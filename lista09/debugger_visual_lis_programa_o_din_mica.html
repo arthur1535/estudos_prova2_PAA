@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIS Debugger - Programação Dinâmica Bottom-Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        ide: {
+                            bg: '#0b0f19',
+                            panel: '#111827',
+                            card: '#1e293b',
+                            border: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .node-transition {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        .active-i-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes gold-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.45); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
+        }
+        .best-j-glow {
+            animation: gold-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shadow-inner">
+                    <i class="ph-bold ph-tree-structure text-2xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg sm:text-xl tracking-tight text-white">LIS Visual Debugger</h1>
+                        <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">Bottom-Up DP</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Maior Subsequência Crescente passo a passo para provas de Algoritmos / PAA</p>
+                </div>
+            </div>
+
+            <!-- Formula Pill -->
+            <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2 font-mono text-xs sm:text-sm text-slate-200 shadow-inner">
+                <span class="text-indigo-400 font-bold">Fórmula:</span>
+                <span>L[i] = 1 + max({ L[j] <span class="text-slate-500">|</span> j &lt; i <span class="text-slate-500">e</span> <span class="text-emerald-400">s[j] &lt; s[i]</span> } &cup; {0})</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Section 1: Input & Presets + Controls -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- Input Config (5 cols) -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="arrayInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-brackets-square text-indigo-400"></i> Vetor de Entrada (s)
+                        </label>
+                        <span id="inputError" class="text-xs text-rose-400 hidden">Use números separados por vírgula!</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="arrayInput" type="text" value="3, 1, 4, 1, 5, 9, 2, 6, 5" 
+                            class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-sm font-mono text-white outline-none transition"
+                            placeholder="Ex: 3, 1, 4, 1, 5, 9, 2, 6, 5">
+                        <button onclick="applyCustomArray()" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-1.5 shrink-0 shadow">
+                            <i class="ph-bold ph-check"></i> Carregar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span class="text-xs text-slate-400 mr-1">Exemplos:</span>
+                    <button onclick="loadPreset('5, 2, 8, 6, 3, 6, 9, 7')" class="text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/50 px-2.5 py-1 rounded-lg transition font-bold shadow-sm">
+                        ★ Lista 9 - Q3 (5, 2, 8, 6, 3, 6, 9, 7)
+                    </button>
+                    <button onclick="loadPreset('3, 1, 4, 1, 5, 9, 2, 6, 5')" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg transition font-medium">
+                        Slide Aula 09 (π)
+                    </button>
+                    <button onclick="loadPreset('10, 22, 9, 33, 21, 50, 41, 60')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Clássico (8 elem)
+                    </button>
+                    <button onclick="loadPreset('9, 7, 5, 3, 1')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Decrescente (Pior Caso)
+                    </button>
+                    <button onclick="loadPreset('2, 5, 3, 7, 11, 8, 10, 13, 6')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Múltiplas LIS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Debugger Controls (7 cols) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="ph-bold ph-sliders-horizontal text-indigo-400"></i> Controles de Execução
+                    </span>
+
+                    <!-- Mode Switcher (Micro vs Macro) -->
+                    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button id="btnModeMicro" onclick="setStepMode('micro')" class="text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow">
+                            Passo Micro (Comparar cada j)
+                        </button>
+                        <button id="btnModeMacro" onclick="setStepMode('macro')" class="text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white">
+                            Passo Macro (Calcular i direto)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <button onclick="goToStart()" title="Início / Reset" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-200 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1 border border-slate-700">
+                            <i class="ph-bold ph-skip-back"></i> <span class="hidden sm:inline">Reset</span>
+                        </button>
+                        <button onclick="stepBackward()" id="btnPrev" title="Passo Anterior" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-slate-200 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1 border border-slate-700">
+                            <i class="ph-bold ph-caret-left"></i> Anterior
+                        </button>
+                        <button onclick="togglePlay()" id="btnPlay" class="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/50">
+                            <i id="playIcon" class="ph-bold ph-play"></i> <span id="playText">Play</span>
+                        </button>
+                        <button onclick="stepForward()" id="btnNext" title="Próximo Passo" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-40 disabled:pointer-events-none text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1 shadow-lg shadow-indigo-950/50">
+                            Próximo <i class="ph-bold ph-caret-right"></i>
+                        </button>
+                        <button onclick="nextIndexI()" id="btnNextI" title="Avançar para o próximo índice i" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1">
+                            Próx. <i>i</i> <i class="ph-bold ph-fast-forward"></i>
+                        </button>
+                    </div>
+
+                    <!-- Speed Control -->
+                    <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                        <i class="ph-bold ph-gauge text-slate-400 text-sm"></i>
+                        <input id="speedSlider" type="range" min="150" max="1800" step="150" value="850" class="w-20 accent-indigo-500 cursor-pointer" oninput="updateSpeed()">
+                        <span id="speedLabel" class="text-xs font-mono text-slate-300 w-10 text-right">1.0x</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Interactive Array Visualization -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="ph-bold ph-eye text-indigo-400 text-lg"></i> Visualização dos Vetores <span class="font-mono text-xs text-slate-400 font-normal">(Clique em um bloco calculado para inspecionar sua subsequência!)</span>
+                    </h2>
+                </div>
+                <!-- Progress counter -->
+                <div class="flex items-center gap-3">
+                    <span id="stepCounterBadge" class="text-xs font-mono bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-slate-300">
+                        Passo 0 / 0
+                    </span>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center gap-3 sm:gap-5 text-xs text-slate-300 mb-6 pb-4 border-b border-slate-800/80">
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-indigo-500/30 border-2 border-indigo-400 inline-block"></span>
+                    <span>Índice Atual (<code class="font-mono text-indigo-300">i</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-amber-500/30 border-2 border-amber-400 inline-block"></span>
+                    <span>Comparando (<code class="font-mono text-amber-300">j</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-emerald-500/20 border-2 border-emerald-500 inline-block"></span>
+                    <span>Válido (<code class="font-mono text-emerald-300">s[j] &lt; s[i]</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-emerald-500/30 border-2 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.8)] inline-block"></span>
+                    <span>Melhor Candidato (<code class="font-mono text-amber-300">max L[j]</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-rose-950/40 border border-rose-800/60 opacity-60 inline-block"></span>
+                    <span>Inválido (<code class="font-mono text-rose-400">s[j] &ge; s[i]</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-fuchsia-500/30 border-2 border-fuchsia-400 inline-block"></span>
+                    <span>Caminho da Subsequência</span>
+                </div>
+            </div>
+
+            <!-- Array Nodes Container -->
+            <div class="overflow-x-auto custom-scrollbar pb-4 pt-6">
+                <div id="arrayVisualizer" class="flex items-center justify-start sm:justify-center gap-3 min-w-max px-2">
+                    <!-- Dynamic Blocks injected via JS -->
+                </div>
+            </div>
+
+            <!-- Subsequence Path Banner (Shown when inspecting or finished) -->
+            <div id="subsequenceBanner" class="mt-4 bg-fuchsia-950/30 border border-fuchsia-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 hidden">
+                <div class="flex items-center gap-2.5">
+                    <i class="ph-fill ph-sparkle text-fuchsia-400 text-xl"></i>
+                    <div class="text-xs sm:text-sm">
+                        <span id="subseqTitle" class="font-semibold text-fuchsia-200">Subsequência Crescente reconstruída:</span>
+                        <span id="subseqChain" class="font-mono font-bold text-white ml-2 bg-fuchsia-900/60 px-2.5 py-1 rounded-lg border border-fuchsia-500/40"></span>
+                    </div>
+                </div>
+                <button onclick="clearInspection()" class="text-xs text-fuchsia-300 hover:text-white underline">
+                    Voltar ao modo de debug
+                </button>
+            </div>
+        </section>
+
+        <!-- Section 3: Modo Lousa (Chalkboard Live Formula & Explanation) -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: Live Formula Substitution (5 cols) -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-slate-800/30 pointer-events-none">
+                    <i class="ph-bold ph-math-operations text-9xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-chalkboard-teacher text-base"></i> Substituição na Fórmula
+                        </h3>
+                        <span id="currentIndicesTag" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Aguardando início</span>
+                    </div>
+
+                    <div id="formulaBox" class="bg-slate-950/90 border border-slate-800 rounded-xl p-4 font-mono text-sm space-y-3 shadow-inner relative z-10">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+                <!-- Candidates pill list for current i -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80 relative z-10">
+                    <div class="text-xs text-slate-400 mb-2 flex items-center justify-between">
+                        <span>Conjunto de candidatos válidos até agora (<code class="text-emerald-400">s[j] &lt; s[i]</code>):</span>
+                    </div>
+                    <div id="validCandidatesList" class="flex flex-wrap gap-1.5 min-h-[28px]">
+                        <span class="text-xs text-slate-500 italic">Nenhum candidato avaliado ainda.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Didactic Step-by-Step Narrative (7 cols) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-chat-centered-text text-base"></i> Explicação Passo a Passo (Modo Lousa)
+                        </h3>
+                        <span id="stepPhaseBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                            Pronto
+                        </span>
+                    </div>
+
+                    <!-- Main explanation box -->
+                    <div id="explanationBox" class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-4 text-sm sm:text-base leading-relaxed text-slate-200 min-h-[120px] flex flex-col justify-center">
+                        <!-- Dynamic Explanation -->
+                    </div>
+                </div>
+
+                <!-- Exam Tip Footer -->
+                <div class="mt-4 bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-3 flex items-start gap-3">
+                    <i class="ph-fill ph-lightbulb-filament text-amber-400 text-xl shrink-0 mt-0.5"></i>
+                    <p id="examTipText" class="text-xs text-slate-300 leading-relaxed">
+                        <strong class="text-indigo-300">Dica de Prova:</strong> Lembre-se que todo elemento sozinho já é uma subsequência crescente de tamanho 1. Por isso, se não houver nenhum elemento anterior menor que <code class="font-mono text-amber-300">s[i]</code>, o máximo do conjunto vazio é <code class="font-mono">0</code> e <code class="font-mono text-emerald-300">L[i] = 1 + 0 = 1</code>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Exam Execution Table -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <i class="ph-bold ph-table text-indigo-400 text-lg"></i> Tabela de Execução Completa (Padrão de Prova)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Acompanhe o preenchimento linha por linha exatamente como você deve escrever na folha de prova.</p>
+                </div>
+
+                <!-- Global Max Badge -->
+                <div id="globalMaxContainer" class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Tamanho da LIS (<code class="text-indigo-400">max(L)</code>):</span>
+                    <span id="globalMaxValue" class="font-mono text-xl font-bold text-emerald-400">-</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar rounded-xl border border-slate-800">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950 text-slate-400 text-xs uppercase font-mono border-b border-slate-800">
+                            <th class="py-3 px-4 w-16 text-center">Índice (i)</th>
+                            <th class="py-3 px-4 w-20 text-center">Valor (s<sub>i</sub>)</th>
+                            <th class="py-3 px-4">Elementos anteriores menores (s<sub>j</sub> &lt; s<sub>i</sub> e seus L[j])</th>
+                            <th class="py-3 px-4 w-32 text-center">max(L[j])</th>
+                            <th class="py-3 px-4 w-36 text-center">Cálculo (1 + max)</th>
+                            <th class="py-3 px-4 w-28 text-center">Novo L[i]</th>
+                            <th class="py-3 px-4 w-44 text-center">Subsequência em i</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examTableBody" class="divide-y divide-slate-800/70 text-sm font-mono">
+                        <!-- Rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 mt-8">
+        Debugger Educacional para Projeto e Análise de Algoritmos (PAA) &bull; Complexidade O(n²) Bottom-Up
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // --- State Variables ---
+        let S = [3, 1, 4, 1, 5, 9, 2, 6, 5]; // 0-indexed internally, displayed 1-indexed
+        let steps = [];
+        let currentStepIndex = 0;
+        let stepMode = 'micro'; // 'micro' or 'macro'
+        let isPlaying = false;
+        let playTimer = null;
+        let playIntervalMs = 850;
+        let inspectedNodeIndex = null; // If user clicks a node i to highlight its subsequence
+
+        // --- Initialization ---
+        window.onload = () => {
+            generateSteps();
+            renderAll();
+        };
+
+        // --- Parse Input & Presets ---
+        function loadPreset(presetStr) {
+            document.getElementById('arrayInput').value = presetStr;
+            applyCustomArray();
+        }
+
+        function applyCustomArray() {
+            stopPlay();
+            const raw = document.getElementById('arrayInput').value;
+            const parts = raw.split(',').map(x => x.trim()).filter(x => x !== '');
+            const nums = parts.map(Number);
+
+            const errEl = document.getElementById('inputError');
+            if (nums.length === 0 || nums.length > 18 || nums.some(isNaN)) {
+                errEl.textContent = nums.length > 18 ? 'Use no máximo 18 números para melhor visualização.' : 'Entrada inválida! Use números separados por vírgula.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            S = nums;
+            inspectedNodeIndex = null;
+            generateSteps();
+            currentStepIndex = 0;
+            renderAll();
+        }
+
+        // --- Step Engine Generator ---
+        // Generates a complete trace of snapshots so we can step forward/backward seamlessly
+        function generateSteps() {
+            steps = [];
+            const n = S.length;
+            const L = new Array(n).fill(null);
+            const prevIdx = new Array(n).fill(-1); // To reconstruct subsequences
+            const tableRows = [];
+
+            // Initial Step 0: Before starting
+            steps.push({
+                type: 'INIT',
+                i: null,
+                j: null,
+                L: [...L],
+                prevIdx: [...prevIdx],
+                validJs: [],
+                invalidJs: [],
+                bestJ: null,
+                currentMaxLj: 0,
+                tableRows: [],
+                title: 'Estado Inicial',
+                explanation: `Temos um vetor <code class="text-indigo-300 font-mono">s</code> com <strong>${n} elementos</strong> (índices de 1 a ${n}). Vamos calcular <code class="text-emerald-300 font-mono">L[i]</code> de baixo para cima (<strong>Bottom-Up</strong>), começando em <code class="font-mono">i = 1</code> até <code class="font-mono">i = ${n}</code>.`,
+                formulaHtml: `
+                    <div class="text-slate-400">Fórmula Geral:</div>
+                    <div class="text-base text-white font-bold">L[i] = 1 + max({ L[j] | j &lt; i e s[j] &lt; s[i] } &cup; {0})</div>
+                    <div class="text-xs text-slate-400 pt-1">Clique em <strong>"Próximo"</strong> ou <strong>"Play"</strong> para iniciar o debug.</div>
+                `
+            });
+
+            for (let i = 0; i < n; i++) {
+                const i1 = i + 1;
+                const si = S[i];
+                let validJs = [];
+                let invalidJs = [];
+                let bestJ = null;
+                let currentMaxLj = 0;
+
+                // Step: Start evaluating index i
+                steps.push({
+                    type: 'START_I',
+                    i: i,
+                    j: null,
+                    L: [...L],
+                    prevIdx: [...prevIdx],
+                    validJs: [],
+                    invalidJs: [],
+                    bestJ: null,
+                    currentMaxLj: 0,
+                    tableRows: JSON.parse(JSON.stringify(tableRows)),
+                    title: `Iniciando Índice i = ${i1} (s[${i1}] = ${si})`,
+                    explanation: i === 0
+                        ? `Começamos no primeiro elemento: <code class="text-indigo-300 font-mono">i = 1</code> com valor <code class="text-indigo-300 font-mono">s[1] = ${si}</code>. Como não existem elementos à esquerda (<code class="font-mono">j &lt; 1</code>), não há ninguém para comparar.`
+                        : `Agora queremos descobrir <code class="text-indigo-300 font-mono">L[${i1}]</code> para o elemento <code class="text-indigo-300 font-mono">s[${i1}] = ${si}</code>. Vamos olhar para todos os elementos anteriores (<code class="text-amber-300 font-mono">j = 1</code> até <code class="text-amber-300 font-mono">${i}</code>) procurando valores menores que <strong>${si}</strong>.`,
+                    formulaHtml: `
+                        <div class="text-indigo-300">Calculando para i = ${i1} (s[${i1}] = ${si}):</div>
+                        <div class="text-white">L[${i1}] = 1 + max({ L[j] | 1 &le; j &lt; ${i1} e s[j] &lt; ${si} } &cup; {0})</div>
+                        <div class="text-xs text-slate-400">Máximo acumulado até agora: <span class="text-amber-300 font-bold">0</span></div>
+                    `
+                });
+
+                // Inner loop j from 0 to i - 1
+                for (let j = 0; j < i; j++) {
+                    const j1 = j + 1;
+                    const sj = S[j];
+                    const lj = L[j];
+                    const isSmaller = sj < si;
+
+                    let stepExplanation = '';
+                    let beatMax = false;
+
+                    if (isSmaller) {
+                        validJs.push(j);
+                        if (lj > currentMaxLj) {
+                            currentMaxLj = lj;
+                            bestJ = j;
+                            beatMax = true;
+                            stepExplanation = `Comparando <code class="text-amber-300 font-mono">s[${j1}] = ${sj}</code> com <code class="text-indigo-300 font-mono">s[${i1}] = ${si}</code>: Como <strong>${sj} &lt; ${si}</strong>, é <span class="text-emerald-400 font-bold">VÁLIDO!</span> O valor de <code class="text-emerald-300 font-mono">L[${j1}] = ${lj}</code> supera nosso máximo anterior e vira o novo melhor candidato (<code class="text-amber-300 font-mono">max = ${currentMaxLj}</code>)!`;
+                        } else {
+                            stepExplanation = `Comparando <code class="text-amber-300 font-mono">s[${j1}] = ${sj}</code> com <code class="text-indigo-300 font-mono">s[${i1}] = ${si}</code>: Como <strong>${sj} &lt; ${si}</strong>, é <span class="text-emerald-400 font-semibold">VÁLIDO</span> (<code class="font-mono">L[${j1}] = ${lj}</code>). Porém, não supera o máximo atual que já é <strong>${currentMaxLj}</strong>.`;
+                        }
+                    } else {
+                        invalidJs.push(j);
+                        stepExplanation = `Comparando <code class="text-amber-300 font-mono">s[${j1}] = ${sj}</code> com <code class="text-indigo-300 font-mono">s[${i1}] = ${si}</code>: Como <strong>${sj} &not;&lt; ${si}</strong> (${sj} &ge; ${si}), <span class="text-rose-400 font-semibold">DESCARTADO!</span> Não podemos continuar uma subsequência crescente a partir de ${sj}.`;
+                    }
+
+                    const validSetStr = validJs.length > 0
+                        ? validJs.map(idx => `L[${idx + 1}]=${L[idx]}`).join(', ')
+                        : 'vazio';
+
+                    steps.push({
+                        type: 'COMPARE_J',
+                        i: i,
+                        j: j,
+                        L: [...L],
+                        prevIdx: [...prevIdx],
+                        validJs: [...validJs],
+                        invalidJs: [...invalidJs],
+                        bestJ: bestJ,
+                        currentMaxLj: currentMaxLj,
+                        tableRows: JSON.parse(JSON.stringify(tableRows)),
+                        title: `Comparando j = ${j1} com i = ${i1}`,
+                        explanation: stepExplanation,
+                        formulaHtml: `
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>Teste: s[${j1}] &lt; s[${i1}] &rArr; <strong>${sj} &lt; ${si}</strong></span>
+                                <span class="${isSmaller ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">${isSmaller ? '✓ VERDADEIRO' : '✗ FALSO'}</span>
+                            </div>
+                            <div class="text-white">L[${i1}] = 1 + max({ ${validSetStr} } &cup; {0})</div>
+                            <div class="text-xs text-amber-300">Melhor L[j] até agora: <strong>${currentMaxLj}</strong> ${bestJ !== null ? `(vindo de j=${bestJ + 1})` : ''}</div>
+                        `
+                    });
+                }
+
+                // Commit L[i]
+                L[i] = 1 + currentMaxLj;
+                prevIdx[i] = bestJ !== null ? bestJ : -1;
+
+                // Reconstruct path for this i
+                const subseqValues = [];
+                const subseqIndices = [];
+                let curr = i;
+                while (curr !== -1) {
+                    subseqValues.unshift(S[curr]);
+                    subseqIndices.unshift(curr + 1);
+                    curr = prevIdx[curr];
+                }
+
+                // Add row to exam table
+                const rowObj = {
+                    i: i1,
+                    si: si,
+                    validCandidates: validJs.map(idx => ({
+                        j: idx + 1,
+                        sj: S[idx],
+                        lj: L[idx],
+                        isBest: idx === bestJ
+                    })),
+                    maxLj: currentMaxLj,
+                    calcStr: `1 + ${currentMaxLj}`,
+                    finalLi: L[i],
+                    subseqStr: subseqValues.join(' → ')
+                };
+                tableRows.push(rowObj);
+
+                const validValuesOnly = validJs.map(idx => L[idx]);
+                const setDisplay = validValuesOnly.length > 0 ? validValuesOnly.join(', ') : '0';
+
+                steps.push({
+                    type: 'COMMIT_I',
+                    i: i,
+                    j: null,
+                    L: [...L],
+                    prevIdx: [...prevIdx],
+                    validJs: [...validJs],
+                    invalidJs: [...invalidJs],
+                    bestJ: bestJ,
+                    currentMaxLj: currentMaxLj,
+                    tableRows: JSON.parse(JSON.stringify(tableRows)),
+                    title: `Concluído L[${i1}] = ${L[i]}`,
+                    explanation: validJs.length === 0
+                        ? `Nenhum elemento anterior era menor que <strong>${si}</strong>. Portanto, o máximo dos anteriores válidos é <strong>0</strong>. Calculamos <code class="text-emerald-300 font-mono">L[${i1}] = 1 + 0 = 1</code> (apenas o próprio ${si} sozinho).`
+                        : `Terminamos de varrer os anteriores de <code class="text-indigo-300 font-mono">i = ${i1}</code>! O maior <code class="font-mono">L[j]</code> entre os candidatos menores que ${si} foi <strong>${currentMaxLj}</strong> (no índice <code class="text-amber-300 font-mono">j = ${bestJ + 1}</code> com valor ${S[bestJ]}). Somando 1 (o próprio ${si}), cravamos <code class="text-emerald-300 font-mono font-bold">L[${i1}] = 1 + ${currentMaxLj} = ${L[i]}</code>!`,
+                    formulaHtml: `
+                        <div class="text-emerald-400 font-bold">✓ Fechamento do Índice i = ${i1}:</div>
+                        <div class="text-white text-base">L[${i1}] = 1 + max({ ${setDisplay} }) = 1 + ${currentMaxLj} = <span class="text-emerald-400 font-bold underline">${L[i]}</span></div>
+                        <div class="text-xs text-fuchsia-300">Subsequência formada: [ ${subseqValues.join(' &rarr; ')} ]</div>
+                    `
+                });
+            }
+
+            // Final Summary Step
+            const maxVal = Math.max(...L);
+            const bestEndIdx = L.indexOf(maxVal);
+            steps.push({
+                type: 'DONE',
+                i: null,
+                j: null,
+                L: [...L],
+                prevIdx: [...prevIdx],
+                validJs: [],
+                invalidJs: [],
+                bestJ: bestEndIdx,
+                currentMaxLj: maxVal,
+                tableRows: JSON.parse(JSON.stringify(tableRows)),
+                title: `Algoritmo Finalizado! LIS = ${maxVal}`,
+                explanation: `Todos os índices foram calculados! Agora damos o passo final fundamental da prova: tiramos o <strong>máximo global de todo o vetor L</strong>: <code class="text-emerald-300 font-mono">max(L) = max(${L.join(', ')}) = ${maxVal}</code>. Clique em qualquer bloco acima para ver a subsequência que termina nele!`,
+                formulaHtml: `
+                    <div class="text-emerald-400 font-bold">Resultado Global da Prova:</div>
+                    <div class="text-white text-base">LIS = max(L[1..${n}]) = <span class="text-emerald-400 font-bold text-lg">${maxVal}</span></div>
+                    <div class="text-xs text-slate-400">Vetor L completo: [ ${L.join(', ')} ]</div>
+                `
+            });
+        }
+
+        // --- Navigation & Playback Controls ---
+        function setStepMode(mode) {
+            stepMode = mode;
+            const btnMicro = document.getElementById('btnModeMicro');
+            const btnMacro = document.getElementById('btnModeMacro');
+            if (mode === 'micro') {
+                btnMicro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+                btnMacro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white';
+            } else {
+                btnMacro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+                btnMicro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white';
+            }
+        }
+
+        function stepForward() {
+            inspectedNodeIndex = null;
+            if (currentStepIndex >= steps.length - 1) {
+                stopPlay();
+                return;
+            }
+
+            if (stepMode === 'micro') {
+                currentStepIndex++;
+            } else {
+                // Macro mode: jump directly to next COMMIT_I or DONE
+                let idx = currentStepIndex + 1;
+                while (idx < steps.length - 1 && steps[idx].type !== 'COMMIT_I' && steps[idx].type !== 'DONE') {
+                    idx++;
+                }
+                currentStepIndex = idx;
+            }
+            renderAll();
+            if (currentStepIndex >= steps.length - 1) stopPlay();
+        }
+
+        function stepBackward() {
+            stopPlay();
+            inspectedNodeIndex = null;
+            if (currentStepIndex <= 0) return;
+
+            if (stepMode === 'micro') {
+                currentStepIndex--;
+            } else {
+                let idx = currentStepIndex - 1;
+                while (idx > 0 && steps[idx].type !== 'COMMIT_I' && steps[idx].type !== 'INIT') {
+                    idx--;
+                }
+                currentStepIndex = idx;
+            }
+            renderAll();
+        }
+
+        function nextIndexI() {
+            stopPlay();
+            inspectedNodeIndex = null;
+            if (currentStepIndex >= steps.length - 1) return;
+
+            const currI = steps[currentStepIndex].i;
+            let idx = currentStepIndex + 1;
+            // Find the COMMIT_I of the current i, or if already at COMMIT_I, the next COMMIT_I
+            while (idx < steps.length - 1) {
+                if (steps[idx].type === 'COMMIT_I' && (steps[currentStepIndex].type !== 'COMMIT_I' || steps[idx].i !== currI)) {
+                    break;
+                }
+                idx++;
+            }
+            currentStepIndex = idx;
+            renderAll();
+        }
+
+        function goToStart() {
+            stopPlay();
+            inspectedNodeIndex = null;
+            currentStepIndex = 0;
+            renderAll();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                if (currentStepIndex >= steps.length - 1) {
+                    currentStepIndex = 0;
+                }
+                isPlaying = true;
+                document.getElementById('playIcon').className = 'ph-bold ph-pause';
+                document.getElementById('playText').textContent = 'Pausar';
+                document.getElementById('btnPlay').classList.replace('bg-emerald-600', 'bg-amber-600');
+                document.getElementById('btnPlay').classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+                playTimer = setInterval(stepForward, playIntervalMs);
+            }
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            if (playTimer) clearInterval(playTimer);
+            playTimer = null;
+            document.getElementById('playIcon').className = 'ph-bold ph-play';
+            document.getElementById('playText').textContent = 'Play';
+            document.getElementById('btnPlay').classList.replace('bg-amber-600', 'bg-emerald-600');
+            document.getElementById('btnPlay').classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
+        }
+
+        function updateSpeed() {
+            const sliderVal = Number(document.getElementById('speedSlider').value);
+            // Invert slider so right is faster
+            playIntervalMs = 1950 - sliderVal;
+            const speedMultiplier = (850 / playIntervalMs).toFixed(1);
+            document.getElementById('speedLabel').textContent = `${speedMultiplier}x`;
+            if (isPlaying) {
+                clearInterval(playTimer);
+                playTimer = setInterval(stepForward, playIntervalMs);
+            }
+        }
+
+        function inspectNode(idx) {
+            const st = steps[currentStepIndex];
+            if (st.L[idx] === null) return; // Not calculated yet
+            stopPlay();
+            inspectedNodeIndex = idx;
+            renderAll();
+        }
+
+        function clearInspection() {
+            inspectedNodeIndex = null;
+            renderAll();
+        }
+
+        // Helper to get subsequence indices ending at `targetIdx`
+        function getSubsequenceIndices(targetIdx, prevIdxArr) {
+            const path = [];
+            let curr = targetIdx;
+            while (curr !== -1 && curr !== null && curr !== undefined) {
+                path.unshift(curr);
+                curr = prevIdxArr[curr];
+            }
+            return path;
+        }
+
+        // --- Render UI ---
+        function renderAll() {
+            const st = steps[currentStepIndex];
+
+            // Update buttons state
+            document.getElementById('btnPrev').disabled = currentStepIndex === 0;
+            document.getElementById('btnNext').disabled = currentStepIndex === steps.length - 1;
+            document.getElementById('btnNextI').disabled = currentStepIndex === steps.length - 1;
+            document.getElementById('stepCounterBadge').textContent = `Passo ${currentStepIndex} / ${steps.length - 1}`;
+
+            // Determine if we should highlight a subsequence path
+            let highlightedPath = [];
+            const banner = document.getElementById('subsequenceBanner');
+            if (inspectedNodeIndex !== null && st.L[inspectedNodeIndex] !== null) {
+                highlightedPath = getSubsequenceIndices(inspectedNodeIndex, st.prevIdx);
+                banner.classList.remove('hidden');
+                document.getElementById('subseqTitle').innerHTML = `Inspecionando <code class="font-mono">i = ${inspectedNodeIndex + 1}</code> (L[${inspectedNodeIndex + 1}] = ${st.L[inspectedNodeIndex]}):`;
+                document.getElementById('subseqChain').innerHTML = highlightedPath.map(idx => `${S[idx]} <span class="text-xs text-fuchsia-300 font-normal">(i=${idx+1})</span>`).join(' &rarr; ');
+            } else if (st.type === 'DONE') {
+                highlightedPath = getSubsequenceIndices(st.bestJ, st.prevIdx);
+                banner.classList.remove('hidden');
+                document.getElementById('subseqTitle').innerHTML = `Maior Subsequência Crescente Global (Tamanho ${st.currentMaxLj}):`;
+                document.getElementById('subseqChain').innerHTML = highlightedPath.map(idx => `${S[idx]} <span class="text-xs text-fuchsia-300 font-normal">(i=${idx+1})</span>`).join(' &rarr; ');
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            renderArrayBlocks(st, highlightedPath);
+            renderChalkboard(st);
+            renderExamTable(st);
+        }
+
+        function renderArrayBlocks(st, highlightedPath) {
+            const container = document.getElementById('arrayVisualizer');
+            container.innerHTML = '';
+
+            S.forEach((val, idx) => {
+                const i1 = idx + 1;
+                const lVal = st.L[idx];
+                const isCurrentI = st.i === idx;
+                const isCurrentJ = st.j === idx;
+                const isValidJ = st.validJs.includes(idx);
+                const isInvalidJ = st.invalidJs.includes(idx);
+                const isBestJ = st.bestJ === idx && st.type !== 'DONE';
+                const isInPath = highlightedPath.includes(idx);
+
+                // Styling logic for the card
+                let cardClasses = 'bg-slate-950 border-slate-800 text-slate-300';
+                let badgeTop = '';
+                let lBoxClasses = 'bg-slate-900 border-slate-800 text-slate-500';
+
+                if (isInPath) {
+                    cardClasses = 'bg-fuchsia-950/40 border-fuchsia-400 text-white shadow-lg shadow-fuchsia-950/50 -translate-y-1.5';
+                    lBoxClasses = 'bg-fuchsia-600 text-white border-fuchsia-400 font-bold';
+                    badgeTop = `<span class="absolute -top-6 text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-fuchsia-500 text-white shadow">LIS</span>`;
+                } else if (isCurrentI) {
+                    cardClasses = 'bg-indigo-950/60 border-indigo-400 text-white active-i-ring -translate-y-1.5';
+                    lBoxClasses = lVal !== null
+                        ? 'bg-emerald-600 text-white border-emerald-400 font-bold scale-105'
+                        : 'bg-indigo-600/40 text-indigo-200 border-indigo-400';
+                    badgeTop = `<span class="absolute -top-6 text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-500 text-white shadow">i = ${i1}</span>`;
+                } else if (isCurrentJ) {
+                    cardClasses = 'bg-amber-950/50 border-amber-400 text-white -translate-y-1';
+                    lBoxClasses = isValidJ
+                        ? 'bg-emerald-600/40 border-emerald-400 text-emerald-200 font-bold'
+                        : 'bg-rose-900/50 border-rose-500 text-rose-200';
+                    badgeTop = `<span class="absolute -top-6 text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500 text-slate-950 shadow">j = ${i1}</span>`;
+                } else if (isBestJ) {
+                    cardClasses = 'bg-emerald-950/50 border-amber-400 text-white best-j-glow';
+                    lBoxClasses = 'bg-amber-500 text-slate-950 border-amber-300 font-bold';
+                    badgeTop = `<span class="absolute -top-6 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400 text-slate-950 shadow flex items-center gap-0.5">★ max</span>`;
+                } else if (isValidJ) {
+                    cardClasses = 'bg-emerald-950/30 border-emerald-500/70 text-emerald-100';
+                    lBoxClasses = 'bg-emerald-900/60 border-emerald-500/60 text-emerald-300 font-semibold';
+                } else if (isInvalidJ) {
+                    cardClasses = 'bg-rose-950/20 border-rose-900/50 text-slate-500 opacity-60';
+                    lBoxClasses = 'bg-slate-900 border-slate-800 text-slate-500';
+                } else if (lVal !== null) {
+                    cardClasses = 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-fuchsia-400/60';
+                    lBoxClasses = 'bg-slate-800 border-slate-700 text-emerald-400 font-semibold';
+                }
+
+                const clickableAttr = lVal !== null ? `onclick="inspectNode(${idx})" title="Clique para ver a subsequência terminando em i=${i1}"` : '';
+                const cursorClass = lVal !== null ? 'cursor-pointer' : 'cursor-default';
+
+                const blockHtml = `
+                    <div ${clickableAttr} class="relative flex flex-col items-center p-2.5 rounded-2xl border-2 w-20 sm:w-24 node-transition select-none ${cardClasses} ${cursorClass}">
+                        ${badgeTop}
+                        <!-- Index i -->
+                        <div class="text-[11px] font-mono text-slate-400 mb-1">i = ${i1}</div>
+                        
+                        <!-- Value s[i] -->
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col items-center justify-center mb-2 shadow-inner">
+                            <span class="text-[10px] font-mono text-slate-500 leading-none">s[${i1}]</span>
+                            <span class="text-lg sm:text-xl font-bold font-mono tracking-tight">${val}</span>
+                        </div>
+
+                        <!-- L[i] Box -->
+                        <div class="w-full py-1 px-2 rounded-lg border text-center font-mono text-xs transition-all ${lBoxClasses}">
+                            L[${i1}] = ${lVal !== null ? lVal : '?'}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', blockHtml);
+            });
+        }
+
+        function renderChalkboard(st) {
+            // Indices badge
+            const tagEl = document.getElementById('currentIndicesTag');
+            if (st.i !== null && st.j !== null) {
+                tagEl.textContent = `i = ${st.i + 1} | j = ${st.j + 1}`;
+                tagEl.className = 'text-xs font-mono px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30';
+            } else if (st.i !== null) {
+                tagEl.textContent = `i = ${st.i + 1}`;
+                tagEl.className = 'text-xs font-mono px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+            } else if (st.type === 'DONE') {
+                tagEl.textContent = 'Concluído';
+                tagEl.className = 'text-xs font-mono px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+            } else {
+                tagEl.textContent = 'Início';
+                tagEl.className = 'text-xs font-mono px-2.5 py-0.5 rounded bg-slate-800 text-slate-400';
+            }
+
+            // Formula Box
+            document.getElementById('formulaBox').innerHTML = st.formulaHtml;
+
+            // Valid Candidates List
+            const candContainer = document.getElementById('validCandidatesList');
+            if (st.validJs.length === 0) {
+                candContainer.innerHTML = `<span class="text-xs text-slate-500 italic">Conjunto vazio &empty; &rarr; max = 0</span>`;
+            } else {
+                candContainer.innerHTML = st.validJs.map(jIdx => {
+                    const isBest = jIdx === st.bestJ;
+                    const cls = isBest
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-bold'
+                        : 'bg-emerald-950/60 border-emerald-600/50 text-emerald-300';
+                    return `<span class="text-xs font-mono px-2 py-0.5 rounded-lg border ${cls}">
+                        j=${jIdx + 1}: s[${jIdx + 1}]=${S[jIdx]} &rarr; L[${jIdx + 1}]=${st.L[jIdx]} ${isBest ? '★' : ''}
+                    </span>`;
+                }).join('');
+            }
+
+            // Explanation Narrative
+            document.getElementById('stepPhaseBadge').textContent = st.title;
+            document.getElementById('explanationBox').innerHTML = `<p>${st.explanation}</p>`;
+        }
+
+        function renderExamTable(st) {
+            const tbody = document.getElementById('examTableBody');
+            tbody.innerHTML = '';
+
+            // Global Max
+            const calculatedLs = st.L.filter(x => x !== null);
+            const globalMaxEl = document.getElementById('globalMaxValue');
+            if (calculatedLs.length > 0) {
+                const maxNow = Math.max(...calculatedLs);
+                globalMaxEl.textContent = maxNow;
+            } else {
+                globalMaxEl.textContent = '-';
+            }
+
+            const maxGlobalFinal = st.type === 'DONE' ? Math.max(...st.L) : null;
+
+            st.tableRows.forEach((row, rIdx) => {
+                const isLatestRow = (rIdx === st.tableRows.length - 1) && st.type === 'COMMIT_I';
+                const isGlobalWinner = st.type === 'DONE' && row.finalLi === maxGlobalFinal;
+
+                let rowClass = 'bg-slate-900/40 hover:bg-slate-800/50 transition';
+                if (isLatestRow) rowClass = 'bg-indigo-950/40 border-l-4 border-l-indigo-500';
+                if (isGlobalWinner) rowClass = 'bg-emerald-950/30 border-l-4 border-l-emerald-500';
+
+                let candidatesHtml = '<span class="text-slate-500 italic">Nenhum (j &lt; i com s<sub>j</sub> &lt; s<sub>i</sub> vazio)</span>';
+                if (row.validCandidates.length > 0) {
+                    candidatesHtml = row.validCandidates.map(c => {
+                        if (c.isBest) {
+                            return `<span class="inline-block bg-amber-500/20 border border-amber-400/60 text-amber-200 px-1.5 py-0.5 rounded text-xs font-bold mr-1 mb-1">s<sub>${c.j}</sub>=${c.sj} (L[${c.j}]=${c.lj}) ★</span>`;
+                        }
+                        return `<span class="inline-block bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-xs mr-1 mb-1">s<sub>${c.j}</sub>=${c.sj} (L[${c.j}]=${c.lj})</span>`;
+                    }).join('');
+                }
+
+                const tr = `
+                    <tr onclick="inspectNode(${row.i - 1})" class="cursor-pointer ${rowClass}" title="Clique para destacar esta subsequência nos blocos acima">
+                        <td class="py-3 px-4 text-center font-bold text-indigo-300">${row.i}</td>
+                        <td class="py-3 px-4 text-center font-bold text-white">${row.si}</td>
+                        <td class="py-3 px-4">${candidatesHtml}</td>
+                        <td class="py-3 px-4 text-center font-bold text-amber-300">${row.maxLj}</td>
+                        <td class="py-3 px-4 text-center text-slate-300">${row.calcStr}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2.5 py-1 rounded-lg font-bold ${isGlobalWinner ? 'bg-emerald-500 text-slate-950 shadow' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                                ${row.finalLi}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-xs text-fuchsia-300 font-semibold">${row.subseqStr}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+
+            if (st.tableRows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500 font-sans">
+                            Avance os passos acima para preencher a tabela de execução dinamicamente.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

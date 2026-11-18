@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resolução Visual Interativa -- Lista 6 (Divisão e Conquista)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #475569;
+      border-radius: 3px;
+    }
+    .cell-transition {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 custom-scrollbar">
+
+  <!-- Header Geral -->
+  <header class="max-w-7xl mx-auto mb-6 bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl p-5 shadow-xl">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 rounded text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">UFU • FEELT • PAA</span>
+          <span class="px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Prova 2</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Lista 6: Divisão e Conquista -- Visualizador Interativo</h1>
+        <p class="text-sm text-slate-400 mt-1">
+          Prof. Felipe A. Louza • Aluno: <span class="text-slate-200 font-medium">Arthur Pires Lopes</span> (12221EEL001)
+        </p>
+      </div>
+
+      <!-- Navegação por Abas de Questões -->
+      <nav class="flex flex-wrap gap-1.5 bg-slate-900/90 p-1.5 rounded-lg border border-slate-700/80">
+        <button onclick="switchTab('q1')" id="tab-q1" class="tab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-sky-600 text-white shadow">Q1: Merge Sort</button>
+        <button onclick="switchTab('q2')" id="tab-q2" class="tab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">Q2: Quick Sort</button>
+        <button onclick="switchTab('q3')" id="tab-q3" class="tab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">Q3: Lomuto</button>
+        <button onclick="switchTab('q4')" id="tab-q4" class="tab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">Q4: K-Way Merge</button>
+        <button onclick="switchTab('q5')" id="tab-q5" class="tab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800">Q5: Quick-Find</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- QUESTÃO 1: MERGE SORT -->
+    <!-- ========================================================================= -->
+    <section id="content-q1" class="tab-pane space-y-4">
+      <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-black border border-sky-500/30">1</span>
+              Merge Sort em Vetor Pré-Ordenado
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Entrada: <code class="text-sky-300 font-mono text-xs">A = ⟨1, 2, 3, 4, 5, 6, 7, 8, 9, 10⟩</code>. O algoritmo executa a árvore completa de divisões e 19 comparações.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="prevMergeStep()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">◀ Anterior</button>
+            <button onclick="toggleMergePlay()" id="merge-play-btn" class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-xs font-bold rounded-lg shadow transition">▶ Auto</button>
+            <button onclick="nextMergeStep()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">Próximo ▶</button>
+            <button onclick="resetMerge()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:text-white transition">↺</button>
+          </div>
+        </div>
+
+        <!-- Estatísticas da Questão 1 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+            <span class="text-xs text-slate-400 block">Etapa de Intercalação</span>
+            <span id="merge-step-badge" class="text-lg font-black text-sky-400">0 / 9</span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+            <span class="text-xs text-slate-400 block">Comparações Acumuladas</span>
+            <span id="merge-comp-count" class="text-lg font-black text-emerald-400">0</span>
+            <span class="text-[10px] text-slate-400 block">(Total final: 19)</span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+            <span class="text-xs text-slate-400 block">Chamadas Recursivas</span>
+            <span class="text-lg font-black text-purple-400">19 <span class="text-xs font-normal text-slate-400">(2n-1)</span></span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700/60">
+            <span class="text-xs text-slate-400 block">Complexidade Temporal</span>
+            <span class="text-lg font-black text-amber-400">Θ(n lg n)</span>
+          </div>
+        </div>
+
+        <!-- Visualizador do Vetor Principal -->
+        <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-700/70 mb-5">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Estado Atual do Arranjo A[1..10]</span>
+            <span id="merge-status-text" class="text-xs font-mono text-sky-300">Aguardando início...</span>
+          </div>
+          <div id="merge-array-container" class="flex flex-wrap items-center justify-center gap-2 py-2">
+            <!-- Gerado via JS -->
+          </div>
+        </div>
+
+        <!-- Detalhes da Intercalação Ativa -->
+        <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Subvetores da Intercalação</h4>
+            <div id="merge-subarrays" class="space-y-2 text-xs">
+              <div class="text-slate-500 italic">Nenhuma intercalação selecionada. Clique em "Próximo" para avançar.</div>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Comparações Realizadas nesta Etapa</h4>
+            <div id="merge-explanation" class="text-xs text-slate-300 space-y-1">
+              <p class="text-slate-500">Como a entrada original já está ordenada, em qualquer chamada <code class="text-sky-300">Merge(A, p, q, r)</code> com <code class="text-amber-300">L = A[p..q]</code> e <code class="text-emerald-300">R = A[q+1..r]</code>, todos os elementos de L são estritamente menores que os de R. Cada elemento de L é comparado uma vez contra o primeiro de R e inserido, totalizando exatamente <code class="text-purple-300">|L|</code> comparações.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- QUESTÃO 2: QUICK SORT -->
+    <!-- ========================================================================= -->
+    <section id="content-q2" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-black border border-sky-500/30">2</span>
+              Quick Sort -- Análise das 3 Estratégias de Escolha de Pivô
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Entrada: <code class="text-sky-300 font-mono text-xs">A = ⟨1, 2, 3, 4, 5, 6, 7, 8, 9, 10⟩</code>. Compare o pior caso, a mediana de três e a aleatorização.
+            </p>
+          </div>
+          <!-- Seletor da Sub-estratégia -->
+          <div class="flex gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700">
+            <button onclick="setQuickStrategy('first')" id="btn-qs-first" class="px-2.5 py-1 text-xs font-semibold rounded bg-rose-600 text-white shadow">Pivô: 1º Elemento</button>
+            <button onclick="setQuickStrategy('med3')" id="btn-qs-med3" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-300 hover:text-white">Mediana de 3</button>
+            <button onclick="setQuickStrategy('random')" id="btn-qs-random" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-300 hover:text-white">Aleatório</button>
+          </div>
+        </div>
+
+        <!-- Painel de Destaque da Estratégia -->
+        <div id="qs-strategy-card" class="bg-slate-900/90 border border-rose-500/30 rounded-xl p-4 mb-5">
+          <!-- Preenchido via JS -->
+        </div>
+
+        <!-- Visualização da Árvore / Níveis de Recursão -->
+        <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-700 mb-4">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Árvore de Execução e Partições Resultantes</span>
+            <button id="qs-rerun-btn" onclick="rerunRandomQS()" class="hidden px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded shadow transition">🎲 Sortear Outro Pivô</button>
+          </div>
+          <div id="qs-tree-container" class="space-y-2 font-mono text-xs overflow-x-auto p-2">
+            <!-- Preenchido via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- QUESTÃO 3: LOMUTO -->
+    <!-- ========================================================================= -->
+    <section id="content-q3" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-black border border-sky-500/30">3</span>
+              Simulador Passo a Passo de Partition-Lomuto
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Entrada: <code class="text-sky-300 font-mono text-xs">A = ⟨4, 8, 2, 7, 6, 3, 5, 1, 9, 10⟩</code> com <code class="text-amber-300 font-mono text-xs">x = A[10] = 10</code>.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="prevLomutoStep()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">◀ Anterior</button>
+            <button onclick="toggleLomutoPlay()" id="lomuto-play-btn" class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-xs font-bold rounded-lg shadow transition">▶ Auto</button>
+            <button onclick="nextLomutoStep()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">Próximo ▶</button>
+            <button onclick="resetLomuto()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:text-white transition">↺</button>
+          </div>
+        </div>
+
+        <!-- Vetor com Ponteiros i, j e x -->
+        <div class="bg-slate-900/90 rounded-xl p-5 border border-slate-700/70 mb-5">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> ≤ x (índices l..i)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> > x (índices i+1..j-1)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-600 inline-block"></span> Não vistos (j..r-1)</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> Pivô x (A[r])</span>
+            </div>
+            <div id="lomuto-step-badge" class="px-2.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-xs font-mono text-sky-400">
+              Passo 0 / 10
+            </div>
+          </div>
+
+          <!-- Grade de Células -->
+          <div id="lomuto-cells-container" class="flex flex-wrap items-center justify-center gap-2 py-4">
+            <!-- Preenchido via JS -->
+          </div>
+
+          <!-- Ponteiros visuais -->
+          <div id="lomuto-pointers" class="text-center font-mono text-xs text-slate-400 py-1 border-t border-slate-800 mt-2">
+            <!-- Preenchido via JS -->
+          </div>
+        </div>
+
+        <!-- Invariante de Laço e Ação Atual -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Ação Executada na Iteração
+            </h4>
+            <div id="lomuto-action-desc" class="text-xs text-slate-300 space-y-1.5">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span> Invariante de Laço em Tempo Real
+            </h4>
+            <div id="lomuto-invariant-box" class="text-xs font-mono text-slate-300 space-y-1">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- QUESTÃO 4: K-WAY MERGE -->
+    <!-- ========================================================================= -->
+    <section id="content-q4" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <div class="border-b border-slate-700 pb-4 mb-4">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-black border border-sky-500/30">4</span>
+            Merge de k Vetores Ordenados em O(nk lg k)
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Dados <code class="text-sky-300">k = 4</code> vetores ordenados com <code class="text-sky-300">n = 3</code> elementos cada (Total: <code class="text-emerald-400">N = nk = 12</code> elementos).
+          </p>
+        </div>
+
+        <!-- Seletor de Abordagem Q4 -->
+        <div class="flex gap-2 mb-4">
+          <button onclick="setKWayMode('tree')" id="btn-kway-tree" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-sky-600 text-white shadow">Abordagem 1: Divisão e Conquista (Árvore de Torneio)</button>
+          <button onclick="setKWayMode('heap')" id="btn-kway-heap" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:text-white">Abordagem 2: Min-Heap de Tamanho k</button>
+        </div>
+
+        <div id="kway-content" class="space-y-4">
+          <!-- Preenchido via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- QUESTÃO 5: QUICK-FIND -->
+    <!-- ========================================================================= -->
+    <section id="content-q5" class="tab-pane hidden space-y-4">
+      <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-700 pb-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-black border border-sky-500/30">5</span>
+              Algoritmo Quick-Find (Quickselect) -- Seleção do k-ésimo Menor
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Encontra o k-ésimo elemento descartando metade do vetor a cada passo: <code class="text-emerald-400 font-bold">Profundidade Média: Θ(log n)</code> e <code class="text-amber-400 font-bold">Tempo Total Médio: Θ(n)</code>.
+            </p>
+          </div>
+
+          <!-- Controle de Escolha de k -->
+          <div class="flex items-center gap-2 bg-slate-900 p-2 rounded-lg border border-slate-700">
+            <label class="text-xs font-medium text-slate-300">Buscar o k-ésimo menor:</label>
+            <select id="qf-k-select" onchange="runQuickFind()" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs font-bold text-sky-300 focus:outline-none">
+              <option value="1">k = 1 (mínimo)</option>
+              <option value="3">k = 3</option>
+              <option value="5" selected>k = 5 (mediana)</option>
+              <option value="7">k = 7</option>
+              <option value="10">k = 10 (máximo)</option>
+            </select>
+            <button onclick="runQuickFind()" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-xs font-bold rounded shadow transition">Executar</button>
+          </div>
+        </div>
+
+        <!-- Rastreamento Visual dos Passos -->
+        <div class="space-y-4">
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-700">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">Descarte de Metades e Foco da Recursão</span>
+            <div id="qf-trace-container" class="space-y-3 font-mono text-xs">
+              <!-- Preenchido via JS -->
+            </div>
+          </div>
+
+          <!-- Demonstração Matemática da Soma Geométrica -->
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <h4 class="font-bold text-slate-200 uppercase tracking-wider mb-2">1. Profundidade Média: Θ(log n)</h4>
+              <p class="text-slate-400 mb-2">
+                Apenas <strong class="text-white">uma única chamada recursiva</strong> é realizada por nível (descartando o outro ramo). O tamanho do subvetor reduz-se sucessivamente:
+              </p>
+              <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-sky-300 font-mono text-center">
+                n ➔ n/2 ➔ n/4 ➔ n/8 ➔ ... ➔ 1  (⌈lg n⌉ níveis)
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-slate-200 uppercase tracking-wider mb-2">2. Custo Total de Tempo: Θ(n)</h4>
+              <p class="text-slate-400 mb-2">
+                O trabalho por nível é proporcional ao tamanho do subvetor restante, gerando uma progressão geométrica decrescente convergente:
+              </p>
+              <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-emerald-300 font-mono text-center">
+                T(n) ≤ cn(1 + 1/2 + 1/4 + 1/8 + ...) = 2cn = Θ(n)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- SCRIPTS JS INTERATIVOS -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- Controle de Abas ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-sky-600', 'text-white', 'shadow');
+        btn.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-slate-800');
+      });
+
+      document.getElementById('content-' + tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-' + tabId);
+      activeBtn.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-slate-800');
+      activeBtn.classList.add('bg-sky-600', 'text-white', 'shadow');
+    }
+
+    // =========================================================================
+    // QUESTÃO 1: MERGE SORT INTERATIVO
+    // =========================================================================
+    const mergeData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const mergeSteps = [
+      { step: 0, p: 0, q: 0, r: 0, L: [], R: [], comps: 0, desc: "Início: vetor original ordenado A[1..10]." },
+      { step: 1, p: 1, q: 1, r: 2, L: [1], R: [2], comps: 1, desc: "Merge(1, 1, 2): Compara 1 ≤ 2. L esgota; copia 2." },
+      { step: 2, p: 1, q: 2, r: 3, L: [1, 2], R: [3], comps: 2, desc: "Merge(1, 2, 3): Compara 1 ≤ 3 e 2 ≤ 3. L esgota; copia 3." },
+      { step: 3, p: 4, q: 4, r: 5, L: [4], R: [5], comps: 1, desc: "Merge(4, 4, 5): Compara 4 ≤ 5. L esgota; copia 5." },
+      { step: 4, p: 1, q: 3, r: 5, L: [1, 2, 3], R: [4, 5], comps: 3, desc: "Merge(1, 3, 5): Compara 1 ≤ 4, 2 ≤ 4, 3 ≤ 4. L esgota; copia 4, 5." },
+      { step: 5, p: 6, q: 6, r: 7, L: [6], R: [7], comps: 1, desc: "Merge(6, 6, 7): Compara 6 ≤ 7. L esgota; copia 7." },
+      { step: 6, p: 6, q: 7, r: 8, L: [6, 7], R: [8], comps: 2, desc: "Merge(6, 7, 8): Compara 6 ≤ 8 e 7 ≤ 8. L esgota; copia 8." },
+      { step: 7, p: 9, q: 9, r: 10, L: [9], R: [10], comps: 1, desc: "Merge(9, 9, 10): Compara 9 ≤ 10. L esgota; copia 10." },
+      { step: 8, p: 6, q: 8, r: 10, L: [6, 7, 8], R: [9, 10], comps: 3, desc: "Merge(6, 8, 10): Compara 6 ≤ 9, 7 ≤ 9, 8 ≤ 9. L esgota; copia 9, 10." },
+      { step: 9, p: 1, q: 5, r: 10, L: [1, 2, 3, 4, 5], R: [6, 7, 8, 9, 10], comps: 5, desc: "Merge(1, 5, 10): Compara 1..5 contra 6. L esgota; copia 6..10. Fim!" }
+    ];
+
+    let currentMergeIdx = 0;
+    let mergeTimer = null;
+
+    function renderMerge() {
+      const info = mergeSteps[currentMergeIdx];
+      document.getElementById('merge-step-badge').innerText = `${info.step} / 9`;
+      
+      // Soma acumulada de comparações
+      let totalC = 0;
+      for (let i = 1; i <= currentMergeIdx; i++) totalC += mergeSteps[i].comps;
+      document.getElementById('merge-comp-count').innerText = totalC;
+      document.getElementById('merge-status-text').innerText = info.desc;
+
+      // Render cells
+      const container = document.getElementById('merge-array-container');
+      container.innerHTML = '';
+      mergeData.forEach((val, idx) => {
+        const pos = idx + 1;
+        const cell = document.createElement('div');
+        cell.className = 'cell-transition flex flex-col items-center justify-center w-11 h-14 rounded-lg font-mono font-bold text-base border shadow';
+        
+        let isL = (currentMergeIdx > 0 && pos >= info.p && pos <= info.q);
+        let isR = (currentMergeIdx > 0 && pos > info.q && pos <= info.r);
+
+        if (isL) {
+          cell.className += ' bg-amber-500/20 text-amber-300 border-amber-500/60 ring-2 ring-amber-500/30';
+        } else if (isR) {
+          cell.className += ' bg-emerald-500/20 text-emerald-300 border-emerald-500/60 ring-2 ring-emerald-500/30';
+        } else {
+          cell.className += ' bg-slate-800 text-slate-300 border-slate-700';
+        }
+
+        cell.innerHTML = `<span>${val}</span><span class="text-[9px] font-normal text-slate-500 mt-1">[${pos}]</span>`;
+        container.appendChild(cell);
+      });
+
+      // Subarrays display
+      const subContainer = document.getElementById('merge-subarrays');
+      if (currentMergeIdx === 0) {
+        subContainer.innerHTML = '<div class="text-slate-500 italic">Clique em "Próximo" para iniciar as intercalações.</div>';
+      } else {
+        subContainer.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">L = ⟨${info.L.join(', ')}⟩</span>
+            <span class="text-slate-400 font-bold">+</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">R = ⟨${info.R.join(', ')}⟩</span>
+          </div>
+          <div class="text-slate-400 text-[11px] mt-1">
+            Comparações nesta chamada: <strong class="text-white">${info.comps}</strong> (exatamente |L| = ${info.L.length} comparações)
+          </div>
+        `;
+      }
+    }
+
+    function nextMergeStep() {
+      if (currentMergeIdx < mergeSteps.length - 1) {
+        currentMergeIdx++;
+        renderMerge();
+      } else {
+        stopMergePlay();
+      }
+    }
+
+    function prevMergeStep() {
+      if (currentMergeIdx > 0) {
+        currentMergeIdx--;
+        renderMerge();
+      }
+    }
+
+    function resetMerge() {
+      stopMergePlay();
+      currentMergeIdx = 0;
+      renderMerge();
+    }
+
+    function toggleMergePlay() {
+      if (mergeTimer) {
+        stopMergePlay();
+      } else {
+        document.getElementById('merge-play-btn').innerText = '⏸ Pausar';
+        document.getElementById('merge-play-btn').classList.replace('bg-sky-600', 'bg-amber-600');
+        mergeTimer = setInterval(() => {
+          if (currentMergeIdx < mergeSteps.length - 1) {
+            nextMergeStep();
+          } else {
+            stopMergePlay();
+          }
+        }, 1200);
+      }
+    }
+
+    function stopMergePlay() {
+      if (mergeTimer) {
+        clearInterval(mergeTimer);
+        mergeTimer = null;
+        document.getElementById('merge-play-btn').innerText = '▶ Auto';
+        document.getElementById('merge-play-btn').classList.replace('bg-amber-600', 'bg-sky-600');
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 2: QUICK SORT STRATEGIES
+    // =========================================================================
+    let currentQSStrategy = 'first';
+
+    function setQuickStrategy(strat) {
+      currentQSStrategy = strat;
+      ['first', 'med3', 'random'].forEach(s => {
+        const btn = document.getElementById('btn-qs-' + s);
+        btn.className = 'px-2.5 py-1 text-xs font-semibold rounded text-slate-300 hover:text-white';
+      });
+      const activeBtn = document.getElementById('btn-qs-' + strat);
+      if (strat === 'first') activeBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded bg-rose-600 text-white shadow';
+      if (strat === 'med3') activeBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded bg-emerald-600 text-white shadow';
+      if (strat === 'random') activeBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded bg-purple-600 text-white shadow';
+
+      renderQuickSort();
+    }
+
+    function renderQuickSort() {
+      const card = document.getElementById('qs-strategy-card');
+      const tree = document.getElementById('qs-tree-container');
+      const rerunBtn = document.getElementById('qs-rerun-btn');
+
+      if (currentQSStrategy === 'first') {
+        rerunBtn.classList.add('hidden');
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+            <span class="text-sm font-bold text-rose-400">Pivô = Primeiro Elemento (p = A[1]) -- Pior Caso Absoluto</span>
+            <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold">Complexidade: Θ(n²)</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Como o vetor já está ordenado, o primeiro elemento é sempre o menor do subarranjo. Cada partição divide <code class="text-white">m</code> elementos em <code class="text-rose-300">0 à esquerda</code> e <code class="text-rose-300">m-1 à direita</code>. A profundidade da recursão é <strong class="text-white">n = 10 níveis</strong>, gerando <strong class="text-white">45 comparações</strong> no total.
+          </p>
+        `;
+
+        tree.innerHTML = `
+          <div class="space-y-1 text-xs text-slate-300">
+            <div class="p-1.5 bg-slate-950/60 rounded border border-rose-500/30 flex justify-between">
+              <span>Nível 1: [1..10] ➔ Pivô: <strong class="text-rose-400">x=1</strong> | Esq: ∅ | Dir: [2, 3, 4, 5, 6, 7, 8, 9, 10]</span>
+              <span class="text-slate-400 font-mono">9 comp.</span>
+            </div>
+            <div class="p-1.5 bg-slate-950/60 rounded border border-rose-500/30 flex justify-between ml-3">
+              <span>Nível 2: [2..10] ➔ Pivô: <strong class="text-rose-400">x=2</strong> | Esq: ∅ | Dir: [3, 4, 5, 6, 7, 8, 9, 10]</span>
+              <span class="text-slate-400 font-mono">8 comp.</span>
+            </div>
+            <div class="p-1.5 bg-slate-950/60 rounded border border-rose-500/30 flex justify-between ml-6">
+              <span>Nível 3: [3..10] ➔ Pivô: <strong class="text-rose-400">x=3</strong> | Esq: ∅ | Dir: [4, 5, 6, 7, 8, 9, 10]</span>
+              <span class="text-slate-400 font-mono">7 comp.</span>
+            </div>
+            <div class="p-1.5 bg-slate-950/60 rounded border border-rose-500/30 flex justify-between ml-9">
+              <span>Nível 4: [4..10] ➔ Pivô: <strong class="text-rose-400">x=4</strong> | Esq: ∅ | Dir: [5, 6, 7, 8, 9, 10]</span>
+              <span class="text-slate-400 font-mono">6 comp.</span>
+            </div>
+            <div class="text-center text-slate-500 font-bold py-1">⋮ (degradação linear nível a nível) ⋮</div>
+            <div class="p-1.5 bg-slate-950/60 rounded border border-rose-500/30 flex justify-between ml-20">
+              <span>Nível 9: [9, 10] ➔ Pivô: <strong class="text-rose-400">x=9</strong> | Esq: ∅ | Dir: [10]</span>
+              <span class="text-slate-400 font-mono">1 comp.</span>
+            </div>
+            <div class="mt-2 text-right text-emerald-400 font-bold">
+              Total de comparações: 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 = 45 comparações = Θ(n²)
+            </div>
+          </div>
+        `;
+      } else if (currentQSStrategy === 'med3') {
+        rerunBtn.classList.add('hidden');
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+            <span class="text-sm font-bold text-emerald-400">Pivô = Mediana entre A[1], A[⌊n/2⌋] e A[n] (Mediana de 3)</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">Complexidade: Θ(n lg n)</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Como o vetor já está ordenado, <code class="text-emerald-300">A[1] ≤ A[⌊n/2⌋] ≤ A[n]</code>. A mediana entre o primeiro, o meio e o fim seleciona sempre o elemento central exato, garantindo partições equilibradas e reduzindo a altura da árvore de recursão para apenas <strong class="text-white">⌈lg 10⌉ = 4 níveis</strong>.
+          </p>
+        `;
+
+        tree.innerHTML = `
+          <div class="space-y-1.5 text-xs text-slate-300">
+            <div class="p-2 bg-slate-950/60 rounded border border-emerald-500/30">
+              <span class="font-bold text-white">Nível 1:</span> [1..10] ➔ Candidatos: {1, 5, 10} ➔ <strong class="text-emerald-400">Pivô: x=5</strong>
+              <div class="text-slate-400 mt-0.5 pl-2">Divide em: Esq: ⟨1, 2, 3, 4⟩ (tam 4) | Pivô: [5] | Dir: ⟨6, 7, 8, 9, 10⟩ (tam 5)</div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-3">
+              <div class="p-2 bg-slate-950/60 rounded border border-emerald-500/30">
+                <span class="font-bold text-white">Nível 2 (Esq):</span> [1..4] ➔ Cand: {1, 2, 4} ➔ <strong class="text-emerald-400">Pivô: x=2</strong>
+                <div class="text-slate-400 mt-0.5 pl-1">Esq: ⟨1⟩ | [2] | Dir: ⟨3, 4⟩</div>
+              </div>
+              <div class="p-2 bg-slate-950/60 rounded border border-emerald-500/30">
+                <span class="font-bold text-white">Nível 2 (Dir):</span> [6..10] ➔ Cand: {6, 8, 10} ➔ <strong class="text-emerald-400">Pivô: x=8</strong>
+                <div class="text-slate-400 mt-0.5 pl-1">Esq: ⟨6, 7⟩ | [8] | Dir: ⟨9, 10⟩</div>
+              </div>
+            </div>
+            <div class="text-right text-emerald-400 font-bold mt-2">
+              Altura da árvore: 4 níveis | Custo ótimo balanceado: T(n) = 2T(n/2) + Θ(n) = Θ(n lg n)
+            </div>
+          </div>
+        `;
+      } else if (currentQSStrategy === 'random') {
+        rerunBtn.classList.remove('hidden');
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+            <span class="text-sm font-bold text-purple-400">Pivô = Escolha Aleatória Uniforme (Randomized Quick Sort)</span>
+            <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold">Esperança: E[T(n)] = Θ(n lg n)</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Sorteia-se um índice uniformemente em <code class="text-purple-300">[l, r]</code>. A probabilidade de ocorrer o pior caso sistemático é insignificante (<code class="text-white">2⁹/10! ≈ 0,014%</code>). O tempo esperado de execução para qualquer vetor é comprovadamente <strong class="text-white">E[T(n)] ≈ 1,39 n lg n</strong>.
+          </p>
+        `;
+
+        renderRandomTree();
+      }
+    }
+
+    function renderRandomTree() {
+      const tree = document.getElementById('qs-tree-container');
+      const randomPivot = Math.floor(Math.random() * 8) + 2; // Sorteia pivô entre 2 e 9 para demonstração
+      const left = [];
+      const right = [];
+      for (let i = 1; i <= 10; i++) {
+        if (i < randomPivot) left.push(i);
+        else if (i > randomPivot) right.push(i);
+      }
+
+      tree.innerHTML = `
+        <div class="space-y-2 text-xs text-slate-300">
+          <div class="p-2 bg-slate-950/60 rounded border border-purple-500/30">
+            <span class="font-bold text-white">Nível 1 (Sorteio Aleatório):</span> Arranjo [1..10] ➔ <strong class="text-purple-300">Pivô sorteado: x = ${randomPivot}</strong>
+            <div class="text-slate-400 mt-1 pl-2">
+              Subvetor Esquerdo (≤ x): ⟨${left.join(', ')}⟩ (tamanho ${left.length})<br>
+              Subvetor Direito (> x): ⟨${right.join(', ')}⟩ (tamanho ${right.length})
+            </div>
+          </div>
+          <div class="p-2 bg-slate-900/40 rounded border border-slate-800 text-slate-400 text-[11px]">
+            🎲 Clique no botão <strong class="text-purple-400">"Sortear Outro Pivô"</strong> acima para simular diferentes permutações da execução probabilística.
+          </div>
+        </div>
+      `;
+    }
+
+    function rerunRandomQS() {
+      if (currentQSStrategy === 'random') renderRandomTree();
+    }
+
+    // =========================================================================
+    // QUESTÃO 3: LOMUTO SIMULATOR
+    // =========================================================================
+    const lomutoInitial = [4, 8, 2, 7, 6, 3, 5, 1, 9, 10];
+    let lomutoState = {
+      step: 0,
+      i: -1,
+      j: 0,
+      arr: [...lomutoInitial],
+      action: "Início: x = A[10] = 10, i = 0 (l - 1).",
+      p: 0,
+      r: 9
+    };
+
+    const lomutoHistory = [
+      { step: 0, i: -1, j: 0, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "Inicialização: x = A[10] = 10, i = 0. Intervalos ≤ x e > x são vazios." },
+      { step: 1, i: 0, j: 0, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 1: A[1] = 4 ≤ 10 (V). Faz i ← i + 1 = 1. Troca A[1] ↔ A[1]." },
+      { step: 2, i: 1, j: 1, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 2: A[2] = 8 ≤ 10 (V). Faz i ← i + 1 = 2. Troca A[2] ↔ A[2]." },
+      { step: 3, i: 2, j: 2, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 3: A[3] = 2 ≤ 10 (V). Faz i ← i + 1 = 3. Troca A[3] ↔ A[3]." },
+      { step: 4, i: 3, j: 3, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 4: A[4] = 7 ≤ 10 (V). Faz i ← i + 1 = 4. Troca A[4] ↔ A[4]." },
+      { step: 5, i: 4, j: 4, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 5: A[5] = 6 ≤ 10 (V). Faz i ← i + 1 = 5. Troca A[5] ↔ A[5]." },
+      { step: 6, i: 5, j: 5, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 6: A[6] = 3 ≤ 10 (V). Faz i ← i + 1 = 6. Troca A[6] ↔ A[6]." },
+      { step: 7, i: 6, j: 6, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 7: A[7] = 5 ≤ 10 (V). Faz i ← i + 1 = 7. Troca A[7] ↔ A[7]." },
+      { step: 8, i: 7, j: 7, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 8: A[8] = 1 ≤ 10 (V). Faz i ← i + 1 = 8. Troca A[8] ↔ A[8]." },
+      { step: 9, i: 8, j: 8, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "j = 9: A[9] = 9 ≤ 10 (V). Faz i ← i + 1 = 9. Troca A[9] ↔ A[9]." },
+      { step: 10, i: 8, j: 9, arr: [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], action: "Fim do laço: Troca final A[i+1] ↔ A[r] (A[10] ↔ A[10]). Retorna i + 1 = 10 (posição final do pivô)." }
+    ];
+
+    let currentLomutoIdx = 0;
+    let lomutoTimer = null;
+
+    function renderLomuto() {
+      const state = lomutoHistory[currentLomutoIdx];
+      document.getElementById('lomuto-step-badge').innerText = `Passo ${state.step} / 10`;
+      document.getElementById('lomuto-action-desc').innerHTML = `<p class="font-medium text-white">${state.action}</p>`;
+
+      // Render cells
+      const container = document.getElementById('lomuto-cells-container');
+      container.innerHTML = '';
+      state.arr.forEach((val, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell-transition flex flex-col items-center justify-center w-11 h-14 rounded-lg font-mono font-bold text-base border shadow';
+
+        if (idx === 9) {
+          // Pivô x
+          cell.className += ' bg-sky-500/20 text-sky-300 border-sky-500/70 ring-2 ring-sky-500/40';
+        } else if (idx <= state.i) {
+          // ≤ x
+          cell.className += ' bg-emerald-500/20 text-emerald-300 border-emerald-500/60';
+        } else if (idx > state.i && idx < state.j) {
+          // > x
+          cell.className += ' bg-amber-500/20 text-amber-300 border-amber-500/60';
+        } else {
+          // Unexamined
+          cell.className += ' bg-slate-800 text-slate-400 border-slate-700';
+        }
+
+        cell.innerHTML = `<span>${val}</span><span class="text-[9px] font-normal text-slate-500 mt-1">[${idx+1}]</span>`;
+        container.appendChild(cell);
+      });
+
+      // Pointers line
+      const ptrs = document.getElementById('lomuto-pointers');
+      ptrs.innerHTML = `Ponteiros atuais: <span class="text-emerald-400 font-bold">i = ${state.i + 1}</span> (último ≤ x) | <span class="text-amber-400 font-bold">j = ${state.j + 1}</span> (elemento avaliado) | <span class="text-sky-400 font-bold">x = 10</span> (pivô A[10])`;
+
+      // Invariant Box
+      const invBox = document.getElementById('lomuto-invariant-box');
+      invBox.innerHTML = `
+        <div class="text-emerald-400">1. A[l..i] ≤ 10: {${state.arr.slice(0, state.i + 1).join(', ') || '∅'}}</div>
+        <div class="text-amber-400">2. A[i+1..j-1] > 10: {${state.arr.slice(state.i + 1, state.j).join(', ') || '∅'}}</div>
+        <div class="text-sky-400">3. A[r] = 10 (pivô fixado no final)</div>
+      `;
+    }
+
+    function nextLomutoStep() {
+      if (currentLomutoIdx < lomutoHistory.length - 1) {
+        currentLomutoIdx++;
+        renderLomuto();
+      } else {
+        stopLomutoPlay();
+      }
+    }
+
+    function prevLomutoStep() {
+      if (currentLomutoIdx > 0) {
+        currentLomutoIdx--;
+        renderLomuto();
+      }
+    }
+
+    function resetLomuto() {
+      stopLomutoPlay();
+      currentLomutoIdx = 0;
+      renderLomuto();
+    }
+
+    function toggleLomutoPlay() {
+      if (lomutoTimer) {
+        stopLomutoPlay();
+      } else {
+        document.getElementById('lomuto-play-btn').innerText = '⏸ Pausar';
+        document.getElementById('lomuto-play-btn').classList.replace('bg-sky-600', 'bg-amber-600');
+        lomutoTimer = setInterval(() => {
+          if (currentLomutoIdx < lomutoHistory.length - 1) {
+            nextLomutoStep();
+          } else {
+            stopLomutoPlay();
+          }
+        }, 1100);
+      }
+    }
+
+    function stopLomutoPlay() {
+      if (lomutoTimer) {
+        clearInterval(lomutoTimer);
+        lomutoTimer = null;
+        document.getElementById('lomuto-play-btn').innerText = '▶ Auto';
+        document.getElementById('lomuto-play-btn').classList.replace('bg-amber-600', 'bg-sky-600');
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 4: K-WAY MERGE
+    // =========================================================================
+    let kwayMode = 'tree';
+
+    function setKWayMode(mode) {
+      kwayMode = mode;
+      const btnTree = document.getElementById('btn-kway-tree');
+      const btnHeap = document.getElementById('btn-kway-heap');
+
+      if (mode === 'tree') {
+        btnTree.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-sky-600 text-white shadow';
+        btnHeap.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:text-white';
+      } else {
+        btnTree.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:text-white';
+        btnHeap.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-purple-600 text-white shadow';
+      }
+      renderKWay();
+    }
+
+    function renderKWay() {
+      const container = document.getElementById('kway-content');
+      if (kwayMode === 'tree') {
+        container.innerHTML = `
+          <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-700 space-y-3 font-mono text-xs">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block font-sans">Árvore de Torneio (Divisão e Conquista nos k vetores)</span>
+            
+            <div class="p-2.5 bg-slate-950/70 rounded border border-slate-800">
+              <span class="text-sky-400 font-bold">Nível 0 (4 vetores de tamanho 3):</span>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                <div class="p-2 bg-slate-900 rounded border border-slate-700">V₁: ⟨1, 5, 9⟩</div>
+                <div class="p-2 bg-slate-900 rounded border border-slate-700">V₂: ⟨2, 6, 10⟩</div>
+                <div class="p-2 bg-slate-900 rounded border border-slate-700">V₃: ⟨3, 7, 11⟩</div>
+                <div class="p-2 bg-slate-900 rounded border border-slate-700">V₄: ⟨4, 8, 12⟩</div>
+              </div>
+            </div>
+
+            <div class="text-center text-slate-500 font-bold">▼ Intercala aos pares (Merge linear) ▼</div>
+
+            <div class="p-2.5 bg-slate-950/70 rounded border border-slate-800">
+              <span class="text-emerald-400 font-bold">Nível 1 (2 vetores de tamanho 6):</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                <div class="p-2 bg-slate-900 rounded border border-emerald-500/40">Merge(V₁, V₂): ⟨1, 2, 5, 6, 9, 10⟩ (6 elem.)</div>
+                <div class="p-2 bg-slate-900 rounded border border-emerald-500/40">Merge(V₃, V₄): ⟨3, 4, 7, 8, 11, 12⟩ (6 elem.)</div>
+              </div>
+              <span class="text-[10px] text-slate-400 block mt-1">Trabalho do nível: 6 + 6 = 12 operações = c · nk</span>
+            </div>
+
+            <div class="text-center text-slate-500 font-bold">▼ Intercala os 2 supervetores ▼</div>
+
+            <div class="p-2.5 bg-slate-950/70 rounded border border-slate-800">
+              <span class="text-amber-400 font-bold">Nível 2 (1 vetor final de tamanho 12):</span>
+              <div class="p-2 bg-slate-900 rounded border border-amber-500/40 mt-2 text-amber-300">
+                Resultado: ⟨1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12⟩
+              </div>
+              <span class="text-[10px] text-slate-400 block mt-1">Trabalho do nível: 12 operações = c · nk</span>
+            </div>
+
+            <div class="p-3 bg-sky-500/10 border border-sky-500/30 rounded-lg text-xs text-sky-200 font-sans mt-3">
+              <strong>Conclusão Teórica:</strong> A árvore possui exatamente <code class="text-white">⌈lg k⌉ = 2</code> níveis. Cada nível processa a totalidade dos <code class="text-white">nk</code> elementos com custo linear <code class="text-white">c · nk</code>.
+              Portanto: <code class="text-emerald-400 font-bold">T(k) = 2T(k/2) + Θ(nk) = Θ(nk lg k)</code>.
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-700 space-y-3 font-mono text-xs">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block font-sans">Processamento com Min-Heap de Tamanho k</span>
+            
+            <div class="p-3 bg-slate-950/70 rounded border border-slate-800 space-y-2">
+              <div class="text-purple-300 font-bold font-sans">Etapa 1: Build-Min-Heap</div>
+              <p class="text-slate-400 font-sans text-xs">Insere o 1º elemento de cada um dos k=4 vetores no heap:</p>
+              <div class="flex gap-2">
+                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-500/40 font-bold">{1, V₁}</span>
+                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-500/40 font-bold">{2, V₂}</span>
+                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-500/40 font-bold">{3, V₃}</span>
+                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-500/40 font-bold">{4, V₄}</span>
+              </div>
+              <span class="text-[10px] text-slate-500 font-sans block">Custo: O(k)</span>
+            </div>
+
+            <div class="p-3 bg-slate-950/70 rounded border border-slate-800 space-y-2">
+              <div class="text-emerald-300 font-bold font-sans">Etapa 2: Extração Contínua e Inserção do Próximo</div>
+              <p class="text-slate-400 font-sans text-xs">Repetido exatamente N = nk = 12 vezes:</p>
+              <ul class="list-disc list-inside space-y-1 text-slate-300 font-sans text-[11px]">
+                <li>Extrai o mínimo global do heap via <code class="text-sky-300">Extract-Min</code>: custo <code class="text-white">O(lg k)</code>.</li>
+                <li>Grava o valor extraído no vetor de saída.</li>
+                <li>Lê o próximo elemento do mesmo vetor de origem e insere no heap via <code class="text-sky-300">Min-Heap-Insert</code>: custo <code class="text-white">O(lg k)</code>.</li>
+              </ul>
+              <span class="text-[10px] text-slate-500 font-sans block">Custo total: nk × O(lg k) = O(nk lg k) com memória auxiliar O(k)</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 5: QUICK-FIND SIMULATOR
+    // =========================================================================
+    function runQuickFind() {
+      const kVal = parseInt(document.getElementById('qf-k-select').value);
+      const container = document.getElementById('qf-trace-container');
+
+      // Simulando a execução do Quick-Find em vetor desordenado para ilustração viva
+      // V = [4, 8, 2, 7, 6, 3, 5, 1, 9, 10], ordenado seria [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      container.innerHTML = `
+        <div class="p-2.5 bg-slate-950/70 rounded border border-slate-800">
+          <div class="flex justify-between items-center text-white">
+            <span>Passo 1: Subvetor V[1..10] (tamanho n = 10)</span>
+            <span class="text-sky-400">Procurando ordem k = ${kVal}</span>
+          </div>
+          <div class="text-slate-400 mt-1 pl-2 text-[11px]">
+            Partição em torno do pivô deposita <strong class="text-amber-300">x = 5</strong> na posição <strong class="text-white">q = 5</strong>.<br>
+            ${kVal === 5 ? '<span class="text-emerald-400 font-bold">✓ k = m = 5: Encontrou o elemento! Retorna V[5] = 5.</span>' : 
+              kVal < 5 ? `<span class="text-sky-300">Como k=${kVal} < 5: DESCARTA toda a metade direita [6..10] e recursa à ESQUERDA V[1..4].</span>` : 
+              `<span class="text-purple-300">Como k=${kVal} > 5: DESCARTA toda a metade esquerda [1..5] e recursa à DIREITA V[6..10] com k' = ${kVal - 5}.</span>`}
+          </div>
+        </div>
+
+        ${kVal !== 5 ? `
+          <div class="p-2.5 bg-slate-950/70 rounded border border-slate-800 ml-3">
+            <div class="flex justify-between items-center text-white">
+              <span>Passo 2: Subvetor Restante (tamanho ≈ n/2 = ${kVal < 5 ? 4 : 5})</span>
+              <span class="text-emerald-400 font-bold">Metade oposta completamente descartada!</span>
+            </div>
+            <div class="text-slate-400 mt-1 pl-2 text-[11px]">
+              Nova partição rápida isola o elemento procurado com custo proporcional a apenas metade do vetor anterior.
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded text-emerald-300 text-xs">
+          <strong>Resultado:</strong> O ${kVal}º menor elemento é <span class="text-white font-bold text-sm underline">${kVal}</span>.
+        </div>
+      `;
+    }
+
+    // Inicialização ao carregar a página
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMerge();
+      renderQuickSort();
+      renderLomuto();
+      renderKWay();
+      runQuickFind();
+    });
+  </script>
+</body>
+</html>

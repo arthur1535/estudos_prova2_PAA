@@ -1,0 +1,630 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{top=2.2cm,bottom=2.2cm,left=2cm,right=2cm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{tikz}
+\usetikzlibrary{trees,arrows.meta,positioning}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!75!black,
+    urlcolor=blue!75!black,
+    citecolor=blue!75!black
+}
+
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{UFU -- FEELT} | PAA: Guia Didático de Estudos}
+\rhead{Prof. Felipe A. Louza | \textbf{Lista 8}}
+\lfoot{\small Arthur Pires Lopes -- 12221EEL001}
+\rfoot{\thepage}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+% Estilos de caixas didáticas (sem emojis unicode para compatibilidade total com pdflatex)
+\newtcolorbox{dica}[1][]{
+    enhanced,
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    fonttitle=\bfseries\small,
+    title={[Dica de Estudo / Ponto de Atenção] #1},
+    boxrule=0.8pt,
+    arc=3pt,
+    breakable
+}
+
+\newtcolorbox{teoria}[1][]{
+    enhanced,
+    colback=teal!5!white,
+    colframe=teal!80!black,
+    fonttitle=\bfseries\small,
+    title={[Fundamentação Teórica] #1},
+    boxrule=0.8pt,
+    arc=3pt,
+    breakable
+}
+
+\newtcolorbox{alerta}[1][]{
+    enhanced,
+    colback=red!5!white,
+    colframe=red!75!black,
+    fonttitle=\bfseries\small,
+    title={[Atenção: Pegadinha Clássica de Prova] #1},
+    boxrule=0.8pt,
+    arc=3pt,
+    breakable
+}
+
+\begin{document}
+
+% =========================================================================
+% CABEÇALHO DO GUIA DE ESTUDOS
+% =========================================================================
+\begin{center}
+    {\Large \textbf{Universidade Federal de Uberlândia -- UFU}}\\[2pt]
+    {\large Faculdade de Engenharia Elétrica (FEELT)}\\[2pt]
+    {\large Projeto e Análise de Algoritmos (PAA) -- Prof. Felipe A. Louza}\\[4pt]
+    \rule{\textwidth}{1pt}\\[5pt]
+    {\LARGE \textbf{Lista 8: Ordenação em Tempo ``Linear''}}\\[3pt]
+    {\large \textbf{Guia Completo de Estudos e Resoluções Comentadas}}\\[3pt]
+    \textbf{Arthur Pires Lopes}\quad Matrícula: \textbf{12221EEL001}\\[2pt]
+    \rule{\textwidth}{0.5pt}
+\end{center}
+
+\vspace{0.2cm}
+
+\begin{teoria}[Visão Geral do Módulo]
+A ordenação é um dos problemas mais fundamentais da Ciência da Computação. O estudo divide-se em duas grandes classes:
+\begin{itemize}
+    \item \textbf{Ordenação por Comparação (Comparison Sorts):} Algoritmos como \textsc{Insertion Sort}, \textsc{Merge Sort}, \textsc{Heap Sort} e \textsc{Quicksort} baseiam-se exclusivamente em comparações de ordem ($x_i \le x_j$). Provamos matematicamente que essa família possui uma \textbf{barreira instransponível} no pior caso de $\Omega(n \log n)$.
+    \item \textbf{Ordenação em Tempo Linear (Non-Comparison Sorts):} Algoritmos como \textsc{Counting Sort}, \textsc{Radix Sort} e \textsc{Bucket Sort} superam a barreira de $\Omega(n \log n)$, atingindo tempo $\mathcal{O}(n)$. Eles conseguem isso porque \textbf{não comparam elementos entre si}; em vez disso, exploram a estrutura interna e a representação numérica das chaves (usando indexação direta de memória e decomposição de dígitos).
+\end{itemize}
+\end{teoria}
+
+\vspace{0.3cm}
+
+% =========================================================================
+% QUESTÃO 1
+% =========================================================================
+\section*{Questão 1: O Modelo de Árvores de Decisão}
+
+\textbf{Enunciado:} Mostre uma árvore de decisão para o problema da ordenação por comparações para um vetor com 4 elementos:
+\[
+A = \langle x_1, x_2, x_3, x_4 \rangle
+\]
+\begin{enumerate}
+    \item[(a)] Qual o número de folhas da árvore?
+    \item[(b)] Qual é a altura da árvore?
+    \item[(c)] Explique (com as suas palavras) a relação entre a altura da árvore e a cota inferior para o problema de ordenação por comparações.
+\end{enumerate}
+
+\subsection*{Resolução Detalhada e Comentada}
+
+\paragraph{(a) Número de folhas da árvore:}
+\begin{itemize}
+    \item \textbf{Conceito:} Em uma árvore de decisão para ordenação, uma folha representa a sequência ordenada resultante dos elementos de entrada. Como não sabemos a priori a ordem dos elementos, o algoritmo deve ser capaz de produzir qualquer uma das permutações possíveis de $A = \langle x_1, x_2, x_3, x_4 \rangle$.
+    \item \textbf{Cálculo Combinatório:} O número de permutações distintas de $n = 4$ elementos distintos é dado pelo fatorial:
+    \[
+        l = n! = 4! = 4 \times 3 \times 2 \times 1 = 24 \text{ folhas}.
+    \]
+    \item \textbf{Conclusão:} A árvore de decisão mínima/ótima para ordenar 4 elementos distintos possui exatamente \textbf{24 folhas alcançáveis}.
+\end{itemize}
+
+\paragraph{(b) Altura da árvore:}
+\begin{itemize}
+    \item \textbf{Propriedade das Árvores Binárias:} Cada nó interno representa uma comparação entre dois elementos, gerando 2 filhos ($\le$ e $>$). Uma árvore binária com altura $h$ tem no máximo $2^h$ folhas:
+    \[
+        l \le 2^h \implies 2^h \ge l.
+    \]
+    \item Como precisamos de pelo menos $l = 24$ folhas para cobrir todos os casos:
+    \[
+        2^h \ge 24.
+    \]
+    \item Testando valores inteiros de $h$:
+    \[
+        2^4 = 16 < 24 \quad (\text{insuficiente para cobrir 24 casos}),
+    \]
+    \[
+        2^5 = 32 \ge 24 \quad (\text{suficiente}).
+    \]
+    Logo, a altura mínima teórica é:
+    \[
+        h \ge \lceil \log_2(24) \rceil = \lceil 4{,}585 \rceil = 5.
+    \]
+    \item \textbf{Existe algoritmo com altura 5?} Sim! O algoritmo de ordenação de Ford-Johnson (\emph{Merge-Insertion Sort}) consegue ordenar qualquer vetor de 4 elementos com no máximo 5 comparações no pior caso. Portanto, a altura da árvore de decisão ótima é exatamente \textbf{$h = 5$}.
+\end{itemize}
+
+\begin{dica}[O Algoritmo Ótimo de 5 Comparações para $n=4$]
+Veja como funciona o algoritmo de Ford-Johnson para 4 elementos:
+\begin{enumerate}
+    \item Comparar $x_1 : x_2$ e comparar $x_3 : x_4$ (2 comparações). Sem perda de generalidade, suponha $x_1 \le x_2$ e $x_3 \le x_4$.
+    \item Comparar os menores de cada par: $x_1 : x_3$ (1 comparação). Suponha $x_1 \le x_3$. Agora temos certeza de que $x_1$ é o menor de todos os 4 elementos!
+    \item Inserir $x_4$ e $x_2$: compara $x_2 : x_4$ (1 comparação) e depois $x_2 : x_3$ (1 comparação).
+    \item Total de comparações no pior caso: $2 + 1 + 1 + 1 = 5$ comparações!
+\end{enumerate}
+\end{dica}
+
+\paragraph{(c) Relação entre a altura da árvore e a cota inferior:}
+A relação entre a altura da árvore de decisão e a cota inferior para ordenação por comparações é o pilar central da complexidade desse problema. O raciocínio encadeia-se nos seguintes pontos:
+\begin{enumerate}
+    \item \textbf{Mapeamento da Computação:} Qualquer algoritmo determinístico baseado em comparações pode ser visto como uma árvore de decisão binária. Cada nó interno é uma comparação $x_i \le x_j$, cada ramo é uma resposta ($\text{Sim}$ ou $\text{Não}$), e cada folha é uma permutação ordenada.
+    \item \textbf{Caminho = Execução:} Cada entrada específica percorre um caminho único da raiz até uma determinada folha. O comprimento desse caminho (número de arestas) é o número de comparações executadas para aquela entrada.
+    \item \textbf{Pior Caso = Altura da Árvore:} O custo no pior caso do algoritmo é definido pelo caminho mais longo da raiz até uma folha, que é precisamente a \textbf{altura $h$} da árvore.
+    \item \textbf{Desigualdade Fundamental:} Para que o algoritmo seja correto para qualquer entrada de $n$ elementos distintos, a árvore deve ter pelo menos $n!$ folhas. Em uma árvore binária de altura $h$, o número máximo de folhas é $2^h$. Logo:
+    \[
+        2^h \ge n! \implies h \ge \log_2(n!).
+    \]
+    \item \textbf{Derivação da Cota Assintótica $\Omega(n \log n)$:}
+    Podemos estimar $\log_2(n!)$ de três formas elegantes:
+    \begin{itemize}
+        \item \textit{Pela metade superior da soma:}
+        \[
+            \log_2(n!) = \sum_{i=1}^n \log_2 i \ge \sum_{i=\lfloor n/2 \rfloor}^n \log_2\left(\frac{n}{2}\right) \ge \frac{n}{2}(\log_2 n - 1) = \frac{n}{2}\log_2 n - \frac{n}{2} = \Omega(n \log n).
+        \]
+        \item \textit{Pela integral:}
+        \[
+            \ln(n!) = \sum_{i=1}^n \ln i \ge \int_1^n \ln x \, dx = [x \ln x - x]_1^n = n \ln n - n + 1 \implies \log_2(n!) = \Omega(n \log n).
+        \]
+        \item \textit{Pela Fórmula de Stirling:}
+        \[
+            n! \approx \sqrt{2\pi n}\left(\frac{n}{e}\right)^n \implies \log_2(n!) = n \log_2 n - n \log_2 e + \mathcal{O}(\log n) = \Theta(n \log n).
+        \]
+    \end{itemize}
+    \item \textbf{Conclusão:} A altura da árvore de decisão prova formalmente que \textbf{nenhum algoritmo de ordenação por comparações pode ter complexidade de pior caso inferior a $\Omega(n \log n)$}.
+\end{enumerate}
+
+\paragraph{Diagrama da Árvore de Decisão Ótima ($h=5$, 24 folhas):}
+Abaixo temos a representação visual da árvore ótima. O ramo canônico $x_1 \le x_2$ e $x_3 \le x_4$ está completamente expandido com suas 6 folhas (profundidade máxima 5); os demais três quadrantes são simétricos por permutação de variáveis:
+
+\begin{center}
+\begin{tikzpicture}[
+  scale=0.92, transform shape,
+  every node/.style={circle, draw=black!80, fill=blue!8, inner sep=2pt, font=\footnotesize},
+  leaf/.style={rectangle, draw=black!80, fill=green!15, rounded corners=2pt, inner sep=3pt, font=\scriptsize},
+  subt/.style={rectangle, draw=black!60, dashed, fill=gray!12, rounded corners=3pt, inner sep=4pt, font=\scriptsize},
+  edge from parent/.style={draw=black!70, -{Latex[scale=0.8]}},
+  level 1/.style={sibling distance=7.4cm, level distance=1.25cm},
+  level 2/.style={sibling distance=3.6cm, level distance=1.25cm},
+  level 3/.style={sibling distance=2.1cm, level distance=1.25cm},
+  level 4/.style={sibling distance=1.3cm, level distance=1.25cm},
+  level 5/.style={sibling distance=1.1cm, level distance=1.25cm}
+]
+
+\node {$x_1 \le x_2$}
+  child {
+    node {$x_3 \le x_4$}
+    child {
+      node {$x_1 \le x_3$}
+      child {
+        node {$x_2 \le x_4$}
+        child {
+          node {$x_2 \le x_3$}
+          child { node[leaf] {$\langle 1,2,3,4\rangle$} edge from parent node[left,draw=none,fill=none,font=\tiny]{S} }
+          child { node[leaf] {$\langle 1,3,2,4\rangle$} edge from parent node[right,draw=none,fill=none,font=\tiny]{N} }
+          edge from parent node[left,draw=none,fill=none,font=\tiny]{S}
+        }
+        child { node[leaf] {$\langle 1,3,4,2\rangle$} edge from parent node[right,draw=none,fill=none,font=\tiny]{N} }
+        edge from parent node[left,draw=none,fill=none,font=\tiny]{S}
+      }
+      child {
+        node {$x_4 \le x_2$}
+        child {
+          node {$x_4 \le x_1$}
+          child { node[leaf] {$\langle 3,4,1,2\rangle$} edge from parent node[left,draw=none,fill=none,font=\tiny]{S} }
+          child { node[leaf] {$\langle 3,1,4,2\rangle$} edge from parent node[right,draw=none,fill=none,font=\tiny]{N} }
+          edge from parent node[left,draw=none,fill=none,font=\tiny]{S}
+        }
+        child { node[leaf] {$\langle 3,1,2,4\rangle$} edge from parent node[right,draw=none,fill=none,font=\tiny]{N} }
+        edge from parent node[right,draw=none,fill=none,font=\tiny]{N}
+      }
+      edge from parent node[left,draw=none,fill=none,font=\tiny]{S}
+    }
+    child {
+      node[subt] {Ramo $x_3 > x_4$ (6 folhas, prof. $\le 5$)}
+      edge from parent node[right,draw=none,fill=none,font=\tiny]{N}
+    }
+    edge from parent node[left,draw=none,fill=none,font=\tiny]{S}
+  }
+  child {
+    node[subt] {Ramo $x_1 > x_2$ (12 folhas simétricas, prof. $\le 5$)}
+    edge from parent node[right,draw=none,fill=none,font=\tiny]{N}
+  };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 2
+% =========================================================================
+\section*{Questão 2: O Teorema da Informação e o ``Professor Picareta''}
+
+\textbf{Enunciado:} O prof. de PAA afirmou que desenvolveu um novo método de ordenação consegue ordenar qualquer vetor de 5 elementos com apenas 6 comparações. O prof. de PAA está falando a verdade ou ele é um picareta?
+
+\subsection*{Resolução Detalhada e Comentada}
+
+\textbf{Veredito Direto:} O professor de PAA é um \textbf{picareta} (sua afirmação é matematicamente impossível).
+
+\paragraph{Demonstração Matemática Rigorosa:}
+\begin{enumerate}
+    \item \textbf{Espaço Amostral de Entradas:}
+    Um vetor com $n = 5$ elementos distintos admite:
+    \[
+        N = 5! = 5 \times 4 \times 3 \times 2 \times 1 = 120 \text{ permutações possíveis}.
+    \]
+    Para garantir a corretude, o algoritmo deve ser capaz de distinguir entre cada uma dessas 120 permutações e fornecer a permutação ordenada correspondente na saída.
+
+    \item \textbf{Capacidade Máxima de Discriminação de 6 Comparações:}
+    Cada comparação entre dois elementos possui no máximo 2 desfechos possíveis ($\le$ ou $>$), fornecendo no máximo 1 bit de informação.
+    Com uma sequência de no máximo $k = 6$ comparações, o número máximo de estados finais (folhas na árvore de decisão) que podem ser atingidos é:
+    \[
+        L_{\max} = 2^6 = 64 \text{ folhas}.
+    \]
+
+    \item \textbf{Aplicação do Princípio da Casa dos Pombos (Pigeonhole Principle):}
+    Temos $120$ permutações distintas (os ``pombos'') que precisam ser mapeadas em no máximo $64$ folhas (as ``casas'').
+    Como $120 > 64$, pelo Princípio da Casa dos Pombos generalizado, pelo menos uma folha deverá receber:
+    \[
+        \left\lceil \frac{120}{64} \right\rceil = 2 \text{ ou mais permutações distintas}.
+    \]
+    
+    \item \textbf{Por que isso implica erro no algoritmo?}
+    Cada folha da árvore de decisão possui uma instrução fixa de reordenação (por exemplo, ``escreva $\langle x_3, x_1, x_5, x_2, x_4 \rangle$''). Se duas entradas com permutações distintas caírem na mesma folha, o algoritmo aplicará a mesma reordenação a ambas. No entanto, duas permutações diferentes não podem ser ordenadas pela mesma permutação de índices! Portanto, para ao menos uma dessas entradas, a saída produzida estará incorreta.
+
+    \item \textbf{Cota Inferior Real para $n = 5$:}
+    A menor altura possível para uma árvore de decisão com 120 folhas é:
+    \[
+        h \ge \lceil \log_2(5!) \rceil = \lceil \log_2(120) \rceil = \lceil 6{,}9069 \dots \rceil = 7 \text{ comparações}.
+    \]
+\end{enumerate}
+
+\begin{teoria}[Perspectiva da Teoria da Informação de Shannon]
+Considere a incerteza inicial sobre a ordenação dos 5 elementos. Como há 120 permutações com igual probabilidade a priori, a entropia de informação inicial é:
+\[
+    H = \log_2(120) \approx 6{,}907 \text{ bits}.
+\]
+Cada comparação binária ideal extrai no máximo 1 bit de informação do vetor. Portanto, com 6 perguntas binárias (comparações), podemos obter no máximo 6 bits de informação. Como $6 < 6{,}907$, restam pelo menos $0{,}907$ bits de incerteza, o que torna matematicamente impossível identificar com certeza qual é a permutação correta!
+\end{teoria}
+
+\begin{dica}[Quantas comparações são realmente necessárias para $n=5$?]
+O número exato de comparações no pior caso para ordenar 5 elementos é \textbf{7 comparações}. Esse resultado ótimo é atingido pelo algoritmo de Ford-Johnson:
+\begin{enumerate}
+    \item Compara $(a, b)$ e $(c, d)$ $\rightarrow$ 2 comparações.
+    \item Compara os vencedores dos pares $\rightarrow$ 1 comparação.
+    \item Insere o quinto elemento $e$ na cadeia ordenada de 3 elementos via busca binária $\rightarrow$ 2 comparações.
+    \item Insere o elemento restante via busca binária $\rightarrow$ 2 comparações.
+    \item Total: $2 + 1 + 2 + 2 = 7$ comparações!
+\end{enumerate}
+Portanto, 7 comparações são suficientes e necessárias. O professor que alegou conseguir com 6 é, de fato, um picareta!
+\end{dica}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 3
+% =========================================================================
+\section*{Questão 3: Counting Sort Passo a Passo e o Princípio da Estabilidade}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Counting Sort} para a seguinte entrada:
+\[
+A = \langle 2, 3, 3, 4, 1, 3, 0, 3, 1, 2, 2, 1, 2, 4, 3, 4, 4, 2 \rangle
+\]
+
+\subsection*{Resolução Detalhada e Comentada}
+
+O \textsc{Counting Sort} ordena em tempo linear $\mathcal{O}(n + k)$ assumindo que os elementos são inteiros no intervalo $[0, k]$.
+Aqui, temos:
+\begin{itemize}
+    \item Tamanho da entrada: $n = 18$;
+    \item Faixa de valores: $\{0, 1, 2, 3, 4\}$, logo $k = 4$;
+    \item Vetor de entrada: $A[1 \dots 18]$;
+    \item Vetor auxiliar de contagem: $C[0 \dots 4]$;
+    \item Vetor de saída ordenado: $B[1 \dots 18]$.
+\end{itemize}
+
+\paragraph{Fase 1: Inicialização do vetor $C[0 \dots 4]$}
+Inicializamos todas as posições com zero:
+\[
+C = [0, 0, 0, 0, 0]
+\]
+
+\paragraph{Fase 2: Contagem de Frequências (Histograma)}
+Lemos o vetor $A$ elemento por elemento da esquerda para a direita ($j = 1 \dots 18$) e incrementamos $C[A[j]]$:
+\begin{itemize}
+    \item Elemento $0$: aparece 1 vez (em $A[7]$);
+    \item Elemento $1$: aparece 3 vezes (em $A[5], A[9], A[12]$);
+    \item Elemento $2$: aparece 5 vezes (em $A[1], A[10], A[11], A[13], A[18]$);
+    \item Elemento $3$: aparece 5 vezes (em $A[2], A[3], A[6], A[8], A[15]$);
+    \item Elemento $4$: aparece 4 vezes (em $A[4], A[14], A[16], A[17]$).
+\end{itemize}
+Após essa varredura, o vetor $C$ armazena as frequências absolutas:
+\[
+C = [1, 3, 5, 5, 4]
+\]
+
+\paragraph{Fase 3: Soma Prefixa Acumulada (Prefix Sums)}
+Calculamos as somas acumuladas para determinar quantos elementos são menores ou iguais a cada valor:
+\[
+C[i] \leftarrow C[i] + C[i-1] \quad \text{para } i = 1 \dots 4.
+\]
+\begin{align*}
+    C[0] &= 1 && \text{(há 1 elemento } \le 0\text{)} \\
+    C[1] &= C[1] + C[0] = 3 + 1 = 4 && \text{(há 4 elementos } \le 1\text{)} \\
+    C[2] &= C[2] + C[1] = 5 + 4 = 9 && \text{(há 9 elementos } \le 2\text{)} \\
+    C[3] &= C[3] + C[2] = 5 + 9 = 14 && \text{(há 14 elementos } \le 3\text{)} \\
+    C[4] &= C[4] + C[3] = 4 + 14 = 18 && \text{(há 18 elementos } \le 4\text{)}
+\end{align*}
+Vetor de contagem acumulada resultante:
+\[
+C = [1, 4, 9, 14, 18]
+\]
+
+\begin{teoria}[O Significado Intuitivo de $C$ Acumulado]
+O valor $C[v]$ nos dá diretamente o \textbf{índice mais à direita} no vetor de saída $B$ onde um elemento com valor $v$ pode ser colocado.
+Por exemplo, como $C[2] = 9$, o último elemento com valor $2$ será colocado na posição $B[9]$. O próximo $2$ irá para $B[8]$, depois $B[7]$, e assim por diante.
+\end{teoria}
+
+\paragraph{Fase 4: Alocação no Vetor de Saída $B[1 \dots 18]$ e o Sentido da Iteração}
+Iteramos de $j = 18$ \textbf{decrescendo até} $1$:
+\[
+B[C[A[j]]] \leftarrow A[j] \quad \text{e depois} \quad C[A[j]] \leftarrow C[A[j]] - 1.
+\]
+
+\begin{center}
+\small
+\begin{tabular}{rccccc}
+\toprule
+\textbf{Iteração ($j$)} & \textbf{Valor $A[j]$} & \textbf{Posição Destino ($C[A[j]]$)} & \textbf{Atribuição em $B$} & \textbf{Vetor $C$ Atualizado} \\
+\midrule
+$18$ & $2$ & $9$  & $B[9] \leftarrow 2$  & $[1, 4, \mathbf{8}, 14, 18]$ \\
+$17$ & $4$ & $18$ & $B[18] \leftarrow 4$ & $[1, 4, 8, 14, \mathbf{17}]$ \\
+$16$ & $4$ & $17$ & $B[17] \leftarrow 4$ & $[1, 4, 8, 14, \mathbf{16}]$ \\
+$15$ & $3$ & $14$ & $B[14] \leftarrow 3$ & $[1, 4, 8, \mathbf{13}, 16]$ \\
+$14$ & $4$ & $16$ & $B[16] \leftarrow 4$ & $[1, 4, 8, 13, \mathbf{15}]$ \\
+$13$ & $2$ & $8$  & $B[8] \leftarrow 2$  & $[1, 4, \mathbf{7}, 13, 15]$ \\
+$12$ & $1$ & $4$  & $B[4] \leftarrow 1$  & $[1, \mathbf{3}, 7, 13, 15]$ \\
+$11$ & $2$ & $7$  & $B[7] \leftarrow 2$  & $[1, 3, \mathbf{6}, 13, 15]$ \\
+$10$ & $2$ & $6$  & $B[6] \leftarrow 2$  & $[1, 3, \mathbf{5}, 13, 15]$ \\
+$9$  & $1$ & $3$  & $B[3] \leftarrow 1$  & $[1, \mathbf{2}, 5, 13, 15]$ \\
+$8$  & $3$ & $13$ & $B[13] \leftarrow 3$ & $[1, 2, 5, \mathbf{12}, 15]$ \\
+$7$  & $0$ & $1$  & $B[1] \leftarrow 0$  & $[\mathbf{0}, 2, 5, 12, 15]$ \\
+$6$  & $3$ & $12$ & $B[12] \leftarrow 3$ & $[0, 2, 5, \mathbf{11}, 15]$ \\
+$5$  & $1$ & $2$  & $B[2] \leftarrow 1$  & $[0, \mathbf{1}, 5, 11, 15]$ \\
+$4$  & $4$ & $15$ & $B[15] \leftarrow 4$ & $[0, 1, 5, 11, \mathbf{14}]$ \\
+$3$  & $3$ & $11$ & $B[11] \leftarrow 3$ & $[0, 1, 5, \mathbf{10}, 14]$ \\
+$2$  & $3$ & $10$ & $B[10] \leftarrow 3$ & $[0, 1, 5, \mathbf{9}, 14]$ \\
+$1$  & $2$ & $5$  & $B[5] \leftarrow 2$  & $[0, 1, \mathbf{4}, 9, 14]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Vetor Final Ordenado $B[1 \dots 18]$:}
+\[
+B = \langle 0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4 \rangle
+\]
+
+\begin{alerta}[Por que percorrer $A$ de trás para frente?]
+Essa é uma das perguntas favoritas em provas de Algoritmos!
+\begin{itemize}
+    \item \textbf{Resposta:} Para garantir a \textbf{ESTABILIDADE} da ordenação!
+    \item \textbf{O que é estabilidade?} Um algoritmo é estável se elementos com chaves idênticas preservam em $B$ a mesma ordem relativa que tinham no vetor original $A$.
+    \item \textbf{Como funciona?} Como $C[v]$ indica a \emph{última} posição de $v$, o último elemento $v$ encontrado em $A$ (lido de trás para frente) vai para a posição mais à direita de seu bloco em $B$. Os elementos anteriores vão ocupando as posições mais à esquerda. Assim, a ordem original é mantida.
+    \item Se percorrêssemos $A$ da esquerda para a direita ($1$ até $n$), o vetor $B$ também terminaria ordenado numericamente, mas a ordem relativa dos elementos de mesmo valor seria \textbf{invertida}, quebrando a estabilidade. Sem estabilidade, o Counting Sort \textbf{não pode ser usado no Radix Sort}!
+\end{itemize}
+\end{alerta}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 4
+% =========================================================================
+\section*{Questão 4: Radix Sort (LSD vs MSD) e Complexidade}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Radix Sort} para a seguinte entrada:
+\[
+A = \langle 329, 457, 657, 839, 436, 720, 355 \rangle
+\]
+\begin{enumerate}
+    \item[(a)] Considere a ordenação pelo dígito \textbf{mais} significativo (MSD).
+    \item[(b)] Considere a ordenação pelo dígito \textbf{menos} significativo (LSD).
+    \item[(c)] Qual o custo computacional do algoritmo?
+\end{enumerate}
+
+\subsection*{Resolução Detalhada e Comentada}
+
+O vetor possui $n = 7$ elementos, com $d = 3$ dígitos decimais (base $k = 10$).
+
+\paragraph{(a) Ordenação MSD (Most Significant Digit -- da esquerda para a direita):}
+O MSD opera por \textbf{divisão e conquista recursiva} (similar ao particionamento de uma Trie ou Quicksort de dígitos):
+\begin{enumerate}
+    \item \textbf{Nível 1 (Centenas):}
+    Avaliamos o primeiro dígito de cada número:
+    \begin{align*}
+        329 &\rightarrow \text{balde } 3 \\
+        457 &\rightarrow \text{balde } 4 \\
+        657 &\rightarrow \text{balde } 6 \\
+        839 &\rightarrow \text{balde } 8 \\
+        436 &\rightarrow \text{balde } 4 \\
+        720 &\rightarrow \text{balde } 7 \\
+        355 &\rightarrow \text{balde } 3
+    \end{align*}
+    Baldes formados:
+    \begin{itemize}
+        \item Balde 3: $\{329, 355\}$ (tamanho 2 $\implies$ necessita recursão)
+        \item Balde 4: $\{457, 436\}$ (tamanho 2 $\implies$ necessita recursão)
+        \item Balde 6: $\{657\}$ (tamanho 1 $\implies$ caso base, já ordenado)
+        \item Balde 7: $\{720\}$ (tamanho 1 $\implies$ caso base, já ordenado)
+        \item Balde 8: $\{839\}$ (tamanho 1 $\implies$ caso base, já ordenado)
+    \end{itemize}
+
+    \item \textbf{Nível 2 (Dezenas -- chamadas recursivas):}
+    \begin{itemize}
+        \item No Balde 3 ($\{329, 355\}$), olhamos o dígito das dezenas:
+        $3\mathbf{2}9$ tem dezena 2 e $3\mathbf{5}5$ tem dezena 5.
+        Como caem em baldes distintos com 1 elemento cada, a ordem interna é: $\langle 329, 355 \rangle$.
+        \item No Balde 4 ($\{457, 436\}$), olhamos o dígito das dezenas:
+        $4\mathbf{3}6$ tem dezena 3 e $4\mathbf{5}7$ tem dezena 5.
+        A ordem interna é: $\langle 436, 457 \rangle$.
+    \end{itemize}
+
+    \item \textbf{Concatenação final:}
+    Concatenando os baldes ordenados de $0$ a $9$:
+    \[
+        \langle 329, 355, 436, 457, 657, 720, 839 \rangle.
+    \]
+\end{enumerate}
+
+\paragraph{(b) Ordenação LSD (Least Significant Digit -- da direita para a esquerda):}
+O LSD opera de forma \textbf{iterativa}, passando por cada dígito e aplicando uma ordenação estritamente estável (Counting Sort):
+\begin{itemize}
+    \item \textbf{Passada 1 (Dígito 1 -- Unidades):}
+    Extraímos as unidades:
+    \[
+        32\mathbf{9},\quad 45\mathbf{7},\quad 65\mathbf{7},\quad 83\mathbf{9},\quad 43\mathbf{6},\quad 72\mathbf{0},\quad 35\mathbf{5}.
+    \]
+    Ordenando de forma estável:
+    \[
+        A^{(1)} = \langle 72\mathbf{0}, 35\mathbf{5}, 43\mathbf{6}, 45\mathbf{7}, 65\mathbf{7}, 32\mathbf{9}, 83\mathbf{9} \rangle.
+    \]
+    (\textit{Note que $457$ apareceu antes de $657$ na entrada original e permaneceu antes}).
+
+    \item \textbf{Passada 2 (Dígito 2 -- Dezenas):}
+    Extraímos as dezenas do vetor $A^{(1)}$:
+    \[
+        7\mathbf{2}0,\quad 3\mathbf{5}5,\quad 4\mathbf{3}6,\quad 4\mathbf{5}7,\quad 6\mathbf{5}7,\quad 3\mathbf{2}9,\quad 8\mathbf{3}9.
+    \]
+    Ordenando de forma estável:
+    \[
+        A^{(2)} = \langle 7\mathbf{2}0, 3\mathbf{2}9, 4\mathbf{3}6, 8\mathbf{3}9, 3\mathbf{5}5, 4\mathbf{5}7, 6\mathbf{5}7 \rangle.
+    \]
+    (\textit{Note que entre os elementos com dezena 2, $720$ precede $329$ por estabilidade}).
+
+    \item \textbf{Passada 3 (Dígito 3 -- Centenas):}
+    Extraímos as centenas do vetor $A^{(2)}$:
+    \[
+        \mathbf{7}20,\quad \mathbf{3}29,\quad \mathbf{4}36,\quad \mathbf{8}39,\quad \mathbf{3}55,\quad \mathbf{4}57,\quad \mathbf{6}57.
+    \]
+    Ordenando de forma estável:
+    \[
+        A^{(3)} = \langle \mathbf{3}29, \mathbf{3}55, \mathbf{4}36, \mathbf{4}57, \mathbf{6}57, \mathbf{7}20, \mathbf{8}39 \rangle.
+    \]
+\end{itemize}
+
+\begin{teoria}[Comparação Conceitual: LSD vs MSD]
+\begin{center}
+\small
+\begin{tabular}{p{3.8cm}p{5.5cm}p{5.5cm}}
+\toprule
+\textbf{Característica} & \textbf{LSD (Least Significant)} & \textbf{MSD (Most Significant)} \\
+\midrule
+Abordagem & Iterativa (passa por todo o vetor) & Recursiva (divide em sub-baldes) \\
+Ordem dos dígitos & Das unidades para as centenas & Das centenas para as unidades \\
+Necessidade de estabilidade & \textbf{Obrigatória} em cada passada & Dispensável entre baldes distintos \\
+Encadeamento antecipado & Não (sempre faz todas as $d$ passadas) & Sim (balde com tamanho 1 para) \\
+Uso de memória & Previsível ($\mathcal{O}(n + k)$) & Variável (pilha e baldes) \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{teoria}
+
+\paragraph{(c) Custo computacional do Radix Sort:}
+\begin{itemize}
+    \item Para ordenar $n$ elementos de $d$ dígitos em uma base $k$:
+    \item Cada passada de ordenação estável (Counting Sort) consome tempo $\Theta(n + k)$ e espaço $\Theta(n + k)$.
+    \item Como são realizadas $d$ passadas:
+    \[
+        T(n) = \Theta(d(n + k)).
+    \]
+    \item Se $d$ for uma constante independente de $n$ ($d = \mathcal{O}(1)$) e a base for proporcional a $n$ ($k = \mathcal{O}(n)$), temos:
+    \[
+        T(n) = \Theta(n) \quad (\text{tempo linear!}).
+    \]
+    \item Espaço auxiliar: $S(n) = \Theta(n + k)$.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 5
+% =========================================================================
+\section*{Questão 5: Quando o Radix Sort Empata com o Merge Sort?}
+
+\textbf{Enunciado:} Explique o caso em que o algoritmo \textsc{Radix Sort} tem o mesmo custo computacional do algoritmo \textsc{Merge Sort}.
+
+\subsection*{Resolução Detalhada e Comentada}
+
+\paragraph{Equações de Custo:}
+\begin{itemize}
+    \item Custo do \textsc{Merge Sort}:
+    \[
+        T_{\text{MergeSort}}(n) = \Theta(n \log n).
+    \]
+    \item Custo do \textsc{Radix Sort}:
+    \[
+        T_{\text{RadixSort}}(n) = \Theta(d(n + k)).
+    \]
+\end{itemize}
+
+\paragraph{Condição Exata para Igualdade:}
+Para que os custos coincidam assintoticamente, devemos ter:
+\[
+    \Theta(d(n + k)) = \Theta(n \log n).
+\]
+Isso ocorre quando:
+\begin{enumerate}
+    \item A base $k$ é constante ($k = \mathcal{O}(1)$), como $k = 2$ (bits) ou $k = 10$, de modo que $(n + k) = \Theta(n)$; e
+    \item O número de dígitos $d$ é proporcional ao logaritmo do número de elementos:
+    \[
+        d = \Theta(\log n).
+    \]
+\end{enumerate}
+
+\paragraph{Cenário Prático Clássico:}
+Suponha que desejamos ordenar $n$ inteiros cujos valores podem chegar até um teto $N$ polinomial no tamanho da entrada, digamos $N = n^c$ (com $c \ge 1$ constante).
+\begin{itemize}
+    \item Se optarmos por representar cada número em sua forma binária natural ($k = 2$) e aplicarmos o Radix Sort bit a bit:
+    \item O número de bits necessários para representar valores até $N$ é:
+    \[
+        d = \lceil \log_2 N \rceil = \lceil \log_2(n^c) \rceil = c \log_2 n = \Theta(\log n).
+    \]
+    \item Nesse caso, como $d = \Theta(\log n)$ e a base é $k = 2 = \mathcal{O}(1)$, o custo total do Radix Sort é:
+    \[
+        T(n) = \Theta(d(n + k)) = \Theta(\log n \cdot (n + 2)) = \Theta(n \log n).
+    \]
+    \item Portanto, processando as chaves bit a bit, o Radix Sort tem \textbf{exatamente o mesmo custo computacional do Merge Sort}.
+\end{itemize}
+
+\begin{teoria}[O Teorema de Escolha de Parâmetros do Cormen (Lema 8.4)]
+No livro clássico de Cormen, Leiserson, Rivest e Stein (CLRS), é provado que dados $n$ inteiros de $b$ bits, se dividirmos cada chave em dígitos de $r$ bits ($r \le b$), a base se torna $k = 2^r$ e a quantidade de dígitos passa a ser $d = \lceil b/r \rceil$. O custo do Radix Sort fica:
+\[
+    T(n) = \Theta\left(\frac{b}{r}(n + 2^r)\right).
+\]
+\begin{itemize}
+    \item Se escolhermos $r = 1$ (bit a bit) e $b = \Theta(\log n)$, obtemos $T(n) = \Theta(b \cdot n) = \Theta(n \log n)$ $\rightarrow$ \textbf{empate com o Merge Sort}.
+    \item Se escolhermos $r = \lfloor \log_2 n \rfloor$ (agrupando bits), a base vira $k \approx n$ e o número de dígitos cai para $d = b / \log_2 n = \Theta(1)$, resultando em tempo linear $T(n) = \Theta(n)$!
+\end{itemize}
+Isso demonstra o impacto profundo da escolha da base na eficiência do Radix Sort.
+\end{teoria}
+
+\begin{dica}[Por que não usamos Radix Sort para tudo?]
+Se o Radix Sort pode ser linear, por que o Quicksort e o Merge Sort continuam sendo o padrão das bibliotecas da maioria das linguagens (C++, Java, Python)?
+\begin{enumerate}
+    \item \textbf{Generalidade:} Merge Sort e Quicksort ordenam qualquer tipo de objeto que possua uma relação de ordem definida (sobrecarga do operador $<$). O Radix Sort exige que as chaves sejam números inteiros ou decomponíveis em tuplas finitas de dígitos/caracteres.
+    \item \textbf{Localidade de Referência e Cache:} O Counting Sort dentro do Radix Sort espalha escritas aleatórias na memória ($B[C[A[j]]] \leftarrow A[j]$), provocando frequentes falhas de cache (\emph{cache misses}).
+    \item \textbf{Consumo de Memória:} O Radix Sort aloca vetores auxiliares de tamanho $\Theta(n + k)$, enquanto o Quicksort ordena \emph{in-place} com memória $\mathcal{O}(\log n)$.
+    \item \textbf{Constantes Ocultas:} O fator constante $d$ no Radix Sort pode tornar o algoritmo mais lento que o Quicksort para vetores de tamanho moderado.
+\end{enumerate}
+\end{dica}
+
+\end{document}

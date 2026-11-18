@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mochila 0-1 (Knapsack) Debugger - Programação Dinâmica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .active-cell-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes gold-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9); }
+        }
+        .path-glow {
+            animation: gold-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+
+    <!-- Top Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-inner">
+                    <i class="ph-bold ph-backpack text-2xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg sm:text-xl tracking-tight text-white">Mochila 0-1 (Knapsack) Debugger</h1>
+                        <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">2D DP Matrix</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Simulador visual passo a passo com resolução e backtracking da Lista 9 (Questão 8)</p>
+                </div>
+            </div>
+
+            <!-- Formula Pill -->
+            <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl flex flex-wrap items-center gap-2 font-mono text-xs text-slate-200 shadow-inner">
+                <span class="text-emerald-400 font-bold">Recorrência:</span>
+                <span>M[i, k] = max( <span class="text-sky-300">M[i-1, k]</span>, <span class="text-amber-300">M[i-1, k - w<sub>i</sub>] + v<sub>i</sub></span> )</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Section 1: Input & Presets + Controls -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- Configuração (5 colunas) -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-cube text-emerald-400"></i> Itens (peso, valor) e Capacidade W
+                        </label>
+                        <span id="inputError" class="text-xs text-rose-400 hidden">Entrada inválida!</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[11px] text-slate-400">Pares de Itens (formato: peso:valor, ...):</span>
+                            <input id="itemsInput" type="text" value="6:30, 3:14, 4:16, 2:9" 
+                                class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3 py-1.5 text-xs font-mono text-white outline-none transition"
+                                placeholder="6:30, 3:14, 4:16, 2:9">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1">
+                                <span class="text-[11px] text-slate-400">Capacidade Máxima (W):</span>
+                                <input id="capacityInput" type="number" value="10" min="1" max="25"
+                                    class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3 py-1.5 text-xs font-mono text-white outline-none transition">
+                            </div>
+                            <button onclick="applyConfig()" class="mt-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shrink-0 shadow">
+                                <i class="ph-bold ph-check"></i> Aplicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-800">
+                    <span class="text-xs text-slate-400 mr-1">Presets:</span>
+                    <button onclick="loadPreset('6:30, 3:14, 4:16, 2:9', 10)" class="text-xs bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg transition font-bold shadow-sm">
+                        ★ Lista 9 - Q8: 4 itens, W=10
+                    </button>
+                    <button onclick="loadPreset('2:3, 3:4, 4:5, 5:6', 8)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Exemplo Pequeno: W=8
+                    </button>
+                    <button onclick="loadPreset('1:1, 2:6, 3:10, 5:16', 7)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Densidade Variada: W=7
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controles do Debugger (7 colunas) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="ph-bold ph-sliders-horizontal text-emerald-400"></i> Controles de Execução
+                    </span>
+                    <div id="stepCounter" class="text-xs font-mono bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-lg text-slate-300">
+                        Passo <span id="currentStepText" class="text-emerald-400 font-bold">0</span> de <span id="totalStepsText" class="text-slate-400">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="stepFirst()" title="Início" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition">
+                        <i class="ph-bold ph-caret-double-left text-base"></i>
+                    </button>
+                    <button onclick="stepPrev()" title="Passo Anterior" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition">
+                        <i class="ph-bold ph-caret-left text-base"></i>
+                    </button>
+                    <button id="playBtn" onclick="togglePlay()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-xl transition shadow">
+                        <i class="ph-bold ph-play text-base" id="playIcon"></i>
+                        <span id="playText">Executar</span>
+                    </button>
+                    <button onclick="stepNext()" title="Próximo Passo" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition">
+                        <i class="ph-bold ph-caret-right text-base"></i>
+                    </button>
+                    <button onclick="stepLast()" title="Ir ao Fim" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition">
+                        <i class="ph-bold ph-caret-double-right text-base"></i>
+                    </button>
+                    <button onclick="resetSimulation()" title="Reiniciar" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white transition ml-auto">
+                        <i class="ph-bold ph-arrow-counter-clockwise text-base"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 pt-1">
+                    <span class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="ph-bold ph-gauge text-slate-500"></i> Velocidade:
+                    </span>
+                    <input id="speedSlider" type="range" min="100" max="1500" step="100" value="600" 
+                        class="flex-1 accent-emerald-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                    <span id="speedValueText" class="text-xs font-mono text-slate-400 w-14 text-right">600ms</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Painel Explicativo da Célula Atual -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider">Detalhamento da Operação Atual</h2>
+                </div>
+                <div id="statusBadge" class="text-xs font-mono px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    Aguardando início...
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+                    <span class="text-[11px] text-slate-400 block mb-1">Item em Avaliação</span>
+                    <div id="itemDetail" class="font-mono text-sm text-emerald-300 font-semibold">---</div>
+                </div>
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+                    <span class="text-[11px] text-slate-400 block mb-1">Capacidade Avaliada (k)</span>
+                    <div id="capacityDetail" class="font-mono text-sm text-white font-semibold">---</div>
+                </div>
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+                    <span class="text-[11px] text-slate-400 block mb-1">Comparação / Decisão</span>
+                    <div id="decisionDetail" class="font-mono text-xs text-amber-300">---</div>
+                </div>
+            </div>
+
+            <div id="mathExplanation" class="mt-3 bg-slate-950 border border-slate-800/90 rounded-xl p-3 text-xs font-mono text-slate-200 leading-relaxed">
+                Clique em <strong>"Executar"</strong> ou <strong>"Próximo Passo"</strong> para visualizar o preenchimento da matriz dinâmica $M[i, k]$.
+            </div>
+        </section>
+
+        <!-- Section 3: Matriz de Programação Dinâmica M[i, k] -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="ph-bold ph-table text-emerald-400"></i> Matriz de Programação Dinâmica: $M[i, k]$
+                    </h3>
+                    <p class="text-xs text-slate-400">Linhas = Itens $1 \dots n$ | Colunas = Capacidade $k = 0 \dots W$</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-400 inline-block"></span> Célula Atual</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500/30 border border-sky-400 inline-block"></span> Não Incluir: M[i-1, k]</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/30 border border-amber-400 inline-block"></span> Incluir: M[i-1, k-w<sub>i</sub>]</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-yellow-500/40 border border-yellow-400 inline-block"></span> Rota Ótima (Backtrack)</span>
+                </div>
+            </div>
+
+            <!-- Tabela Renderizada -->
+            <div class="overflow-x-auto custom-scrollbar border border-slate-800 rounded-xl bg-slate-950/60 p-2">
+                <table id="dpTable" class="w-full text-center font-mono text-xs border-collapse">
+                    <!-- Gerado Dinamicamente -->
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 4: Solução Ótima e Backtracking -->
+        <section id="solutionSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg hidden">
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-3 mb-4">
+                <i class="ph-bold ph-trophy text-yellow-400 text-xl"></i>
+                <h3 class="text-base font-bold text-white">Solução Ótima Reconstruída (Backtracking)</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Valor Máximo Global</span>
+                    <span id="optVal" class="text-2xl font-black text-emerald-400">$0</span>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Peso Utilizado / Limite</span>
+                    <span id="optWeight" class="text-2xl font-black text-sky-400">0 / 0</span>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 md:col-span-2">
+                    <span class="text-xs text-slate-400 block">Itens Selecionados na Solução</span>
+                    <span id="optItems" class="text-base font-bold text-yellow-300 font-mono">---</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 space-y-2">
+                <p class="font-bold text-white text-sm">Passo a Passo do Algoritmo Retrieve-Knapsack (Backtracking Reverso):</p>
+                <div id="backtrackLog" class="font-mono text-xs space-y-1 text-slate-300">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 mt-8 text-center text-xs text-slate-500">
+        UFU • FEELT • Projeto e Análise de Algoritmos • Prof. Felipe A. Louza • Aluno: Arthur Pires Lopes (12221EEL001)
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        let items = [
+            { id: 1, w: 6, v: 30 },
+            { id: 2, w: 3, v: 14 },
+            { id: 3, w: 4, v: 16 },
+            { id: 4, w: 2, v: 9 }
+        ];
+        let W = 10;
+        let dpMatrix = [];
+        let steps = [];
+        let currentStepIdx = -1;
+        let playInterval = null;
+        let optimalPath = new Set(); // conjunto de chaves "i,k"
+        let chosenItems = [];
+
+        function parseItems(str) {
+            const parts = str.split(',').map(s => s.trim()).filter(Boolean);
+            const res = [];
+            for (let i = 0; i < parts.length; i++) {
+                const [w, v] = parts[i].split(':').map(n => parseInt(n.trim()));
+                if (isNaN(w) || isNaN(v) || w <= 0 || v < 0) return null;
+                res.push({ id: i + 1, w, v });
+            }
+            return res.length > 0 ? res : null;
+        }
+
+        function loadPreset(itemsStr, cap) {
+            document.getElementById('itemsInput').value = itemsStr;
+            document.getElementById('capacityInput').value = cap;
+            applyConfig();
+        }
+
+        function applyConfig() {
+            pause();
+            const itStr = document.getElementById('itemsInput').value;
+            const capVal = parseInt(document.getElementById('capacityInput').value);
+            const parsed = parseItems(itStr);
+            const errSpan = document.getElementById('inputError');
+
+            if (!parsed || isNaN(capVal) || capVal <= 0) {
+                errSpan.classList.remove('hidden');
+                return;
+            }
+            errSpan.classList.add('hidden');
+            items = parsed;
+            W = Math.min(capVal, 30);
+            initSimulation();
+        }
+
+        function initSimulation() {
+            pause();
+            const n = items.length;
+            // Cria matriz n x (W+1)
+            dpMatrix = Array.from({ length: n + 1 }, () => Array(W + 1).fill(null));
+            steps = [];
+            optimalPath.clear();
+            chosenItems = [];
+
+            // Gera todos os passos da DP
+            // Linha 1 (primeiro item)
+            const it1 = items[0];
+            for (let k = 0; k <= W; k++) {
+                const val = (it1.w > k) ? 0 : it1.v;
+                steps.push({
+                    type: 'calc',
+                    i: 1,
+                    k: k,
+                    val: val,
+                    item: it1,
+                    w_k_valid: it1.w <= k,
+                    explanation: it1.w > k 
+                        ? `Item 1 (w=${it1.w}, v=${it1.v}) excede a capacidade k=${k}. Logo M[1, ${k}] = 0.`
+                        : `Item 1 (w=${it1.w}, v=${it1.v}) cabe na capacidade k=${k}. Logo M[1, ${k}] = v_1 = ${it1.v}.`
+                });
+            }
+
+            // Linhas 2 até n
+            for (let i = 2; i <= n; i++) {
+                const it = items[i - 1];
+                for (let k = 0; k <= W; k++) {
+                    const cabe = (k - it.w >= 0);
+                    let val = 0;
+                    let exp = "";
+                    let opExcluir = 0;
+                    let opIncluir = null;
+
+                    if (cabe) {
+                        // Precisa saber o que já está na matriz
+                        // Vamos simular a DP na matriz temporária
+                    }
+                }
+            }
+
+            // Vamos pré-calcular a matriz de verdade para montar os passos com precisão
+            const simM = Array.from({ length: n + 1 }, () => Array(W + 1).fill(0));
+            // Linha 1
+            for (let k = 0; k <= W; k++) {
+                simM[1][k] = (items[0].w > k) ? 0 : items[0].v;
+            }
+            // Linha 2..n
+            for (let i = 2; i <= n; i++) {
+                const it = items[i - 1];
+                for (let k = 0; k <= W; k++) {
+                    if (k - it.w >= 0) {
+                        simM[i][k] = Math.max(simM[i - 1][k], simM[i - 1][k - it.w] + it.v);
+                    } else {
+                        simM[i][k] = simM[i - 1][k];
+                    }
+                }
+            }
+
+            // Agora montamos os passos com todos os números reais
+            steps = [];
+            // Passo a passo linha 1
+            for (let k = 0; k <= W; k++) {
+                const it = items[0];
+                const cabe = (k >= it.w);
+                steps.push({
+                    i: 1,
+                    k: k,
+                    val: simM[1][k],
+                    item: it,
+                    cabe: cabe,
+                    decision: cabe ? `Cabe (w1 ≤ k)` : `Não cabe (w1 > k)`,
+                    formula: cabe ? `M[1, ${k}] = v_1 = ${it.v}` : `M[1, ${k}] = 0`,
+                    prevExclui: null,
+                    prevInclui: null
+                });
+            }
+
+            // Passo a passo linha 2..n
+            for (let i = 2; i <= n; i++) {
+                const it = items[i - 1];
+                for (let k = 0; k <= W; k++) {
+                    const cabe = (k - it.w >= 0);
+                    const excluiVal = simM[i - 1][k];
+                    const incluiVal = cabe ? (simM[i - 1][k - it.w] + it.v) : null;
+                    const finalVal = simM[i][k];
+                    
+                    let decisionStr = "";
+                    let formulaStr = "";
+
+                    if (!cabe) {
+                        decisionStr = `Não cabe (k - w_${i} = ${k} - ${it.w} < 0) ➔ Copia M[${i-1}, ${k}]`;
+                        formulaStr = `M[${i}, ${k}] = M[${i-1}, ${k}] = ${excluiVal}`;
+                    } else {
+                        decisionStr = `max( Excluir: M[${i-1}, ${k}]=${excluiVal}, Incluir: M[${i-1}, ${k-it.w}]+${it.v}=${incluiVal} ) = ${finalVal}`;
+                        formulaStr = `M[${i}, ${k}] = max(${excluiVal}, ${incluiVal}) = ${finalVal}`;
+                    }
+
+                    steps.push({
+                        i: i,
+                        k: k,
+                        val: finalVal,
+                        item: it,
+                        cabe: cabe,
+                        decision: decisionStr,
+                        formula: formulaStr,
+                        prevExclui: { i: i - 1, k: k, val: excluiVal },
+                        prevInclui: cabe ? { i: i - 1, k: k - it.w, val: simM[i - 1][k - it.w] } : null
+                    });
+                }
+            }
+
+            // Backtracking da solução ótima
+            let currI = n;
+            let currK = W;
+            optimalPath.clear();
+            chosenItems = [];
+            const backtrackSteps = [];
+
+            while (currI > 0 && currK > 0) {
+                optimalPath.add(`${currI},${currK}`);
+                const it = items[currI - 1];
+                if (currI === 1) {
+                    if (simM[1][currK] > 0) {
+                        chosenItems.push(it);
+                        backtrackSteps.push(`• Item 1 (w=6, v=$30): M[1, ${currK}] = ${simM[1][currK]} > 0 ➔ <strong>ITEM 1 ENTRA</strong> na mochila! Capacidade restante: ${currK} - ${it.w} = ${currK - it.w}`);
+                    }
+                    break;
+                }
+
+                if (currK - it.w >= 0 && simM[currI][currK] === simM[currI - 1][currK - it.w] + it.v && simM[currI][currK] !== simM[currI - 1][currK]) {
+                    chosenItems.push(it);
+                    backtrackSteps.push(`• Item ${currI} (w=${it.w}, v=$${it.v}): M[${currI}, ${currK}] (${simM[currI][currK]}) ≠ M[${currI-1}, ${currK}] (${simM[currI-1][currK]}) ➔ <strong>ITEM ${currI} ENTRA</strong>! Subtrai peso: ${currK} - ${it.w} = ${currK - it.w}`);
+                    currK = currK - it.w;
+                } else {
+                    backtrackSteps.push(`• Item ${currI} (w=${it.w}, v=$${it.v}): M[${currI}, ${currK}] (${simM[currI][currK]}) == M[${currI-1}, ${currK}] (${simM[currI-1][currK]}) ➔ Item ${currI} <strong>NÃO</strong> entra.`);
+                }
+                currI--;
+            }
+
+            // Registra passos de backtrack
+            window.finalBacktrackSteps = backtrackSteps;
+            window.finalSimM = simM;
+
+            document.getElementById('totalStepsText').innerText = steps.length;
+            renderInitialTable();
+            resetSimulation();
+        }
+
+        function renderInitialTable() {
+            const table = document.getElementById('dpTable');
+            table.innerHTML = '';
+
+            // Header row: Capacidades k
+            const thead = document.createElement('thead');
+            const htr = document.createElement('tr');
+            htr.className = 'bg-slate-900 border-b border-slate-800 text-slate-400 font-bold';
+            
+            htr.innerHTML = `
+                <th class="p-2 border-r border-slate-800">i</th>
+                <th class="p-2 border-r border-slate-800">Item (w, v)</th>
+            `;
+            for (let k = 0; k <= W; k++) {
+                htr.innerHTML += `<th class="p-2 w-10 border-r border-slate-800/60 text-slate-300">k=${k}</th>`;
+            }
+            thead.appendChild(htr);
+            table.appendChild(thead);
+
+            // Body rows: Itens 1..n
+            const tbody = document.createElement('tbody');
+            for (let i = 1; i <= items.length; i++) {
+                const it = items[i - 1];
+                const tr = document.createElement('tr');
+                tr.id = `row-${i}`;
+                tr.className = 'border-b border-slate-800/60 hover:bg-slate-900/40 transition';
+                
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-emerald-400 border-r border-slate-800 bg-slate-900/60">${i}</td>
+                    <td class="p-2 text-left border-r border-slate-800 bg-slate-900/60">
+                        <span class="text-white font-medium">w=${it.w}</span>, <span class="text-emerald-400 font-bold">$${it.v}</span>
+                    </td>
+                `;
+
+                for (let k = 0; k <= W; k++) {
+                    tr.innerHTML += `
+                        <td id="cell-${i}-${k}" class="p-2 border-r border-slate-800/40 text-slate-600 transition-all font-mono">
+                            -
+                        </td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+        }
+
+        function updateUI() {
+            document.getElementById('currentStepText').innerText = currentStepIdx + 1;
+
+            // Limpa classes dinâmicas de todas as células
+            for (let i = 1; i <= items.length; i++) {
+                for (let k = 0; k <= W; k++) {
+                    const c = document.getElementById(`cell-${i}-${k}`);
+                    if (!c) continue;
+                    c.className = 'p-2 border-r border-slate-800/40 transition-all font-mono';
+                    
+                    // Verifica se já foi calculada
+                    const stepForCell = steps.find(s => s.i === i && s.k === k);
+                    const cellStepIdx = steps.indexOf(stepForCell);
+
+                    if (cellStepIdx <= currentStepIdx && stepForCell) {
+                        c.innerText = stepForCell.val;
+                        c.classList.add('text-slate-200', 'bg-slate-900/80');
+                    } else {
+                        c.innerText = '-';
+                        c.classList.add('text-slate-600');
+                    }
+                }
+            }
+
+            if (currentStepIdx < 0) {
+                document.getElementById('statusBadge').innerText = 'Aguardando início...';
+                document.getElementById('statusBadge').className = 'text-xs font-mono px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
+                document.getElementById('itemDetail').innerText = '---';
+                document.getElementById('capacityDetail').innerText = '---';
+                document.getElementById('decisionDetail').innerText = '---';
+                document.getElementById('mathExplanation').innerHTML = 'Clique em <strong>"Executar"</strong> ou <strong>"Próximo Passo"</strong> para avançar.';
+                document.getElementById('solutionSection').classList.add('hidden');
+                return;
+            }
+
+            const step = steps[currentStepIdx];
+            const currentCell = document.getElementById(`cell-${step.i}-${step.k}`);
+            
+            // Destaque da célula atual
+            if (currentCell) {
+                currentCell.classList.remove('bg-slate-900/80', 'text-slate-200');
+                currentCell.classList.add('bg-emerald-600/30', 'text-emerald-300', 'font-black', 'active-cell-ring');
+            }
+
+            // Destaque das dependências anteriores
+            if (step.prevExclui) {
+                const peCell = document.getElementById(`cell-${step.prevExclui.i}-${step.prevExclui.k}`);
+                if (peCell) peCell.classList.add('bg-sky-500/25', 'text-sky-300', 'border-sky-500/60');
+            }
+            if (step.prevInclui) {
+                const piCell = document.getElementById(`cell-${step.prevInclui.i}-${step.prevInclui.k}`);
+                if (piCell) piCell.classList.add('bg-amber-500/25', 'text-amber-300', 'border-amber-500/60');
+            }
+
+            // Textos explicativos
+            document.getElementById('statusBadge').innerText = `Calculando M[${step.i}, ${step.k}]`;
+            document.getElementById('statusBadge').className = 'text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold';
+            document.getElementById('itemDetail').innerHTML = `Item ${step.i}: peso = <strong>${step.item.w}</strong>, valor = <strong>$${step.item.v}</strong>`;
+            document.getElementById('capacityDetail').innerHTML = `Capacidade atual = <strong>${step.k}</strong> kg`;
+            document.getElementById('decisionDetail').innerText = step.decision;
+
+            document.getElementById('mathExplanation').innerHTML = `
+                <div class="text-emerald-400 font-bold mb-1">Cálculo da Célula:</div>
+                <div class="text-sm font-bold text-white mb-1">${step.formula}</div>
+                <div class="text-slate-400 text-[11px]">${step.cabe ? `O item ${step.i} cabe na capacidade ${step.k}. Avaliamos se vale a pena incluí-lo somando seu valor $${step.item.v} à solução ótima da capacidade restante M[${step.i-1}, ${step.k - step.item.w}], ou manter a melhor solução sem ele M[${step.i-1}, ${step.k}].` : `O peso do item (${step.item.w}) é maior que a capacidade atual (${step.k}). O item não pode ser inserido, herdando o valor da linha superior.`}</div>
+            `;
+
+            // Se for o último passo, mostra a solução ótima e o caminho
+            if (currentStepIdx === steps.length - 1) {
+                showSolution();
+            } else {
+                document.getElementById('solutionSection').classList.add('hidden');
+            }
+        }
+
+        function showSolution() {
+            const solSec = document.getElementById('solutionSection');
+            solSec.classList.remove('hidden');
+
+            const optV = window.finalSimM[items.length][W];
+            let totW = 0;
+            chosenItems.forEach(it => totW += it.w);
+
+            document.getElementById('optVal').innerText = `$${optV}`;
+            document.getElementById('optWeight').innerText = `${totW} / ${W} kg`;
+
+            const itemNames = chosenItems.map(it => `Item ${it.id} (peso ${it.w}kg, $${it.v})`).join(' + ');
+            document.getElementById('optItems').innerText = itemNames || 'Nenhum item coube';
+
+            // Destaque das células da rota ótima
+            optimalPath.forEach(key => {
+                const [i, k] = key.split('-');
+                const c = document.getElementById(`cell-${key.replace(',', '-')}`);
+                if (c) {
+                    c.classList.remove('active-cell-ring');
+                    c.classList.add('bg-yellow-500/30', 'text-yellow-300', 'font-black', 'path-glow');
+                }
+            });
+
+            const logDiv = document.getElementById('backtrackLog');
+            logDiv.innerHTML = window.finalBacktrackSteps.join('<br>');
+        }
+
+        function stepNext() {
+            if (currentStepIdx < steps.length - 1) {
+                currentStepIdx++;
+                updateUI();
+            } else {
+                pause();
+            }
+        }
+
+        function stepPrev() {
+            if (currentStepIdx > 0) {
+                currentStepIdx--;
+                updateUI();
+            }
+        }
+
+        function stepFirst() {
+            pause();
+            currentStepIdx = 0;
+            updateUI();
+        }
+
+        function stepLast() {
+            pause();
+            currentStepIdx = steps.length - 1;
+            updateUI();
+        }
+
+        function resetSimulation() {
+            pause();
+            currentStepIdx = -1;
+            updateUI();
+        }
+
+        function togglePlay() {
+            if (playInterval) {
+                pause();
+            } else {
+                play();
+            }
+        }
+
+        function play() {
+            if (currentStepIdx >= steps.length - 1) {
+                currentStepIdx = -1;
+            }
+            document.getElementById('playBtn').classList.replace('bg-emerald-600', 'bg-rose-600');
+            document.getElementById('playBtn').classList.replace('hover:bg-emerald-500', 'hover:bg-rose-500');
+            document.getElementById('playIcon').className = 'ph-bold ph-pause text-base';
+            document.getElementById('playText').innerText = 'Pausar';
+
+            const speed = parseInt(document.getElementById('speedSlider').value);
+            playInterval = setInterval(() => {
+                if (currentStepIdx < steps.length - 1) {
+                    stepNext();
+                } else {
+                    pause();
+                }
+            }, speed);
+        }
+
+        function pause() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+            const btn = document.getElementById('playBtn');
+            btn.classList.replace('bg-rose-600', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-rose-500', 'hover:bg-emerald-500');
+            document.getElementById('playIcon').className = 'ph-bold ph-play text-base';
+            document.getElementById('playText').innerText = 'Executar';
+        }
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            const v = e.target.value;
+            document.getElementById('speedValueText').innerText = `${v}ms`;
+            if (playInterval) {
+                pause();
+                play();
+            }
+        });
+
+        // Inicia na carga
+        window.addEventListener('DOMContentLoaded', () => {
+            initSimulation();
+        });
+    </script>
+</body>
+</html>

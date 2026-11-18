@@ -1,0 +1,677 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{top=2.2cm,bottom=2.2cm,left=2cm,right=2cm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{trees,arrows.meta,positioning}
+\usepackage{listings}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!70!black,
+    citecolor=blue!70!black
+}
+
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{UFU -- FEELT} | Projeto e Análise de Algoritmos}
+\rhead{Prof. Felipe A. Louza | \textbf{Lista 9}}
+\lfoot{\small Arthur Pires Lopes -- 12221EEL001}
+\rfoot{\thepage}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{black!3},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  literate={á}{{\'a}}1 {ã}{{\~a}}1 {ç}{{\c c}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1 {←}{{$\leftarrow$}}1 {≠}{{$\ne$}}1 {∞}{{$\infty$}}1
+}
+
+\begin{document}
+
+% =========================================================================
+% CABEÇALHO OFICIAL
+% =========================================================================
+\begin{center}
+    {\Large \textbf{Universidade Federal de Uberlândia -- UFU}}\\[2pt]
+    {\large Faculdade de Engenharia Elétrica (FEELT)}\\[2pt]
+    {\large Projeto e Análise de Algoritmos (PAA) -- Prof. Felipe A. Louza}\\[4pt]
+    \rule{\textwidth}{1pt}\\[5pt]
+    {\LARGE \textbf{Lista 9: Programação Dinâmica}}\\[3pt]
+    \textbf{Versão para Entrega Oficial}\\[2pt]
+    \rule{\textwidth}{0.5pt}
+\end{center}
+
+\vspace{0.1cm}
+\noindent \textbf{Aluno:} Arthur Pires Lopes \quad \textbf{Matrícula:} 12221EEL001
+
+\vspace{0.3cm}
+
+% =========================================================================
+% QUESTÃO 1
+% =========================================================================
+\section*{Questão 1}
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Cut-Rod-Bottom-Up}$(P, n)$ para a seguinte entrada:
+\begin{center}
+\begin{tabular}{r|ccccccc}
+\toprule
+\textbf{tamanho} $i$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\
+\midrule
+\textbf{preço} $p_i$ & 0 & 1 & 3 & 11 & 16 & 19 & 10 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Resolução}
+
+O algoritmo \textsc{Cut-Rod-Bottom-Up} calcula a receita máxima $A[i]$ que pode ser obtida cortando uma barra de comprimento $i \in \{0, 1, \dots, n\}$. A relação de recorrência baseada na subestrutura ótima é dada por:
+\begin{equation}
+A[0] = 0, \qquad A[i] = \max_{1 \le j \le i} \Big( p_j + A[i - j] \Big), \quad \text{para } 1 \le i \le n.
+\end{equation}
+
+Avaliamos iterativamente cada comprimento $i$ de $1$ até $n = 6$:
+
+\begin{itemize}
+    \item \textbf{Para $i = 0$:} Caso base, $A[0] = 0$.
+    \item \textbf{Para $i = 1$:}
+    \[
+    j = 1: p_1 + A[0] = 1 + 0 = 1 \implies A[1] = 1.
+    \]
+    \item \textbf{Para $i = 2$:}
+    \begin{align*}
+    j = 1 &: p_1 + A[1] = 1 + 1 = 2 \\
+    j = 2 &: p_2 + A[0] = 3 + 0 = 3 \implies A[2] = \max(2, 3) = 3.
+    \end{align*}
+    \item \textbf{Para $i = 3$:}
+    \begin{align*}
+    j = 1 &: p_1 + A[2] = 1 + 3 = 4 \\
+    j = 2 &: p_2 + A[1] = 3 + 1 = 4 \\
+    j = 3 &: p_3 + A[0] = 11 + 0 = 11 \implies A[3] = \max(4, 4, 11) = 11.
+    \end{align*}
+    \item \textbf{Para $i = 4$:}
+    \begin{align*}
+    j = 1 &: p_1 + A[3] = 1 + 11 = 12 \\
+    j = 2 &: p_2 + A[2] = 3 + 3 = 6 \\
+    j = 3 &: p_3 + A[1] = 11 + 1 = 12 \\
+    j = 4 &: p_4 + A[0] = 16 + 0 = 16 \implies A[4] = \max(12, 6, 12, 16) = 16.
+    \end{align*}
+    \item \textbf{Para $i = 5$:}
+    \begin{align*}
+    j = 1 &: p_1 + A[4] = 1 + 16 = 17 \\
+    j = 2 &: p_2 + A[3] = 3 + 11 = 14 \\
+    j = 3 &: p_3 + A[2] = 11 + 3 = 14 \\
+    j = 4 &: p_4 + A[1] = 16 + 1 = 17 \\
+    j = 5 &: p_5 + A[0] = 19 + 0 = 19 \implies A[5] = \max(17, 14, 14, 17, 19) = 19.
+    \end{align*}
+    \item \textbf{Para $i = 6$:}
+    \begin{align*}
+    j = 1 &: p_1 + A[5] = 1 + 19 = 20 \\
+    j = 2 &: p_2 + A[4] = 3 + 16 = 19 \\
+    j = 3 &: p_3 + A[3] = 11 + 11 = \mathbf{22} \quad \text{(ótimo)} \\
+    j = 4 &: p_4 + A[2] = 16 + 3 = 19 \\
+    j = 5 &: p_5 + A[1] = 19 + 1 = 20 \\
+    j = 6 &: p_6 + A[0] = 10 + 0 = 10 \implies A[6] = \max(20, 19, \mathbf{22}, 19, 20, 10) = 22.
+    \end{align*}
+\end{itemize}
+
+\textbf{Tabela Final Preenchida:}
+\begin{center}
+\begin{tabular}{r|ccccccc}
+\toprule
+$i$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\
+\midrule
+$p_i$ & 0 & 1 & 3 & 11 & 16 & 19 & 10 \\
+$A[i]$ & \textbf{0} & \textbf{1} & \textbf{3} & \textbf{11} & \textbf{16} & \textbf{19} & \textbf{22} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Resultado:} O valor máximo obtido para a barra de tamanho $n = 6$ é $A[6] = 22$.
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 2
+% =========================================================================
+\section*{Questão 2}
+\textbf{Enunciado:} Escreva um algoritmo para descobrir os tamanhos dos pedaços nos quais a barra foi cortada na solução ótima. \emph{Dica: Modifique o algoritmo \textsc{Cut-Rod-Bottom-Up}$(P, n)$ para registrar os cortes na solução.}
+
+\subsection*{Resolução}
+
+Para reconstruir os pedaços da solução ótima, mantemos um vetor auxiliar $S[1 \dots n]$, onde $S[i]$ armazena o tamanho ótimo do primeiro pedaço $j$ cortado de uma barra de comprimento $i$.
+
+\subsubsection*{1. Algoritmo Estendido com Registro de Cortes}
+
+\begin{lstlisting}
+EXTENDED-CUT-ROD-BOTTOM-UP(P, n)
+1  let A[0 .. n] and S[1 .. n] be new arrays
+2  A[0] = 0
+3  for i = 1 to n
+4      m = -infinity
+5      for j = 1 to i
+6          if m < P[j] + A[i - j]
+7              m = P[j] + A[i - j]
+8              S[i] = j
+9      A[i] = m
+10 return A and S
+\end{lstlisting}
+
+\subsubsection*{2. Algoritmo de Recuperação dos Pedaços}
+
+\begin{lstlisting}
+RETRIEVE-CUT-ROD-SOLUTION(P, n)
+1  (A, S) = EXTENDED-CUT-ROD-BOTTOM-UP(P, n)
+2  let L be an empty list
+3  curr = n
+4  while curr > 0
+5      add S[curr] to L
+6      curr = curr - S[curr]
+7  return L
+\end{lstlisting}
+
+\subsubsection*{3. Rastreamento e Análise de Complexidade}
+Aplicando à entrada da Questão 1 ($n = 6$):
+\begin{center}
+\begin{tabular}{r|cccccc}
+\toprule
+$i$ & 1 & 2 & 3 & 4 & 5 & 6 \\
+\midrule
+$S[i]$ & 1 & 2 & 3 & 4 & 5 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Para $curr = 6$: $S[6] = 3 \implies$ adiciona 3, novo $curr = 6 - 3 = 3$. Para $curr = 3$: $S[3] = 3 \implies$ adiciona 3, novo $curr = 3 - 3 = 0$. Fim da execução. Pedaços ótimos: $\langle 3, 3 \rangle$ ($11 + 11 = 22$).
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\Theta(n^2)$ para o preenchimento das tabelas e $O(n)$ no laço de recuperação. Total: $\Theta(n^2)$.
+    \item \textbf{Complexidade de Espaço:} $\Theta(n)$ para os vetores auxiliares $A[0..n]$ e $S[1..n]$.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 3
+% =========================================================================
+\section*{Questão 3}
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{LIS-PD}$(S, n)$ para a seguinte entrada:
+\begin{center}
+\begin{tabular}{r|cccccccc}
+\toprule
+$i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+$s_i$ & 5 & 2 & 8 & 6 & 3 & 6 & 9 & 7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Resolução}
+
+O algoritmo calcula o vetor $L[1 \dots n]$, onde $L[i]$ denota o comprimento da maior subsequência estritamente crescente que \textbf{termina exatamente no elemento $s_i$}. A regra indutiva é:
+\begin{equation}
+L[1] = 1, \qquad L[i] = 1 + \max \left( \{ L[j] \mid 1 \le j < i \text{ e } s_j < s_i \} \cup \{0\} \right), \quad \text{para } 2 \le i \le n.
+\end{equation}
+
+Cálculo detalhado passo a passo:
+\begin{itemize}
+    \item \textbf{Para $i = 1$ ($s_1 = 5$):} $L[1] = 1$. Subsequência: $\langle 5 \rangle$.
+    \item \textbf{Para $i = 2$ ($s_2 = 2$):}
+    $j = 1: s_1 = 5 \not< 2$.
+    Nenhum elemento anterior é menor $\implies \ell = 0 \implies L[2] = 1 + 0 = 1$. Subsequência: $\langle 2 \rangle$.
+    \item \textbf{Para $i = 3$ ($s_3 = 8$):}
+    \begin{align*}
+    j = 1 &: s_1 = 5 < 8 \implies L[1] = 1 \\
+    j = 2 &: s_2 = 2 < 8 \implies L[2] = 1 \implies \ell = \max(1, 1) = 1 \implies L[3] = 1 + 1 = 2.
+    \end{align*}
+    \item \textbf{Para $i = 4$ ($s_4 = 6$):}
+    \begin{align*}
+    j = 1 &: s_1 = 5 < 6 \implies L[1] = 1 \\
+    j = 2 &: s_2 = 2 < 6 \implies L[2] = 1 \\
+    j = 3 &: s_3 = 8 \not< 6 \implies \ell = 1 \implies L[4] = 1 + 1 = 2.
+    \end{align*}
+    \item \textbf{Para $i = 5$ ($s_5 = 3$):}
+    \begin{align*}
+    j = 1 &: s_1 = 5 \not< 3 \\
+    j = 2 &: s_2 = 2 < 3 \implies L[2] = 1 \\
+    j = 3, 4 &: s_3 = 8 \not< 3, \; s_4 = 6 \not< 3 \implies \ell = 1 \implies L[5] = 1 + 1 = 2.
+    \end{align*}
+    \item \textbf{Para $i = 6$ ($s_6 = 6$):}
+    \begin{align*}
+    j = 1 &: s_1 = 5 < 6 \implies L[1] = 1 \\
+    j = 2 &: s_2 = 2 < 6 \implies L[2] = 1 \\
+    j = 3, 4 &: s_3 = 8 \not< 6, \; s_4 = 6 \not< 6 \text{ (estritamente menor)} \\
+    j = 5 &: s_5 = 3 < 6 \implies L[5] = 2 \implies \ell = \max(1, 2) = 2 \implies L[6] = 1 + 2 = 3.
+    \end{align*}
+    \item \textbf{Para $i = 7$ ($s_7 = 9$):}
+    Candidatos $s_j < 9$: $s_1(1), s_2(1), s_3(2), s_4(2), s_5(2), s_6(3)$.
+    \[
+    \ell = \max(L[1], L[2], L[3], L[4], L[5], L[6]) = \max(1, 1, 2, 2, 2, 3) = 3 \implies L[7] = 1 + 3 = 4.
+    \]
+    \item \textbf{Para $i = 8$ ($s_8 = 7$):}
+    Candidatos $s_j < 7$: $s_1=5(1), s_2=2(1), s_4=6(2), s_5=3(2), s_6=6(3)$. Note que $s_3 = 8 \not< 7$ e $s_7 = 9 \not< 7$.
+    \[
+    \ell = \max(1, 1, 2, 2, 3) = 3 \implies L[8] = 1 + 3 = 4.
+    \]
+\end{itemize}
+
+\textbf{Tabela Final do Vetor $L$:}
+\begin{center}
+\begin{tabular}{r|cccccccc}
+\toprule
+$i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+$s_i$ & 5 & 2 & 8 & 6 & 3 & 6 & 9 & 7 \\
+$L[i]$ & \textbf{1} & \textbf{1} & \textbf{2} & \textbf{2} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{4} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Resultado Final:} O tamanho máximo da LIS global é $\max_{1 \le j \le 8} L[j] = \mathbf{4}$ (atingido nas posições $i = 7$ e $i = 8$).
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 4
+% =========================================================================
+\section*{Questão 4}
+\textbf{Enunciado:} Escreva um algoritmo que retorna a LIS de uma sequência (não apenas o tamanho da LIS). \emph{Dica: Modifique o algoritmo \textsc{LIS-PD}$(S, n)$ para registrar as soluções parciais do problema.}
+
+\subsection*{Resolução}
+
+Adicionamos um vetor de ponteiros predecessores $P[1 \dots n]$. Sempre que encontramos um índice $j < i$ tal que $s_j < s_i$ que maximize $L[j]$, registramos $P[i] = j$. Ao término, identificamos o índice $k$ que maximiza $L[k]$ e realizamos o retrocesso (backtracking) encadeado.
+
+\begin{lstlisting}
+LIS-RECUPERA-SEQUENCIA(S, n)
+1  let L[1 .. n] and P[1 .. n] be new arrays
+2  L[1] = 1
+3  P[1] = -1
+4  max_len = 1
+5  best_idx = 1
+6  for i = 2 to n
+7      l = 0
+8      p = -1
+9      for j = 1 to i - 1
+10         if S[j] < S[i] and L[j] > l
+11             l = L[j]
+12             p = j
+13     L[i] = 1 + l
+14     P[i] = p
+15     if L[i] > max_len
+16         max_len = L[i]
+17         best_idx = i
+18 let R be an empty list
+19 curr = best_idx
+20 while curr != -1
+21     add S[curr] to R
+22     curr = P[curr]
+23 reverse(R)
+24 return R
+\end{lstlisting}
+
+\subsubsection*{Rastreamento e Análise}
+Para a entrada da Questão 3 com $best\_idx = 7$ ($s_7 = 9$):
+\[
+P[7] = 6 \; (s_6 = 6) \to P[6] = 5 \; (s_5 = 3) \to P[5] = 2 \; (s_2 = 2) \to P[2] = -1.
+\]
+Invertendo a lista recuperada: $\langle 2, 3, 6, 9 \rangle$. (Alternativamente, para $best\_idx = 8$: $\langle 2, 3, 6, 7 \rangle$).
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\sum_{i=1}^{n-1} i = \Theta(n^2)$ para preenchimento e $O(n)$ para reconstruir a lista. Total: $\Theta(n^2)$.
+    \item \textbf{Complexidade de Espaço:} $\Theta(n)$ para armazenar $L[1..n]$ e $P[1..n]$.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 5
+% =========================================================================
+\section*{Questão 5}
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{COINS-PD}$(C, k)$ para a seguinte entrada:
+\[
+C = [1, 5, 8, 11] \quad \text{e} \quad k = 13
+\]
+
+\subsection*{Resolução}
+
+O algoritmo preenche um vetor $M[0 \dots k]$, onde $M[i]$ armazena o número mínimo de moedas para formar o valor $i$:
+\begin{equation}
+M[0] = 0, \qquad M[i] = 1 + \min_{\substack{1 \le j \le n \\ i - c_j \ge 0}} M[i - c_j], \quad \text{para } 1 \le i \le k.
+\end{equation}
+
+Execução iterativa para $i = 0 \dots 13$:
+\begin{itemize}
+    \item $i = 0$: $M[0] = 0$.
+    \item $i = 1$: Moeda 1: $1 + M[0] = 1 \implies M[1] = 1$.
+    \item $i = 2$: Moeda 1: $1 + M[1] = 2 \implies M[2] = 2$.
+    \item $i = 3$: Moeda 1: $1 + M[2] = 3 \implies M[3] = 3$.
+    \item $i = 4$: Moeda 1: $1 + M[3] = 4 \implies M[4] = 4$.
+    \item $i = 5$: Moedas 1, 5: $1 + \min(M[4], M[0]) = 1 + \min(4, 0) = 1 \implies M[5] = 1$.
+    \item $i = 6$: Moedas 1, 5: $1 + \min(M[5], M[1]) = 1 + \min(1, 1) = 2 \implies M[6] = 2$.
+    \item $i = 7$: Moedas 1, 5: $1 + \min(M[6], M[2]) = 1 + \min(2, 2) = 3 \implies M[7] = 3$.
+    \item $i = 8$: Moedas 1, 5, 8: $1 + \min(M[7], M[3], M[0]) = 1 + \min(3, 3, 0) = 1 \implies M[8] = 1$.
+    \item $i = 9$: Moedas 1, 5, 8: $1 + \min(M[8], M[4], M[1]) = 1 + \min(1, 4, 1) = 2 \implies M[9] = 2$.
+    \item $i = 10$: Moedas 1, 5, 8: $1 + \min(M[9], M[5], M[2]) = 1 + \min(2, 1, 2) = 2 \implies M[10] = 2$.
+    \item $i = 11$: Moedas 1, 5, 8, 11: $1 + \min(M[10], M[6], M[3], M[0]) = 1 + \min(2, 2, 3, 0) = 1 \implies M[11] = 1$.
+    \item $i = 12$: Moedas 1, 5, 8, 11: $1 + \min(M[11], M[7], M[4], M[1]) = 1 + \min(1, 3, 4, 1) = 2 \implies M[12] = 2$.
+    \item $i = 13$: Moedas 1, 5, 8, 11:
+    \[
+    M[13] = 1 + \min\big( M[12], M[8], M[5], M[2] \big) = 1 + \min(2, 1, 1, 2) = 1 + 1 = \mathbf{2}.
+    \]
+\end{itemize}
+
+\textbf{Tabela Final Preenchida:}
+\begin{center}
+\begin{tabular}{r|cccccccccccccc}
+\toprule
+$i$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 \\
+\midrule
+$M[i]$ & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{1} & \textbf{2} & \textbf{2} & \textbf{1} & \textbf{2} & \textbf{2} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Resultado:} O menor número de moedas para formar a quantia $k = 13$ é $M[13] = \mathbf{2}$ (composto por $8 + 5 = 13$).
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 6
+% =========================================================================
+\section*{Questão 6}
+\textbf{Enunciado:} Escreva um algoritmo que resolve o problema das moedas no qual \textbf{não é permitido repetições de moedas no troco}.
+
+\subsection*{Resolução}
+
+Quando cada moeda $c_i \in C$ pode ser utilizada \textbf{no máximo uma vez}, o problema torna-se análogo à Mochila 0-1. Definimos $M[i, v]$ como o número mínimo de moedas dentre o subconjunto $\{c_1, \dots, c_i\}$ necessárias para formar a quantia exata $v$.
+
+\subsubsection*{1. Relação de Recorrência}
+\begin{equation}
+M[i, v] = 
+\begin{cases}
+0, & \text{se } v = 0 \\
+\infty, & \text{se } i = 0 \text{ e } v > 0 \\
+M[i-1, v], & \text{se } c_i > v \\
+\min\Big(M[i-1, v], \; 1 + M[i-1, v - c_i]\Big), & \text{se } c_i \le v
+\end{cases}
+\end{equation}
+
+\subsubsection*{2. Algoritmo com Otimização de Espaço ($1$D)}
+Para economizar memória de $O(n \cdot k)$ para $O(k)$, percorremos o valor $v$ em \textbf{ordem decrescente} (de $k$ até $c_i$), impedindo que a mesma moeda seja reutilizada no mesmo estágio:
+
+\begin{lstlisting}
+COINS-01-KNAPSACK(C, n, k)
+1  let dp[0 .. k] be a new array
+2  dp[0] = 0
+3  for v = 1 to k
+4      dp[v] = infinity
+5  for i = 1 to n
+6      for v = k down to C[i]
+7          if dp[v - C[i]] != infinity
+8              dp[v] = min(dp[v], 1 + dp[v - C[i]])
+9  if dp[k] == infinity
+10     return -1    // Impossivel formar o troco sem repeticao
+11 return dp[k]
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\Theta(n \cdot k)$ (pseudo-polinomial).
+    \item \textbf{Complexidade de Espaço:} $O(k)$ com vetor unidimensional (ou $\Theta(n \cdot k)$ se a matriz for preservada para recuperação das moedas).
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 7
+% =========================================================================
+\section*{Questão 7}
+\textbf{Enunciado:} Dados um conjunto de valores de moedas $C = c_1, c_2, \dots, c_n$ e uma quantia $k$. Escreva um algoritmo que retorne o \textbf{número de maneiras diferentes} que podemos formar a quantia $k$. \emph{Dica: Modifique o algoritmo \textsc{COINS-PD}$(C, k)$.}
+
+\subsection*{Resolução}
+
+Desejamos calcular o número de combinações não ordenadas de moedas cuja soma totaliza $k$ (onde moedas podem se repetir). 
+
+\subsubsection*{1. Relação de Recorrência}
+Seja $W[i, v]$ o número de maneiras de formar a quantia $v$ usando apenas moedas de $\{c_1, \dots, c_i\}$:
+\begin{equation}
+W[i, v] = W[i-1, v] + W[i, v - c_i], \quad \text{com } W[i, 0] = 1 \; (\forall i) \text{ e } W[0, v] = 0 \; (\forall v > 0).
+\end{equation}
+
+\subsubsection*{2. Algoritmo em Programação Dinâmica}
+Mantendo o laço de moedas no nível externo e o laço de valores no nível interno crescente, evitamos permutações duplicadas (ex: $1+5$ e $5+1$ são contabilizados como uma única maneira):
+
+\begin{lstlisting}
+COUNT-WAYS-COIN-CHANGE(C, n, k)
+1  let dp[0 .. k] be a new array
+2  dp[0] = 1
+3  for v = 1 to k
+4      dp[v] = 0
+5  for j = 1 to n
+6      for v = C[j] to k
+7          dp[v] = dp[v] + dp[v - C[j]]
+8  return dp[k]
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\Theta(n \cdot k)$ operações aritméticas.
+    \item \textbf{Complexidade de Espaço:} $\Theta(k)$ no vetor acumulador.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 8
+% =========================================================================
+\section*{Questão 8}
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{KNAPSACK-PD}$(n, K)$ para a seguinte entrada (capacidade $K = 10$):
+\begin{center}
+\begin{tabular}{c|cc}
+\toprule
+\textbf{item} $i$ & \textbf{peso} $w_i$ & \textbf{valor} $v_i$ \\
+\midrule
+1 & 6 & \$30 \\
+2 & 3 & \$14 \\
+3 & 4 & \$16 \\
+4 & 2 & \$9 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Resolução}
+
+A matriz $M[1 \dots n, 0 \dots K]$ armazena o valor ótimo considerando os primeiros $i$ itens com capacidade $k$:
+\begin{align}
+M[1, k] &= \begin{cases} 0, & \text{se } w_1 > k \\ v_1, & \text{se } w_1 \le k \end{cases} \\
+M[i, k] &= \begin{cases} M[i-1, k], & \text{se } k - w_i < 0 \\ \max\Big(M[i-1, k], \; M[i-1, k - w_i] + v_i\Big), & \text{se } k - w_i \ge 0 \end{cases}
+\end{align}
+
+\subsubsection*{Preenchimento Passo a Passo das Linhas}
+\begin{itemize}
+    \item \textbf{Linha 1 ($w_1 = 6, v_1 = 30$):}
+    Para $k = 0 \dots 5$, $M[1, k] = 0$. Para $k = 6 \dots 10$, $M[1, k] = 30$.
+    \item \textbf{Linha 2 ($w_2 = 3, v_2 = 14$):}
+    \begin{itemize}
+        \item $k = 0, 1, 2$: $k < 3 \implies M[2, k] = M[1, k] = 0$.
+        \item $k = 3, 4, 5$: $\max(M[1, k], M[1, k-3] + 14) = \max(0, 0 + 14) = 14$.
+        \item $k = 6, 7, 8$: $\max(M[1, k], M[1, k-3] + 14) = \max(30, 0 + 14) = 30$.
+        \item $k = 9, 10$: $\max(M[1, k], M[1, k-3] + 14) = \max(30, 30 + 14) = 44$.
+    \end{itemize}
+    \item \textbf{Linha 3 ($w_3 = 4, v_3 = 16$):}
+    \begin{itemize}
+        \item $k = 0, 1, 2$: $M[3, k] = M[2, k] = 0$.
+        \item $k = 3$: $k < 4 \implies M[3, 3] = M[2, 3] = 14$.
+        \item $k = 4, 5$: $\max(M[2, k], M[2, k-4] + 16) = \max(14, 0 + 16) = 16$.
+        \item $k = 6, 7, 8$: $\max(M[2, k], M[2, k-4] + 16) = \max(30, 0/14 + 16) = 30$.
+        \item $k = 9$: $\max(M[2, 9], M[2, 5] + 16) = \max(44, 14 + 16 = 30) = 44$.
+        \item $k = 10$: $\max(M[2, 10], M[2, 6] + 16) = \max(44, 30 + 16 = \mathbf{46}) = \mathbf{46}$.
+    \end{itemize}
+    \item \textbf{Linha 4 ($w_4 = 2, v_4 = 9$):}
+    \begin{itemize}
+        \item $k = 0, 1$: $0$.
+        \item $k = 2$: $\max(0, 0 + 9) = 9$.
+        \item $k = 3$: $\max(14, 0 + 9) = 14$.
+        \item $k = 4$: $\max(16, 0 + 9) = 16$.
+        \item $k = 5$: $\max(16, 14 + 9 = 23) = 23$.
+        \item $k = 6, 7$: $\max(30, 16 + 9 = 25) = 30$.
+        \item $k = 8$: $\max(30, 30 + 9 = 39) = 39$.
+        \item $k = 9$: $\max(44, 30 + 9 = 39) = 44$.
+        \item $k = 10$: $\max(46, 30 + 9 = 39) = \mathbf{46}$.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Matriz Completa $M[i, k]$:}
+\begin{center}
+\begin{tabular}{c|ccccccccccc}
+\toprule
+$i \setminus k$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\midrule
+1 ($w_1=6, v_1=30$) & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{30} & 30 & 30 & 30 & 30 \\
+2 ($w_2=3, v_2=14$) & 0 & 0 & 0 & 14 & 14 & 14 & 30 & 30 & 30 & 44 & 44 \\
+3 ($w_3=4, v_3=16$) & 0 & 0 & 0 & 14 & 16 & 16 & 30 & 30 & 30 & 44 & \textbf{46} \\
+4 ($w_4=2, v_4=9$)  & 0 & 0 & 9 & 14 & 16 & 23 & 30 & 30 & 39 & 44 & \textbf{46} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Reconstrução da Solução Ótima por Retrocesso}
+Partindo de $M[4, 10] = 46$:
+\begin{enumerate}
+    \item $M[4, 10] = 46 = M[3, 10] \implies$ \textbf{Item 4 NÃO entra}. Capacidade restante: $10$.
+    \item $M[3, 10] = 46 \ne M[2, 10] = 44 \implies$ \textbf{Item 3 ENTRA}. Nova capacidade: $10 - w_3 = 10 - 4 = 6$.
+    \item $M[2, 6] = 30 = M[1, 6] \implies$ \textbf{Item 2 NÃO entra}. Capacidade restante: $6$.
+    \item $M[1, 6] = 30 > 0 \implies$ \textbf{Item 1 ENTRA}. Nova capacidade: $6 - w_1 = 6 - 6 = 0$.
+\end{enumerate}
+
+\textbf{Resultado:} Valor máximo = \textbf{\$46}, com os itens selecionados $\{1, 3\}$ e peso total $6 + 4 = 10\text{ kg}$.
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 9
+% =========================================================================
+\section*{Questão 9}
+\textbf{Enunciado:} Escreva um algoritmo que resolve o problema da mochila no qual \textbf{é permitido repetições de itens na mochila}.
+
+\subsection*{Resolução}
+
+No problema da \emph{Mochila Não Limitada} (Unbounded Knapsack), qualquer item $i \in \{1, \dots, n\}$ pode ser escolhido múltiplas vezes. 
+
+\subsubsection*{1. Relação de Recorrência}
+Seja $K[w]$ o valor máximo atingível com capacidade total $w \in \{0, \dots, W\}$:
+\begin{equation}
+K[0] = 0, \qquad K[w] = \max_{\substack{1 \le i \le n \\ w_i \le w}} \Big( K[w - w_i] + v_i \Big), \quad \text{para } 1 \le w \le W.
+\end{equation}
+
+\subsubsection*{2. Algoritmo em Programação Dinâmica}
+
+\begin{lstlisting}
+UNBOUNDED-KNAPSACK(w, v, n, W)
+1  let K[0 .. W] be a new array
+2  K[0] = 0
+3  for c = 1 to W
+4      K[c] = 0
+5      for i = 1 to n
+6          if w[i] <= c
+7              K[c] = max(K[c], K[c - w[i]] + v[i])
+8  return K[W]
+\end{lstlisting}
+
+\subsubsection*{3. Comparação Teórica com a Mochila 0-1}
+Na formulação matricial bidimensional, a diferença crucial reside no índice da linha na transição:
+\begin{itemize}
+    \item \textbf{Mochila 0-1:} $M[i, w] = \max\Big(M[i-1, w], \; M[\mathbf{i-1}, w - w_i] + v_i\Big)$ (o item não pode mais ser usado).
+    \item \textbf{Mochila com Repetições:} $M[i, w] = \max\Big(M[i-1, w], \; M[\mathbf{i}, w - w_i] + v_i\Big)$ (o mesmo item $i$ pode ser reutilizado).
+\end{itemize}
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\Theta(n \cdot W)$ (pseudo-polinomial).
+    \item \textbf{Complexidade de Espaço:} $O(W)$ com o vetor unidimensional $K[0..W]$.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% =========================================================================
+% QUESTÃO 10
+% =========================================================================
+\section*{Questão 10}
+\textbf{Enunciado:} Escreva um algoritmo que retorna a LCS de duas sequências (não apenas o tamanho da LCS). \emph{Dica: Modifique o algoritmo \textsc{LCS-LENGTH}$(S, n)$ para registrar as soluções parciais do problema.}
+
+\subsection*{Resolução}
+
+Para retornar a subsequência comum de caracteres, modificamos o algoritmo para construir simultaneamente a matriz de tamanhos $M[0 \dots n, 0 \dots m]$ e uma matriz de setas/direções $B[1 \dots n, 1 \dots m]$, onde $B[i, j] \in \{\nwarrow, \uparrow, \leftarrow\}$.
+
+\subsubsection*{1. Algoritmo Estendido com Registro de Rota}
+
+\begin{lstlisting}
+EXTENDED-LCS-LENGTH(X, n, Y, m)
+1  let M[0 .. n, 0 .. m] and B[1 .. n, 1 .. m] be new matrices
+2  for i = 0 to n
+3      M[i, 0] = 0
+4  for j = 1 to m
+5      M[0, j] = 0
+6  for i = 1 to n
+7      for j = 1 to m
+8          if X[i] == Y[j]
+9              M[i, j] = M[i - 1, j - 1] + 1
+10             B[i, j] = "DIAGONAL"  // Seta diagonal noroeste
+11         else if M[i - 1, j] >= M[i, j - 1]
+12             M[i, j] = M[i - 1, j]
+13             B[i, j] = "UP"        // Seta para cima
+14         else
+15             M[i, j] = M[i, j - 1]
+16             B[i, j] = "LEFT"      // Seta para a esquerda
+17 return M and B
+\end{lstlisting}
+
+\subsubsection*{2. Algoritmo de Recuperação da Cadeia de Caracteres}
+
+\begin{lstlisting}
+PRINT-LCS(B, X, i, j)
+1  if i == 0 or j == 0
+2      return
+3  if B[i, j] == "DIAGONAL"
+4      PRINT-LCS(B, X, i - 1, j - 1)
+5      print X[i]
+6  else if B[i, j] == "UP"
+7      PRINT-LCS(B, X, i - 1, j)
+8  else
+9      PRINT-LCS(B, X, i, j - 1)
+\end{lstlisting}
+
+\subsubsection*{3. Otimização de Espaço (Backtrack Direto sem Matriz $B$)}
+Podemos prescindir integralmente da matriz $B$ inspecionando os valores diretamente em $M[i, j]$ durante o retrocesso:
+\begin{lstlisting}
+RETRIEVE-LCS-DIRECT(M, X, Y, n, m)
+1  let L be an empty list
+2  i = n, j = m
+3  while i > 0 and j > 0
+4      if X[i] == Y[j]
+5          add X[i] to L
+6          i = i - 1, j = j - 1
+7      else if M[i - 1, j] >= M[i, j - 1]
+8          i = i - 1
+9      else
+10         j = j - 1
+11 reverse(L)
+12 return L
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Complexidade de Tempo:} $\Theta(n \cdot m)$ para o preenchimento das matrizes e $O(n + m)$ para o retrocesso/reconstrução.
+    \item \textbf{Complexidade de Espaço:} $\Theta(n \cdot m)$ para a matriz $M$ (economiza os $\Theta(n \cdot m)$ da matriz $B$ ao utilizar a reconstrução direta).
+\end{itemize}
+
+\end{document}

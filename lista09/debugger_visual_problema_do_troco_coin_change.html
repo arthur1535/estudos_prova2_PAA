@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Change Debugger - Programação Dinâmica Bottom-Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #111827;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .node-transition {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.65); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        .active-i-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes gold-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.45); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.85); }
+        }
+        .best-coin-glow {
+            animation: gold-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
+                    <i class="ph-bold ph-coins text-2xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg sm:text-xl tracking-tight text-white">Debugger do Problema do Troco</h1>
+                        <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">Bottom-Up DP</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Simulador passo a passo de Programação Dinâmica para provas de Algoritmos / PAA</p>
+                </div>
+            </div>
+
+            <!-- Formula Pill -->
+            <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl flex flex-wrap items-center gap-2 font-mono text-xs sm:text-sm text-slate-200 shadow-inner">
+                <span class="text-amber-400 font-bold">Recorrência:</span>
+                <span>M[i] = 1 + min<sub>c<sub>j</sub> &in; C, i - c<sub>j</sub> &ge; 0</sub> { <span class="text-emerald-400">M[i - c<sub>j</sub>]</span> }</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-indigo-300">M[0] = 0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Section 1: Input & Presets + Controls -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- Input Config (5 cols) -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-coins text-amber-400"></i> Moedas (C) &amp; Troco Alvo (N)
+                        </span>
+                        <span id="inputError" class="text-xs text-rose-400 hidden">Verifique os valores!</span>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2">
+                        <div class="col-span-6">
+                            <label class="text-[10px] uppercase font-mono text-slate-400 block mb-1">Moedas C (vírgula)</label>
+                            <input id="coinsInput" type="text" value="2, 5, 7" 
+                                class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-1.5 text-sm font-mono text-white outline-none transition"
+                                placeholder="Ex: 2, 5, 7">
+                        </div>
+                        <div class="col-span-3">
+                            <label class="text-[10px] uppercase font-mono text-slate-400 block mb-1">Troco N</label>
+                            <input id="targetInput" type="number" min="1" max="20" value="11" 
+                                class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-1.5 text-sm font-mono text-white outline-none transition">
+                        </div>
+                        <div class="col-span-3 flex items-end">
+                            <button onclick="applyCustomConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium py-1.5 px-2 rounded-xl text-sm transition flex items-center justify-center gap-1 shadow">
+                                <i class="ph-bold ph-check"></i> Aplicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span class="text-xs text-slate-400 mr-1">Exemplos:</span>
+                    <button onclick="loadPreset('1, 5, 8, 11', 13)" class="text-xs bg-amber-500/25 hover:bg-amber-500/40 text-amber-300 border border-amber-500/50 px-2.5 py-1 rounded-lg transition font-bold shadow-sm">
+                        ★ Lista 9 - Q5: C={1,5,8,11}, k=13
+                    </button>
+                    <button onclick="loadPreset('2, 5, 7', 11)" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg transition font-medium">
+                        Slide Aula 09: C={2,5,7}, N=11
+                    </button>
+                    <button onclick="loadPreset('1, 3, 4', 6)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Falha do Guloso: C={1,3,4}, N=6
+                    </button>
+                    <button onclick="loadPreset('4, 6', 13)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition">
+                        Ímpares Impossíveis: C={4,6}, N=13
+                    </button>
+                </div>
+            </div>
+
+            <!-- Debugger Controls (7 cols) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="ph-bold ph-sliders-horizontal text-indigo-400"></i> Controles de Execução
+                    </span>
+
+                    <!-- Mode Switcher (Micro vs Macro) -->
+                    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button id="btnModeMicro" onclick="setStepMode('micro')" class="text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow">
+                            Passo Micro (Testar cada moeda c<sub>j</sub>)
+                        </button>
+                        <button id="btnModeMacro" onclick="setStepMode('macro')" class="text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white">
+                            Passo Macro (Calcular M[i] direto)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <button onclick="goToStart()" title="Voltar ao Início" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-200 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1 border border-slate-700">
+                            <i class="ph-bold ph-skip-back"></i> <span class="hidden sm:inline">Reset</span>
+                        </button>
+                        <button onclick="stepBackward()" id="btnPrev" title="Passo Anterior" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-slate-200 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1 border border-slate-700">
+                            <i class="ph-bold ph-caret-left"></i> Anterior
+                        </button>
+                        <button onclick="togglePlay()" id="btnPlay" class="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/50">
+                            <i id="playIcon" class="ph-bold ph-play"></i> <span id="playText">Play</span>
+                        </button>
+                        <button onclick="stepForward()" id="btnNext" title="Próximo Passo" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-40 disabled:pointer-events-none text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1 shadow-lg shadow-indigo-950/50">
+                            Próximo <i class="ph-bold ph-caret-right"></i>
+                        </button>
+                        <button onclick="nextIndexI()" id="btnNextI" title="Fechar índice i atual" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1">
+                            Próx. <i>i</i> <i class="ph-bold ph-fast-forward"></i>
+                        </button>
+                        <button onclick="goToEnd()" id="btnEnd" title="Preencher tabela inteira" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-emerald-300 border border-emerald-500/30 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1">
+                            Finalizar Tudo
+                        </button>
+                    </div>
+
+                    <!-- Speed Control -->
+                    <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                        <i class="ph-bold ph-gauge text-slate-400 text-sm"></i>
+                        <input id="speedSlider" type="range" min="150" max="1800" step="150" value="900" class="w-16 sm:w-20 accent-indigo-500 cursor-pointer" oninput="updateSpeed()">
+                        <span id="speedLabel" class="text-xs font-mono text-slate-300 w-9 text-right">1.0x</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Interactive Array M[0...N] Visualization -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <i class="ph-bold ph-squares-four text-indigo-400 text-lg"></i> Vetor de Estados <code class="font-mono text-indigo-300">M[0..N]</code>
+                        <span class="font-normal text-xs text-slate-400">(Clique em qualquer célula calculada para rastrear as moedas!)</span>
+                    </h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="coinsAvailableBadges" class="flex items-center gap-1.5 text-xs font-mono">
+                        <!-- Coin pills -->
+                    </span>
+                    <span id="stepCounterBadge" class="text-xs font-mono bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-slate-300">
+                        Passo 0 / 0
+                    </span>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center gap-3 sm:gap-5 text-xs text-slate-300 mb-6 pb-4 border-b border-slate-800/80">
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-indigo-500/30 border-2 border-indigo-400 inline-block"></span>
+                    <span>Troco Atual (<code class="font-mono text-indigo-300">i</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-amber-500/30 border-2 border-amber-400 inline-block"></span>
+                    <span>Olhando p/ Trás (<code class="font-mono text-amber-300">i - c<sub>j</sub></code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-emerald-500/30 border-2 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.8)] inline-block"></span>
+                    <span>Melhor Escolha (<code class="font-mono text-amber-300">min M[i - c<sub>j</sub>]</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-rose-950/50 border border-rose-700/70 inline-block"></span>
+                    <span>Estado Impossível (<code class="font-mono text-rose-400">&infin;</code>)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded bg-fuchsia-500/30 border-2 border-fuchsia-400 inline-block"></span>
+                    <span>Rastreamento de Moedas (Backtracking)</span>
+                </div>
+            </div>
+
+            <!-- Array Nodes Container -->
+            <div class="overflow-x-auto custom-scrollbar pb-4 pt-6">
+                <div id="arrayVisualizer" class="flex items-stretch justify-start lg:justify-center gap-2.5 min-w-max px-2">
+                    <!-- Dynamic Blocks injected via JS -->
+                </div>
+            </div>
+
+            <!-- Backtracking / Coin Chain Banner -->
+            <div id="backtrackBanner" class="mt-4 bg-fuchsia-950/30 border border-fuchsia-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 hidden">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <i class="ph-fill ph-path text-fuchsia-400 text-xl"></i>
+                    <div class="text-xs sm:text-sm flex flex-wrap items-center gap-2">
+                        <span id="backtrackTitle" class="font-semibold text-fuchsia-200">Rastreamento de Moedas:</span>
+                        <div id="backtrackChain" class="font-mono font-bold text-white flex flex-wrap items-center gap-1.5"></div>
+                    </div>
+                </div>
+                <button onclick="clearInspection()" class="text-xs text-fuchsia-300 hover:text-white underline shrink-0">
+                    Voltar ao modo de debug
+                </button>
+            </div>
+        </section>
+
+        <!-- Section 3: Modo Lousa (Chalkboard Live Formula & Greedy Comparison) -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: Live Formula Substitution (6 cols) -->
+            <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-chalkboard-teacher text-base"></i> Modo Lousa: Teste das Moedas c<sub>j</sub>
+                        </h3>
+                        <span id="currentIndexTag" class="text-xs font-mono px-2.5 py-0.5 rounded bg-slate-800 text-slate-300">Início</span>
+                    </div>
+
+                    <!-- Coin Tests List -->
+                    <div id="coinTestsContainer" class="space-y-2 mb-4">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Mathematical Substitution Box -->
+                <div id="formulaSummaryBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 font-mono text-xs sm:text-sm space-y-1.5 shadow-inner">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+
+            <!-- Right: Didactic Explanation + Greedy vs DP Alert (6 cols) -->
+            <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i class="ph-bold ph-chat-centered-text text-base"></i> Explicação Passo a Passo
+                        </h3>
+                        <span id="stepPhaseBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                            Pronto
+                        </span>
+                    </div>
+
+                    <div id="explanationBox" class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-4 text-sm sm:text-base leading-relaxed text-slate-200 min-h-[110px] flex flex-col justify-center">
+                        <!-- Dynamic Explanation -->
+                    </div>
+                </div>
+
+                <!-- Dynamic Greedy vs DP Comparison Box -->
+                <div id="greedyComparisonBox" class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3.5 flex items-start gap-3">
+                    <i class="ph-fill ph-warning-octagon text-amber-400 text-xl shrink-0 mt-0.5"></i>
+                    <div class="text-xs text-slate-300 leading-relaxed space-y-1" id="greedyComparisonContent">
+                        <!-- Dynamic comparison between DP and Greedy for current i -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Exam Execution Table -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <i class="ph-bold ph-table text-indigo-400 text-lg"></i> Tabela de Execução Completa (Padrão de Prova)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Clique em qualquer linha preenchida para visualizar os saltos de subtração no vetor acima.</p>
+                </div>
+
+                <!-- Target Answer Badge -->
+                <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
+                    <span id="finalTargetLabel" class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Resultado M[11]:</span>
+                    <span id="finalTargetValue" class="font-mono text-xl font-bold text-emerald-400">-</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar rounded-xl border border-slate-800">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr id="examTableHeader" class="bg-slate-950 text-slate-400 text-xs uppercase font-mono border-b border-slate-800">
+                            <!-- Dynamic Headers based on coins C -->
+                        </tr>
+                    </thead>
+                    <tbody id="examTableBody" class="divide-y divide-slate-800/70 text-xs sm:text-sm font-mono">
+                        <!-- Rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 mt-8">
+        Debugger Educacional para Projeto e Análise de Algoritmos (PAA) &bull; Problema do Troco Bottom-Up O(N &middot; |C|)
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // --- State Variables ---
+        let C = [2, 5, 7];
+        let N = 11;
+        let steps = [];
+        let currentStepIndex = 0;
+        let stepMode = 'micro'; // 'micro' or 'macro'
+        let isPlaying = false;
+        let playTimer = null;
+        let playIntervalMs = 850;
+        let inspectedIndex = null;
+
+        // --- Initialization ---
+        window.onload = () => {
+            generateSteps();
+            renderTableHeaders();
+            renderAll();
+        };
+
+        // --- Presets & Custom Input ---
+        function loadPreset(coinsStr, targetN) {
+            document.getElementById('coinsInput').value = coinsStr;
+            document.getElementById('targetInput').value = targetN;
+            applyCustomConfig();
+        }
+
+        function applyCustomConfig() {
+            stopPlay();
+            const rawCoins = document.getElementById('coinsInput').value;
+            const targetVal = parseInt(document.getElementById('targetInput').value, 10);
+
+            const parsedCoins = [...new Set(
+                rawCoins.split(',')
+                    .map(x => parseInt(x.trim(), 10))
+                    .filter(x => !isNaN(x) && x > 0)
+            )].sort((a, b) => a - b);
+
+            const errEl = document.getElementById('inputError');
+            if (parsedCoins.length === 0 || parsedCoins.length > 6 || isNaN(targetVal) || targetVal < 1 || targetVal > 20) {
+                errEl.textContent = 'Use de 1 a 6 moedas positivas e N entre 1 e 20.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            C = parsedCoins;
+            N = targetVal;
+            inspectedIndex = null;
+            generateSteps();
+            currentStepIndex = 0;
+            renderTableHeaders();
+            renderAll();
+        }
+
+        // Helper: Reconstruct coins used for index `idx`
+        function reconstructCoins(idx, M, choiceCoin) {
+            if (idx === 0) return [];
+            if (M[idx] === Infinity || M[idx] === null) return null;
+            const res = [];
+            let curr = idx;
+            let safety = 0;
+            while (curr > 0 && safety < 50) {
+                const c = choiceCoin[curr];
+                if (!c) break;
+                res.push(c);
+                curr -= c;
+                safety++;
+            }
+            return res;
+        }
+
+        // Helper: Reconstruct jump states for backtracking visualization
+        function reconstructJumpPath(idx, M, choiceCoin) {
+            if (M[idx] === null || M[idx] === Infinity) return null;
+            const pathIndices = [idx];
+            const jumps = [];
+            let curr = idx;
+            let safety = 0;
+            while (curr > 0 && safety < 50) {
+                const c = choiceCoin[curr];
+                if (!c) break;
+                jumps.push({ from: curr, coin: c, to: curr - c });
+                curr -= c;
+                pathIndices.push(curr);
+                safety++;
+            }
+            return { pathIndices, jumps };
+        }
+
+        // Helper: Simulate Greedy Algorithm for comparison on value `val`
+        function simulateGreedy(val, coins) {
+            if (val === 0) return { success: true, coins: [] };
+            const sortedDesc = [...coins].sort((a, b) => b - a);
+            let rem = val;
+            const used = [];
+            for (const c of sortedDesc) {
+                while (rem >= c) {
+                    rem -= c;
+                    used.push(c);
+                }
+            }
+            return {
+                success: rem === 0,
+                coins: used,
+                remainder: rem
+            };
+        }
+
+        // --- Generate Complete Execution Trace ---
+        function generateSteps() {
+            steps = [];
+            const M = new Array(N + 1).fill(null);
+            const choiceCoin = new Array(N + 1).fill(null);
+            const tableRows = [];
+
+            // Base case M[0] = 0
+            M[0] = 0;
+            tableRows.push({
+                i: 0,
+                coinTests: C.map(c => ({ coin: c, status: 'BASE', lookbackIdx: -c, val: null })),
+                calcStr: 'Caso Base',
+                finalMi: 0,
+                coinsList: []
+            });
+
+            steps.push({
+                type: 'INIT',
+                i: 0,
+                activeCoin: null,
+                lookbackIdx: null,
+                M: [...M],
+                choiceCoin: [...choiceCoin],
+                coinEvaluations: [],
+                bestCoinSoFar: null,
+                currentMinPrev: Infinity,
+                tableRows: JSON.parse(JSON.stringify(tableRows)),
+                title: 'Caso Base: M[0] = 0',
+                explanation: `Iniciamos pelo <strong>Caso Base</strong>: para formar o troco <code class="text-indigo-300 font-mono">i = 0</code>, precisamos de exatamente <strong>0 moedas</strong> (<code class="text-emerald-300 font-mono">M[0] = 0</code>). Agora vamos calcular <code class="font-mono">M[1]</code> até <code class="font-mono">M[${N}]</code> testando as moedas <code class="text-amber-300 font-mono">C = {${C.join(', ')}}</code>.`
+            });
+
+            // Loop i from 1 to N
+            for (let i = 1; i <= N; i++) {
+                let coinEvaluations = [];
+                let bestCoinSoFar = null;
+                let currentMinPrev = Infinity;
+
+                steps.push({
+                    type: 'START_I',
+                    i: i,
+                    activeCoin: null,
+                    lookbackIdx: null,
+                    M: [...M],
+                    choiceCoin: [...choiceCoin],
+                    coinEvaluations: [],
+                    bestCoinSoFar: null,
+                    currentMinPrev: Infinity,
+                    tableRows: JSON.parse(JSON.stringify(tableRows)),
+                    title: `Calculando Troco i = ${i}`,
+                    explanation: `Queremos descobrir o mínimo de moedas para formar <code class="text-indigo-300 font-mono">i = ${i}</code>. Vamos testar subtrair cada moeda <code class="text-amber-300 font-mono">c<sub>j</sub> &in; {${C.join(', ')}}</code> e consultar o resultado já pronto em <code class="text-emerald-300 font-mono">M[${i} - c<sub>j</sub>]</code>.`
+                });
+
+                for (let cIdx = 0; cIdx < C.length; cIdx++) {
+                    const c = C[cIdx];
+                    const prev = i - c;
+                    let evalObj = { coin: c, lookbackIdx: prev, status: '', prevVal: null, isBest: false };
+                    let expText = '';
+
+                    if (prev < 0) {
+                        evalObj.status = 'NEGATIVE';
+                        expText = `Testando moeda <code class="text-amber-300 font-mono">c = ${c}</code>: Como <code class="font-mono">${i} - ${c} = ${prev} &lt; 0</code>, a moeda de valor ${c} é <strong>maior que o troco ${i}</strong> (<span class="text-rose-400 font-semibold">Inválido</span>).`;
+                    } else {
+                        const prevM = M[prev];
+                        evalObj.prevVal = prevM;
+                        if (prevM === Infinity) {
+                            evalObj.status = 'INFINITY';
+                            expText = `Testando moeda <code class="text-amber-300 font-mono">c = ${c}</code>: Olhamos para <code class="text-amber-300 font-mono">M[${i} - ${c}] = M[${prev}]</code>. Porém <code class="text-rose-400 font-mono">M[${prev}] = &infin;</code> (impossível formar o restante ${prev}). Logo, usar a moeda ${c} não gera solução.`;
+                        } else {
+                            evalObj.status = 'VALID';
+                            if (prevM < currentMinPrev) {
+                                currentMinPrev = prevM;
+                                bestCoinSoFar = c;
+                                expText = `Testando moeda <code class="text-amber-300 font-mono">c = ${c}</code>: Olhamos para <code class="text-emerald-300 font-mono">M[${i} - ${c}] = M[${prev}] = ${prevM}</code>. <span class="text-emerald-400 font-bold">VÁLIDO!</span> É o nosso menor valor até agora (<code class="text-amber-300 font-mono">min = ${prevM}</code>, totalizando ${prevM + 1} moeda(s)).`;
+                            } else {
+                                expText = `Testando moeda <code class="text-amber-300 font-mono">c = ${c}</code>: Olhamos para <code class="text-emerald-300 font-mono">M[${i} - ${c}] = M[${prev}] = ${prevM}</code>. É válido, mas não melhora (ou empata com) o mínimo atual que já é <strong>${currentMinPrev}</strong>.`;
+                            }
+                        }
+                    }
+
+                    coinEvaluations.push(evalObj);
+
+                    steps.push({
+                        type: 'TEST_COIN',
+                        i: i,
+                        activeCoin: c,
+                        lookbackIdx: prev,
+                        M: [...M],
+                        choiceCoin: [...choiceCoin],
+                        coinEvaluations: JSON.parse(JSON.stringify(coinEvaluations)),
+                        bestCoinSoFar: bestCoinSoFar,
+                        currentMinPrev: currentMinPrev,
+                        tableRows: JSON.parse(JSON.stringify(tableRows)),
+                        title: `i = ${i} | Testando Moeda ${c}`,
+                        explanation: expText
+                    });
+                }
+
+                // Commit M[i]
+                if (currentMinPrev === Infinity) {
+                    M[i] = Infinity;
+                    choiceCoin[i] = null;
+                } else {
+                    M[i] = 1 + currentMinPrev;
+                    choiceCoin[i] = bestCoinSoFar;
+                }
+
+                const coinsUsed = reconstructCoins(i, M, choiceCoin);
+                const validTerms = coinEvaluations
+                    .filter(e => e.status !== 'NEGATIVE')
+                    .map(e => e.prevVal === Infinity ? '∞' : e.prevVal);
+
+                const calcStr = validTerms.length === 0
+                    ? '1 + min(∅)'
+                    : `1 + min(${validTerms.join(', ')})`;
+
+                tableRows.push({
+                    i: i,
+                    coinTests: JSON.parse(JSON.stringify(coinEvaluations)),
+                    calcStr: calcStr,
+                    finalMi: M[i],
+                    coinsList: coinsUsed
+                });
+
+                steps.push({
+                    type: 'COMMIT_I',
+                    i: i,
+                    activeCoin: null,
+                    lookbackIdx: bestCoinSoFar !== null ? i - bestCoinSoFar : null,
+                    M: [...M],
+                    choiceCoin: [...choiceCoin],
+                    coinEvaluations: JSON.parse(JSON.stringify(coinEvaluations)),
+                    bestCoinSoFar: bestCoinSoFar,
+                    currentMinPrev: currentMinPrev,
+                    tableRows: JSON.parse(JSON.stringify(tableRows)),
+                    title: `Fechado M[${i}] = ${M[i] === Infinity ? '∞' : M[i]}`,
+                    explanation: M[i] === Infinity
+                        ? `Nenhuma moeda permitiu alcançar um troco anterior válido para <code class="text-indigo-300 font-mono">i = ${i}</code>. Portanto, cravamos <code class="text-rose-400 font-mono font-bold">M[${i}] = &infin;</code> (Impossível).`
+                        : `Concluímos <code class="text-indigo-300 font-mono">i = ${i}</code>! A melhor opção foi pegar a moeda <code class="text-amber-300 font-mono">c = ${bestCoinSoFar}</code> somada a <code class="text-emerald-300 font-mono">M[${i - bestCoinSoFar}] = ${currentMinPrev}</code>. Resultado: <code class="text-emerald-400 font-mono font-bold">M[${i}] = 1 + ${currentMinPrev} = ${M[i]}</code> (Moedas: <code class="font-mono">{${coinsUsed.join(', ')}}</code>).`
+                });
+            }
+
+            // Final Done Step
+            steps.push({
+                type: 'DONE',
+                i: N,
+                activeCoin: null,
+                lookbackIdx: null,
+                M: [...M],
+                choiceCoin: [...choiceCoin],
+                coinEvaluations: steps[steps.length - 1].coinEvaluations,
+                bestCoinSoFar: choiceCoin[N],
+                currentMinPrev: M[N] === Infinity ? Infinity : M[N] - 1,
+                tableRows: JSON.parse(JSON.stringify(tableRows)),
+                title: `Tabela Completa! M[${N}] = ${M[N] === Infinity ? '∞' : M[N]}`,
+                explanation: `Execução Bottom-Up concluída! O vetor <code class="text-indigo-300 font-mono">M[0..${N}]</code> está totalmente preenchido. Clique em qualquer bloco acima ou linha da tabela abaixo para ver o <strong>rastreamento reverso (backtracking)</strong> das moedas escolhidas!`
+            });
+        }
+
+        // --- Playback Controls ---
+        function setStepMode(mode) {
+            stepMode = mode;
+            const btnMicro = document.getElementById('btnModeMicro');
+            const btnMacro = document.getElementById('btnModeMacro');
+            if (mode === 'micro') {
+                btnMicro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+                btnMacro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white';
+            } else {
+                btnMacro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition bg-indigo-600 text-white shadow';
+                btnMicro.className = 'text-xs px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white';
+            }
+        }
+
+        function stepForward() {
+            inspectedIndex = null;
+            if (currentStepIndex >= steps.length - 1) {
+                stopPlay();
+                return;
+            }
+            if (stepMode === 'micro') {
+                currentStepIndex++;
+            } else {
+                let idx = currentStepIndex + 1;
+                while (idx < steps.length - 1 && steps[idx].type !== 'COMMIT_I' && steps[idx].type !== 'DONE') {
+                    idx++;
+                }
+                currentStepIndex = idx;
+            }
+            renderAll();
+            if (currentStepIndex >= steps.length - 1) stopPlay();
+        }
+
+        function stepBackward() {
+            stopPlay();
+            inspectedIndex = null;
+            if (currentStepIndex <= 0) return;
+            if (stepMode === 'micro') {
+                currentStepIndex--;
+            } else {
+                let idx = currentStepIndex - 1;
+                while (idx > 0 && steps[idx].type !== 'COMMIT_I' && steps[idx].type !== 'INIT') {
+                    idx--;
+                }
+                currentStepIndex = idx;
+            }
+            renderAll();
+        }
+
+        function nextIndexI() {
+            stopPlay();
+            inspectedIndex = null;
+            if (currentStepIndex >= steps.length - 1) return;
+            const currI = steps[currentStepIndex].i;
+            let idx = currentStepIndex + 1;
+            while (idx < steps.length - 1) {
+                if (steps[idx].type === 'COMMIT_I' && (steps[currentStepIndex].type !== 'COMMIT_I' || steps[idx].i !== currI)) {
+                    break;
+                }
+                idx++;
+            }
+            currentStepIndex = idx;
+            renderAll();
+        }
+
+        function goToStart() {
+            stopPlay();
+            inspectedIndex = null;
+            currentStepIndex = 0;
+            renderAll();
+        }
+
+        function goToEnd() {
+            stopPlay();
+            inspectedIndex = null;
+            currentStepIndex = steps.length - 1;
+            renderAll();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                if (currentStepIndex >= steps.length - 1) currentStepIndex = 0;
+                isPlaying = true;
+                document.getElementById('playIcon').className = 'ph-bold ph-pause';
+                document.getElementById('playText').textContent = 'Pausar';
+                document.getElementById('btnPlay').classList.replace('bg-emerald-600', 'bg-amber-600');
+                document.getElementById('btnPlay').classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+                playTimer = setInterval(stepForward, playIntervalMs);
+            }
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            if (playTimer) clearInterval(playTimer);
+            playTimer = null;
+            document.getElementById('playIcon').className = 'ph-bold ph-play';
+            document.getElementById('playText').textContent = 'Play';
+            document.getElementById('btnPlay').classList.replace('bg-amber-600', 'bg-emerald-600');
+            document.getElementById('btnPlay').classList.replace('hover:bg-amber-500', 'hover:bg-emerald-500');
+        }
+
+        function updateSpeed() {
+            const sliderVal = Number(document.getElementById('speedSlider').value);
+            playIntervalMs = 1950 - sliderVal;
+            const speedMultiplier = (900 / playIntervalMs).toFixed(1);
+            document.getElementById('speedLabel').textContent = `${speedMultiplier}x`;
+            if (isPlaying) {
+                clearInterval(playTimer);
+                playTimer = setInterval(stepForward, playIntervalMs);
+            }
+        }
+
+        function inspectCell(idx) {
+            const st = steps[currentStepIndex];
+            if (st.M[idx] === null) return;
+            stopPlay();
+            inspectedIndex = idx;
+            renderAll();
+        }
+
+        function clearInspection() {
+            inspectedIndex = null;
+            renderAll();
+        }
+
+        // --- Render Functions ---
+        function renderTableHeaders() {
+            const tr = document.getElementById('examTableHeader');
+            const coinCols = C.map(c => `<th class="py-3 px-3 text-center">Moeda ${c}<br><span class="text-[10px] text-slate-500 font-normal">M[i - ${c}]</span></th>`).join('');
+            tr.innerHTML = `
+                <th class="py-3 px-3 w-14 text-center">Troco (i)</th>
+                ${coinCols}
+                <th class="py-3 px-3 text-center">Cálculo (1 + min)</th>
+                <th class="py-3 px-3 w-24 text-center">M[i]</th>
+                <th class="py-3 px-4 text-center">Combinação Ótima</th>
+            `;
+            document.getElementById('finalTargetLabel').textContent = `Resultado M[${N}]:`;
+        }
+
+        function renderAll() {
+            const st = steps[currentStepIndex];
+
+            // Buttons & Step Counter
+            document.getElementById('btnPrev').disabled = currentStepIndex === 0;
+            document.getElementById('btnNext').disabled = currentStepIndex === steps.length - 1;
+            document.getElementById('btnNextI').disabled = currentStepIndex === steps.length - 1;
+            document.getElementById('stepCounterBadge').textContent = `Passo ${currentStepIndex} / ${steps.length - 1}`;
+
+            // Available coins badges
+            document.getElementById('coinsAvailableBadges').innerHTML = C.map(c => {
+                const isAct = st.activeCoin === c;
+                return `<span class="px-2 py-0.5 rounded-full border ${isAct ? 'bg-amber-500 text-slate-950 border-amber-300 font-bold scale-105' : 'bg-slate-950 text-amber-300 border-amber-500/30'} transition">Moeda ${c}</span>`;
+            }).join('');
+
+            // Backtracking path check
+            const targetInspect = inspectedIndex !== null ? inspectedIndex : (st.type === 'DONE' ? N : null);
+            let backtrackData = null;
+            const banner = document.getElementById('backtrackBanner');
+
+            if (targetInspect !== null && st.M[targetInspect] !== null) {
+                if (st.M[targetInspect] === Infinity) {
+                    banner.classList.remove('hidden');
+                    document.getElementById('backtrackTitle').innerHTML = `Inspecionando <code class="font-mono">i = ${targetInspect}</code>:`;
+                    document.getElementById('backtrackChain').innerHTML = `<span class="text-rose-400">M[${targetInspect}] = &infin; (Impossível formar este valor com as moedas {${C.join(', ')}})</span>`;
+                } else if (targetInspect === 0) {
+                    banner.classList.remove('hidden');
+                    document.getElementById('backtrackTitle').innerHTML = `Inspecionando Caso Base <code class="font-mono">i = 0</code>:`;
+                    document.getElementById('backtrackChain').innerHTML = `<span class="text-emerald-300">M[0] = 0 (Nenhuma moeda necessária)</span>`;
+                } else {
+                    backtrackData = reconstructJumpPath(targetInspect, st.M, st.choiceCoin);
+                    banner.classList.remove('hidden');
+                    document.getElementById('backtrackTitle').innerHTML = `Rastreamento Reverso p/ <code class="font-mono">i = ${targetInspect}</code> (${st.M[targetInspect]} moedas):`;
+                    const chainParts = backtrackData.jumps.map(j => 
+                        `<span class="bg-fuchsia-900/70 px-2 py-0.5 rounded border border-fuchsia-400/50">M[${j.from}]</span>
+                         <span class="text-amber-300 text-xs">(-moeda ${j.coin}) &rarr;</span>`
+                    ).join(' ') + ` <span class="bg-emerald-900/70 px-2 py-0.5 rounded border border-emerald-400/50 text-emerald-200">M[0]=0</span>`;
+                    document.getElementById('backtrackChain').innerHTML = chainParts;
+                }
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            renderArrayCards(st, backtrackData);
+            renderChalkboard(st);
+            renderExamTable(st);
+        }
+
+        function renderArrayCards(st, backtrackData) {
+            const container = document.getElementById('arrayVisualizer');
+            container.innerHTML = '';
+
+            // Collect all evaluated valid lookbacks for current i
+            const evaluatedLookbacks = {};
+            st.coinEvaluations.forEach(ev => {
+                if (ev.lookbackIdx >= 0) {
+                    evaluatedLookbacks[ev.lookbackIdx] = ev;
+                }
+            });
+            const bestLookbackIdx = st.bestCoinSoFar !== null ? st.i - st.bestCoinSoFar : null;
+
+            for (let idx = 0; idx <= N; idx++) {
+                const mVal = st.M[idx];
+                const isCurrentI = st.i === idx && st.type !== 'DONE' && st.type !== 'INIT';
+                const isCurrentLookback = st.lookbackIdx === idx && st.type === 'TEST_COIN';
+                const isBestLookback = bestLookbackIdx === idx && st.type !== 'DONE';
+                const wasTestedLookback = evaluatedLookbacks[idx] !== undefined;
+                const isInBacktrack = backtrackData && backtrackData.pathIndices.includes(idx);
+
+                let cardClasses = 'bg-slate-950 border-slate-800 text-slate-300';
+                let badgeTop = '';
+                let mBoxClasses = 'bg-slate-900 border-slate-800 text-slate-500';
+
+                if (isInBacktrack) {
+                    cardClasses = 'bg-fuchsia-950/40 border-fuchsia-400 text-white shadow-lg shadow-fuchsia-950/50 -translate-y-1.5';
+                    mBoxClasses = 'bg-fuchsia-600 text-white border-fuchsia-300 font-bold';
+                    const jumpObj = backtrackData.jumps.find(j => j.from === idx);
+                    badgeTop = jumpObj
+                        ? `<span class="absolute -top-6 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-fuchsia-500 text-white shadow">-Moeda ${jumpObj.coin}</span>`
+                        : `<span class="absolute -top-6 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500 text-slate-950 shadow">Base 0</span>`;
+                } else if (isCurrentI) {
+                    cardClasses = 'bg-indigo-950/60 border-indigo-400 text-white active-i-ring -translate-y-1.5';
+                    mBoxClasses = mVal !== null
+                        ? (mVal === Infinity ? 'bg-rose-700 text-white border-rose-400 font-bold' : 'bg-emerald-600 text-white border-emerald-400 font-bold')
+                        : 'bg-indigo-600/40 text-indigo-200 border-indigo-400';
+                    badgeTop = `<span class="absolute -top-6 text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-500 text-white shadow">i = ${idx}</span>`;
+                } else if (isCurrentLookback) {
+                    cardClasses = 'bg-amber-950/60 border-amber-400 text-white -translate-y-1.5';
+                    mBoxClasses = mVal === Infinity
+                        ? 'bg-rose-900/70 border-rose-500 text-rose-200 font-bold'
+                        : 'bg-amber-500 text-slate-950 border-amber-300 font-bold';
+                    badgeTop = `<span class="absolute -top-6 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400 text-slate-950 shadow">i - ${st.activeCoin}</span>`;
+                } else if (isBestLookback) {
+                    cardClasses = 'bg-emerald-950/50 border-amber-400 text-white best-coin-glow';
+                    mBoxClasses = 'bg-amber-500 text-slate-950 border-amber-300 font-bold';
+                    badgeTop = `<span class="absolute -top-6 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400 text-slate-950 shadow">★ min (-${st.bestCoinSoFar})</span>`;
+                } else if (wasTestedLookback) {
+                    if (mVal === Infinity) {
+                        cardClasses = 'bg-rose-950/30 border-rose-800/70 text-slate-400 opacity-75';
+                        mBoxClasses = 'bg-rose-950 border-rose-800 text-rose-400';
+                    } else {
+                        cardClasses = 'bg-emerald-950/30 border-emerald-500/60 text-emerald-100';
+                        mBoxClasses = 'bg-emerald-900/60 border-emerald-500/50 text-emerald-300 font-semibold';
+                    }
+                } else if (mVal !== null) {
+                    if (mVal === Infinity) {
+                        cardClasses = 'bg-rose-950/20 border-rose-900/50 text-slate-400 hover:border-rose-500/50';
+                        mBoxClasses = 'bg-rose-950/60 border-rose-800/60 text-rose-400 font-bold';
+                    } else {
+                        cardClasses = 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-fuchsia-400/60';
+                        mBoxClasses = 'bg-slate-800 border-slate-700 text-emerald-400 font-bold';
+                    }
+                }
+
+                // Coins mini badges inside card
+                let coinsBadgesHtml = '<span class="text-[10px] text-slate-600 font-mono">-</span>';
+                if (mVal === 0) {
+                    coinsBadgesHtml = '<span class="text-[10px] text-slate-400 font-mono">&empty;</span>';
+                } else if (mVal === Infinity) {
+                    coinsBadgesHtml = '<span class="text-[10px] text-rose-400/80 font-mono">Impossível</span>';
+                } else if (mVal !== null) {
+                    const cList = reconstructCoins(idx, st.M, st.choiceCoin) || [];
+                    coinsBadgesHtml = cList.map(c => 
+                        `<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400/50 text-[10px] font-mono text-amber-300 font-bold">${c}</span>`
+                    ).join('');
+                }
+
+                const displayM = mVal === null ? '?' : (mVal === Infinity ? '&infin;' : mVal);
+                const clickableAttr = mVal !== null ? `onclick="inspectCell(${idx})" title="Clique para rastrear as moedas de M[${idx}]"` : '';
+                const cursorClass = mVal !== null ? 'cursor-pointer' : 'cursor-default';
+
+                const cardHtml = `
+                    <div ${clickableAttr} class="relative flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 w-[78px] sm:w-[86px] shrink-0 node-transition select-none ${cardClasses} ${cursorClass}">
+                        ${badgeTop}
+                        <div class="text-[11px] font-mono text-slate-400">i = ${idx}</div>
+                        
+                        <div class="my-2 w-full py-2 rounded-xl border text-center font-mono transition-all ${mBoxClasses}">
+                            <div class="text-[9px] uppercase opacity-75 leading-none mb-0.5">M[${idx}]</div>
+                            <div class="text-base sm:text-lg font-bold leading-tight">${displayM}</div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-center gap-1 min-h-[20px]">
+                            ${coinsBadgesHtml}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            }
+        }
+
+        function renderChalkboard(st) {
+            const tagEl = document.getElementById('currentIndexTag');
+            tagEl.textContent = st.type === 'DONE' ? 'Finalizado' : `Troco i = ${st.i}`;
+
+            const testsContainer = document.getElementById('coinTestsContainer');
+            testsContainer.innerHTML = '';
+
+            if (st.i === 0) {
+                testsContainer.innerHTML = `
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300">
+                        Caso Base definicional: <strong class="text-emerald-400">M[0] = 0</strong> (nenhuma moeda é testada).
+                    </div>
+                `;
+            } else {
+                C.forEach(c => {
+                    const ev = st.coinEvaluations.find(e => e.coin === c);
+                    const isBeingTested = st.activeCoin === c && st.type === 'TEST_COIN';
+                    const isBest = st.bestCoinSoFar === c && ev && ev.status === 'VALID';
+
+                    let rowStyle = 'bg-slate-950/60 border-slate-800/80 text-slate-400';
+                    let rightBadge = '<span class="text-slate-600">Aguardando...</span>';
+
+                    if (ev) {
+                        if (ev.status === 'NEGATIVE') {
+                            rowStyle = isBeingTested
+                                ? 'bg-rose-950/50 border-rose-500 text-rose-200'
+                                : 'bg-rose-950/20 border-rose-900/40 text-slate-500';
+                            rightBadge = `<span class="text-rose-400 font-semibold">&cross; Inválido (${st.i} - ${c} = ${ev.lookbackIdx} &lt; 0)</span>`;
+                        } else if (ev.status === 'INFINITY') {
+                            rowStyle = isBeingTested
+                                ? 'bg-rose-950/50 border-amber-500 text-rose-200'
+                                : 'bg-rose-950/20 border-rose-900/40 text-slate-400';
+                            rightBadge = `<span class="text-rose-400">M[${ev.lookbackIdx}] = &infin; (Sem solução)</span>`;
+                        } else if (ev.status === 'VALID') {
+                            if (isBest) {
+                                rowStyle = 'bg-emerald-950/40 border-amber-400 text-white shadow';
+                                rightBadge = `<span class="text-amber-300 font-bold">★ M[${ev.lookbackIdx}] = ${ev.prevVal} (Ótimo!)</span>`;
+                            } else {
+                                rowStyle = 'bg-emerald-950/20 border-emerald-700/40 text-emerald-200';
+                                rightBadge = `<span class="text-emerald-400">M[${ev.lookbackIdx}] = ${ev.prevVal}</span>`;
+                            }
+                        }
+                    }
+
+                    testsContainer.insertAdjacentHTML('beforeend', `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl border font-mono text-xs transition ${rowStyle}">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">c = ${c}</span>
+                                <span>olha M[${st.i} - ${c}] = M[${st.i - c}]</span>
+                            </div>
+                            <div>${rightBadge}</div>
+                        </div>
+                    `);
+                });
+            }
+
+            // Formula Summary Box
+            const summaryBox = document.getElementById('formulaSummaryBox');
+            if (st.i === 0) {
+                summaryBox.innerHTML = `<div class="text-emerald-400 font-bold">M[0] = 0 moedas</div>`;
+            } else {
+                const validLooking = st.coinEvaluations.filter(e => e.status !== 'NEGATIVE');
+                const termsStr = validLooking.length > 0
+                    ? validLooking.map(e => e.prevVal === Infinity ? '&infin;' : e.prevVal).join(', ')
+                    : '&empty;';
+                const minStr = st.currentMinPrev === Infinity ? '&infin;' : st.currentMinPrev;
+                const finalRes = st.currentMinPrev === Infinity ? '&infin;' : (1 + st.currentMinPrev);
+
+                summaryBox.innerHTML = `
+                    <div class="text-slate-400">Substituição em i = ${st.i}:</div>
+                    <div class="text-white">M[${st.i}] = 1 + min({ ${termsStr} }) = 1 + ${minStr} = <strong class="${finalRes === '&infin;' ? 'text-rose-400' : 'text-emerald-400'} text-base">${finalRes}</strong></div>
+                `;
+            }
+
+            // Explanation Narrative
+            document.getElementById('stepPhaseBadge').textContent = st.title;
+            document.getElementById('explanationBox').innerHTML = `<p>${st.explanation}</p>`;
+
+            // Dynamic Greedy vs DP Comparison for current i
+            const greedyEl = document.getElementById('greedyComparisonContent');
+            const targetI = st.i > 0 ? st.i : N;
+            const greedyRes = simulateGreedy(targetI, C);
+            const dpVal = st.M[targetI];
+
+            if (dpVal !== null && dpVal !== Infinity) {
+                if (!greedyRes.success) {
+                    greedyEl.innerHTML = `
+                        <strong class="text-amber-300">Por que o Algoritmo Guloso falha em i = ${targetI}?</strong><br>
+                        Tentando pegar sempre a maior moeda primeiro, o Guloso escolhe <code class="font-mono text-rose-300">[${greedyRes.coins.join(', ')}]</code> e trava com resto <code class="font-mono text-rose-300">${greedyRes.remainder}</code> (dizendo que é impossível!). Já a <strong>Programação Dinâmica</strong> descobre a solução ótima com <strong>${dpVal} moedas</strong>: <code class="font-mono text-emerald-300">{${reconstructCoins(targetI, st.M, st.choiceCoin).join(', ')}}</code>.
+                    `;
+                } else if (greedyRes.coins.length > dpVal) {
+                    greedyEl.innerHTML = `
+                        <strong class="text-amber-300">Pegadinha de Prova em i = ${targetI} (Guloso Subótimo)!</strong><br>
+                        O Algoritmo Guloso usaria <strong>${greedyRes.coins.length} moedas</strong> (<code class="font-mono text-rose-300">{${greedyRes.coins.join(', ')}}</code>), mas a Programação Dinâmica garante o ótimo real com apenas <strong>${dpVal} moedas</strong> (<code class="font-mono text-emerald-300">{${reconstructCoins(targetI, st.M, st.choiceCoin).join(', ')}}</code>)!
+                    `;
+                } else {
+                    greedyEl.innerHTML = `
+                        <strong class="text-indigo-300">Dica de Prova (i = ${targetI}):</strong> Para este valor específico, tanto o Guloso quanto a Programação Dinâmica encontram ${dpVal} moeda(s). Mas atenção: em valores como <code class="font-mono text-amber-300">i = 6, 8 ou 10</code> (com moedas {2,5,7}), o Guloso falha ou perde para a DP!
+                    `;
+                }
+            } else {
+                greedyEl.innerHTML = `
+                    <strong class="text-indigo-300">Dica de Prova:</strong> Sempre que <code class="font-mono">i - c<sub>j</sub> &lt; 0</code>, ignore a moeda. Se todas as moedas válidas apontarem para estados com <code class="font-mono text-rose-400">&infin;</code>, então <code class="font-mono text-rose-400">M[i] = &infin;</code>.
+                `;
+            }
+        }
+
+        function renderExamTable(st) {
+            const tbody = document.getElementById('examTableBody');
+            tbody.innerHTML = '';
+
+            const finalAnsEl = document.getElementById('finalTargetValue');
+            if (st.M[N] !== null) {
+                finalAnsEl.innerHTML = st.M[N] === Infinity ? '<span class="text-rose-400">&infin;</span>' : `${st.M[N]} moedas`;
+            } else {
+                finalAnsEl.textContent = '-';
+            }
+
+            st.tableRows.forEach((row, rIdx) => {
+                const isLatest = rIdx === st.tableRows.length - 1 && st.type === 'COMMIT_I';
+                let trClass = 'bg-slate-900/40 hover:bg-slate-800/60 transition cursor-pointer';
+                if (isLatest) trClass = 'bg-indigo-950/40 border-l-4 border-l-indigo-500 cursor-pointer';
+
+                const coinCellsHtml = C.map(c => {
+                    if (row.i === 0) return `<td class="py-2.5 px-3 text-center text-slate-600">—</td>`;
+                    const testObj = row.coinTests.find(t => t.coin === c);
+                    if (!testObj || testObj.status === 'NEGATIVE') {
+                        return `<td class="py-2.5 px-3 text-center text-slate-600">Inválido <span class="text-[10px]">(${row.i - c}&lt;0)</span></td>`;
+                    }
+                    if (testObj.status === 'INFINITY') {
+                        return `<td class="py-2.5 px-3 text-center text-rose-400/80">M[${testObj.lookbackIdx}] = &infin;</td>`;
+                    }
+                    const isWinner = row.finalMi !== Infinity && (testObj.prevVal + 1 === row.finalMi);
+                    return `<td class="py-2.5 px-3 text-center ${isWinner ? 'text-amber-300 font-bold bg-amber-500/10' : 'text-emerald-300'}">
+                        M[${testObj.lookbackIdx}] = ${testObj.prevVal} ${isWinner ? '★' : ''}
+                    </td>`;
+                }).join('');
+
+                const mBadge = row.finalMi === Infinity
+                    ? `<span class="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800 font-bold">&infin;</span>`
+                    : `<span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">${row.finalMi}</span>`;
+
+                let comboHtml = '<span class="text-slate-500">Nenhuma</span>';
+                if (row.finalMi === Infinity) {
+                    comboHtml = '<span class="text-rose-400/80 italic">Impossível</span>';
+                } else if (row.coinsList && row.coinsList.length > 0) {
+                    comboHtml = `<span class="text-amber-300 font-semibold">{ ${row.coinsList.join(', ')} }</span>`;
+                }
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr onclick="inspectCell(${row.i})" class="${trClass}" title="Clique para rastrear M[${row.i}]">
+                        <td class="py-2.5 px-3 text-center font-bold text-indigo-300">${row.i}</td>
+                        ${coinCellsHtml}
+                        <td class="py-2.5 px-3 text-center text-slate-300">${row.calcStr}</td>
+                        <td class="py-2.5 px-3 text-center">${mBadge}</td>
+                        <td class="py-2.5 px-4 text-center">${comboHtml}</td>
+                    </tr>
+                `);
+            });
+        }
+    </script>
+</body>
+</html>

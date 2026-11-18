@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista 7: O Problema da Seleção — Simulador Visual Interativo</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <!-- KaTeX for formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            darkbg: '#0b0f19',
+            darkcard: '#111827',
+            darkborder: '#1f293d',
+            primary: '#6366f1',
+            accent: '#f59e0b',
+            success: '#10b981',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #111827;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    .cell-transition {
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+    .pivot-pulse {
+      animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes scan-pulse {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+      100% { transform: translateY(0); }
+    }
+    .scan-active {
+      animation: scan-pulse 1.2s infinite;
+    }
+
+    .code-line {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .code-line.active {
+      background: rgba(245, 158, 11, 0.22);
+      border-left: 3px solid #f59e0b;
+      color: #fef3c7;
+      font-weight: 600;
+    }
+    .code-line .line-num {
+      color: #64748b;
+      user-select: none;
+      text-align: right;
+      padding-right: 10px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP APP HEADER -->
+  <header class="border-b border-darkborder bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shadow-inner">
+          <i class="ph-bold ph-crosshair text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-lg sm:text-xl tracking-tight text-white">Lista 7: O Problema da Seleção</h1>
+            <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">PAA · UFU</span>
+          </div>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <span>Docente: <strong>Prof. Felipe A. Louza</strong></span>
+            <span>•</span>
+            <span>Discente: <strong>Arthur Pires Lopes (12221EEL001)</strong></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick stats badge -->
+      <div class="hidden md:flex items-center gap-2 bg-slate-950 border border-darkborder px-3 py-1.5 rounded-xl font-mono text-xs text-slate-300">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Complexidade Ótima: <strong class="text-emerald-400">$\Theta(n)$ no Pior Caso</strong></span>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto custom-scrollbar border-t border-slate-800/60 gap-1 py-1.5">
+      <button onclick="switchTab('tab-visao-geral')" id="btn-tab-visao-geral" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap bg-indigo-600 text-white shadow-sm transition">
+        <i class="ph-bold ph-book-open"></i> Visão Geral & Teoria
+      </button>
+      <button onclick="switchTab('tab-q1')" id="btn-tab-q1" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/70 transition">
+        <i class="ph-bold ph-arrows-down-up"></i> Questão 1 · Min & Max em Pares
+      </button>
+      <button onclick="switchTab('tab-q2')" id="btn-tab-q2" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/70 transition">
+        <i class="ph-bold ph-magnifying-glass"></i> Questão 2 · Debugger SELECTION
+      </button>
+      <button onclick="switchTab('tab-q3')" id="btn-tab-q3" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/70 transition">
+        <i class="ph-bold ph-chart-line-up"></i> Questão 3 · Comparador dos 3 Métodos
+      </button>
+      <button onclick="switchTab('tab-q4')" id="btn-tab-q4" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/70 transition">
+        <i class="ph-bold ph-tree-structure"></i> Questão 4 · QuickSort $\Theta(n \lg n)$
+      </button>
+      <button onclick="switchTab('tab-q5')" id="btn-tab-q5" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/70 transition">
+        <i class="ph-bold ph-cube"></i> Questão 5 · Caixa-Preta Linear
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 0: VISÃO GERAL & MAPA CONCEITUAL -->
+    <!-- ========================================================================= -->
+    <div id="tab-visao-geral" class="tab-content space-y-6">
+      
+      <!-- HERO BANNER -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 border border-indigo-900/40 p-6 sm:p-8 shadow-xl">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-500/30">
+            <i class="ph-bold ph-sparkle"></i> Fundamentos de Análise de Algoritmos
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            O Problema da Seleção e Estatísticas de Ordem
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            Dada uma sequência de $n$ elementos não ordenados e um inteiro $1 \le i \le n$, o <strong>problema da seleção</strong> busca o elemento de posto $i$ (a $i$-ésima menor chave). Enquanto a ordenação completa requer $\Omega(n \lg n)$, a seleção pode ser realizada em <strong>tempo linear estrito $\Theta(n)$ no pior caso</strong>.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800/80">
+          <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+            <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Mínimo / Máximo</span>
+            <div class="text-lg font-bold text-white mt-1">Extremos em $3\lfloor n/2 \rfloor$</div>
+            <p class="text-xs text-slate-400 mt-1">Comparação aos pares atinge o limite inferior da teoria da informação.</p>
+          </div>
+          <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+            <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Paradigma</span>
+            <div class="text-lg font-bold text-indigo-400 mt-1">Podar e Buscar (Prune)</div>
+            <p class="text-xs text-slate-400 mt-1">Diferente de ordenação, descarta uma partição e recorre em apenas 1 subproblema.</p>
+          </div>
+          <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+            <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Garantia Teórica</span>
+            <div class="text-lg font-bold text-emerald-400 mt-1">Linearidade no Pior Caso</div>
+            <p class="text-xs text-slate-400 mt-1">Mediana das medianas (BFPRT 1973) assegura recorrência $T(n) \le T(n/2) + cn = \Theta(n)$.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAPA DAS 5 QUESTÕES -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        
+        <!-- CARD Q1 -->
+        <div onclick="switchTab('tab-q1')" class="cursor-pointer group bg-darkcard border border-darkborder hover:border-indigo-500/60 p-5 rounded-2xl transition shadow-lg hover:shadow-indigo-500/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Questão 1</span>
+            <i class="ph-bold ph-arrow-right text-slate-500 group-hover:text-indigo-400 transition"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mt-3 group-hover:text-indigo-300 transition">Mínimo e Máximo Simultâneos</h3>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            Como encontrar ambos os extremos realizando no máximo $3\lfloor n/2 \rfloor$ comparações ao invés de $2n - 2$ da busca ingênua.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Fórmula:</span>
+            <span class="text-amber-400 font-bold">$C(n) \le 3\lfloor n/2 \rfloor$</span>
+          </div>
+        </div>
+
+        <!-- CARD Q2 -->
+        <div onclick="switchTab('tab-q2')" class="cursor-pointer group bg-darkcard border border-darkborder hover:border-indigo-500/60 p-5 rounded-2xl transition shadow-lg hover:shadow-indigo-500/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Questão 2</span>
+            <i class="ph-bold ph-arrow-right text-slate-500 group-hover:text-indigo-400 transition"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mt-3 group-hover:text-indigo-300 transition">Debugger Passo a Passo de SELECTION</h3>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            Rastreamento completo do subvetor $A = \langle 1, 8, 7, 6, 5, 3, 2, 10, 9 \rangle$ para $i=3$ com pivô no primeiro elemento.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Resultado:</span>
+            <span class="text-emerald-400 font-bold">Elemento 3</span>
+          </div>
+        </div>
+
+        <!-- CARD Q3 -->
+        <div onclick="switchTab('tab-q3')" class="cursor-pointer group bg-darkcard border border-darkborder hover:border-indigo-500/60 p-5 rounded-2xl transition shadow-lg hover:shadow-indigo-500/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Questão 3</span>
+            <i class="ph-bold ph-arrow-right text-slate-500 group-hover:text-indigo-400 transition"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mt-3 group-hover:text-indigo-300 transition">Comparação dos 3 Métodos de Top-$i$</h3>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            Comparação assintótica em função de $n$ e $i$: (a) Ordenação, (b) Max-Heap com $i$ extrações e (c) Seleção linear com partição.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Vencedor:</span>
+            <span class="text-emerald-400 font-bold">Método (c): $\Theta(n + i \lg i)$</span>
+          </div>
+        </div>
+
+        <!-- CARD Q4 -->
+        <div onclick="switchTab('tab-q4')" class="cursor-pointer group bg-darkcard border border-darkborder hover:border-indigo-500/60 p-5 rounded-2xl transition shadow-lg hover:shadow-indigo-500/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Questão 4</span>
+            <i class="ph-bold ph-arrow-right text-slate-500 group-hover:text-indigo-400 transition"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mt-3 group-hover:text-indigo-300 transition">QuickSort Ótimo no Pior Caso</h3>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            Modificação usando a mediana determinística como pivô para eliminar partições degeneradas e assegurar $\Theta(n \lg n)$.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Recorrência:</span>
+            <span class="text-blue-400 font-bold">$2T(n/2) + \Theta(n)$</span>
+          </div>
+        </div>
+
+        <!-- CARD Q5 -->
+        <div onclick="switchTab('tab-q5')" class="cursor-pointer group bg-darkcard border border-darkborder hover:border-indigo-500/60 p-5 rounded-2xl transition shadow-lg hover:shadow-indigo-500/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Questão 5</span>
+            <i class="ph-bold ph-arrow-right text-slate-500 group-hover:text-indigo-400 transition"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mt-3 group-hover:text-indigo-300 transition">Seleção Linear com Caixa-Preta</h3>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            Algoritmo linear simples para selecionar qualquer estatística de ordem $i$ através da redução geométrica $T(n) \le T(n/2) + cn$.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Soma Geométrica:</span>
+            <span class="text-purple-400 font-bold">$cn \sum (1/2)^j = 2cn$</span>
+          </div>
+        </div>
+
+        <!-- CARD PDF LINKS -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950/40 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono font-bold text-slate-400 uppercase">Documentos Compilados</div>
+            <h3 class="text-base font-bold text-white mt-2">Relatórios LaTeX / PDF</h3>
+            <p class="text-xs text-slate-400 mt-1">Acesse as versões completas prontas para impressão e entrega geradas no projeto.</p>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div class="text-xs bg-slate-950 p-2 rounded-lg border border-slate-800 text-slate-300 font-mono">
+              📄 lista07_entrega.pdf (8 pág.)
+            </div>
+            <div class="text-xs bg-slate-950 p-2 rounded-lg border border-slate-800 text-slate-300 font-mono">
+              📘 lista07_estudo.pdf (12 pág.)
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: QUESTÃO 1 (MIN & MAX EM PARES) -->
+    <!-- ========================================================================= -->
+    <div id="tab-q1" class="tab-content hidden space-y-6">
+      
+      <!-- HEADER DO MÓDULO -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-darkcard p-5 rounded-2xl border border-darkborder">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Questão 1</span>
+            <h2 class="text-xl font-bold text-white">Mínimo e Máximo Simultâneos</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Encontrar o $\min$ e o $\max$ realizando no máximo <strong>$3\lfloor n/2 \rfloor$</strong> comparações entre elementos.
+          </p>
+        </div>
+
+        <!-- Indicador de Cota -->
+        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-right">
+          <div class="text-slate-400">Cota Máxima Permitida:</div>
+          <div class="text-amber-400 font-bold text-sm" id="q1-cota-display">3⌊n/2⌋ = --</div>
+        </div>
+      </div>
+
+      <!-- CONTROLES DE ENTRADA -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- CARD CONFIGURAÇÃO DO VETOR -->
+        <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-4">
+          <h3 class="text-sm font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+            <i class="ph-bold ph-sliders"></i> Configurar Vetor de Entrada
+          </h3>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Elementos do Vetor (separados por vírgula):</label>
+            <textarea id="q1-input-array" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none focus:border-indigo-500 resize-none">12, 45, 7, 89, 23, 56, 3, 91, 34</textarea>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="q1LoadPreset('default')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold transition">
+              Padrão (n=9, Ímpar)
+            </button>
+            <button onclick="q1LoadPreset('even')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold transition">
+              Par (n=8)
+            </button>
+            <button onclick="q1RandomArray(9)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold transition">
+              🎲 Aleatório
+            </button>
+          </div>
+
+          <button onclick="q1Initialize()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm text-white shadow-lg transition flex items-center justify-center gap-2">
+            <i class="ph-bold ph-play"></i> Carregar & Reiniciar Simulador
+          </button>
+
+          <!-- Comparativo Teórico -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-2 text-xs">
+            <div class="flex justify-between text-slate-400">
+              <span>Busca Ingênua ($2n - 2$):</span>
+              <span id="q1-naive-count" class="font-mono text-rose-400 font-bold">--</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Algoritmo em Pares ($3\lfloor n/2 \rfloor$):</span>
+              <span id="q1-target-count" class="font-mono text-emerald-400 font-bold">--</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Economia Teórica:</span>
+              <span id="q1-saving-percent" class="font-mono text-indigo-300 font-bold">~25% a menos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ÁREA VISUAL PRINCIPAL DO VETOR -->
+        <div class="lg:col-span-2 bg-darkcard p-5 rounded-2xl border border-darkborder flex flex-col justify-between space-y-5">
+          
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Estado do Vetor e Pares</span>
+              <div class="flex items-center gap-3 text-xs font-mono">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/40 border border-amber-500 inline-block"></span> Par Atual</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/40 border border-emerald-500 inline-block"></span> Mínimo</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500/40 border border-rose-500 inline-block"></span> Máximo</span>
+              </div>
+            </div>
+
+            <!-- Células do Vetor -->
+            <div id="q1-cells-container" class="flex flex-wrap gap-2.5 p-4 bg-slate-950 rounded-xl border border-slate-800/80 min-h-[90px] items-center">
+              <!-- Renderizado via JS -->
+            </div>
+          </div>
+
+          <!-- MENSAGEM DO PASSO ATUAL -->
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-1">
+            <div class="flex items-center justify-between text-xs font-mono text-indigo-400 font-bold">
+              <span id="q1-step-badge">PASSO 0 DE 0</span>
+              <span id="q1-comps-badge">Comparações: 0</span>
+            </div>
+            <p id="q1-step-desc" class="text-sm text-slate-200">
+              Clique em "Próximo Passo" ou "Play" para iniciar a varredura em pares.
+            </p>
+          </div>
+
+          <!-- PLACAR DE VARIÁVEIS MIN E MAX -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] uppercase text-slate-400 font-bold block">Mínimo Corrente</span>
+              <span id="q1-val-min" class="font-mono text-lg font-extrabold text-emerald-400">--</span>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] uppercase text-slate-400 font-bold block">Máximo Corrente</span>
+              <span id="q1-val-max" class="font-mono text-lg font-extrabold text-rose-400">--</span>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] uppercase text-slate-400 font-bold block">Comparações Feitas</span>
+              <span id="q1-val-comps" class="font-mono text-lg font-extrabold text-amber-400">0</span>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <span class="text-[11px] uppercase text-slate-400 font-bold block">Status da Cota</span>
+              <span id="q1-val-status" class="font-mono text-xs font-bold text-emerald-400 leading-6">DENTRO DO LIMITE</span>
+            </div>
+          </div>
+
+          <!-- CONTROLES DO DEBUGGER -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+            <div class="flex items-center gap-2">
+              <button onclick="q1StepPrev()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Passo Anterior">
+                <i class="ph-bold ph-skip-back text-lg"></i>
+              </button>
+              <button onclick="q1TogglePlay()" id="q1-play-btn" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-bold text-white text-xs flex items-center gap-1.5 transition">
+                <i class="ph-bold ph-play"></i> Play
+              </button>
+              <button onclick="q1StepNext()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Próximo Passo">
+                <i class="ph-bold ph-skip-forward text-lg"></i>
+              </button>
+              <button onclick="q1Reset()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition" title="Reiniciar">
+                <i class="ph-bold ph-arrow-counter-clockwise text-lg"></i>
+              </button>
+            </div>
+
+            <!-- Slider de Velocidade -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400 font-mono">Velocidade:</span>
+              <input type="range" id="q1-speed" min="200" max="1600" value="700" step="100" class="w-24 accent-indigo-500">
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: QUESTÃO 2 (DEBUGGER DO SELECTION) -->
+    <!-- ========================================================================= -->
+    <div id="tab-q2" class="tab-content hidden space-y-6">
+      
+      <!-- HEADER DO MÓDULO -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-darkcard p-5 rounded-2xl border border-darkborder">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Questão 2</span>
+            <h2 class="text-xl font-bold text-white">Debugger Passo a Passo: Algoritmo SELECTION</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Encontrar a $i$-ésima menor estatística com pivô fixo no primeiro elemento $A[p]$. Vetor original: 
+            <strong class="font-mono text-indigo-300">A = ⟨1, 8, 7, 6, 5, 3, 2, 10, 9⟩</strong> para <strong>$i = 3$</strong>.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-right">
+          <div class="text-slate-400">Objetivo da Busca:</div>
+          <div class="text-emerald-400 font-bold text-sm">3º menor elemento ($i = 3$)</div>
+        </div>
+      </div>
+
+      <!-- PAINEL PRINCIPAL: ESQUERDA = VETOR + STATUS | DIREITA = PSEUDOCÓDIGO -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- COLUNA ESQUERDA (7 COLS): VISUALIZAÇÃO DO VETOR + CONTROLES + CALL STACK -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- CARD DO VETOR -->
+          <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-4">
+            
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Vetor Ativo $A[1 \dots n]$</span>
+              <div class="flex items-center gap-2 text-[11px] font-mono">
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span> Pivô ($x$)</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> $\le x$</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-indigo-500 inline-block"></span> $> x$</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-700 inline-block"></span> Inativo</span>
+              </div>
+            </div>
+
+            <!-- Células do Vetor -->
+            <div id="q2-cells-container" class="flex flex-wrap gap-2 p-4 bg-slate-950 rounded-xl border border-slate-800 min-h-[110px] items-center justify-center">
+              <!-- Renderizado via JS -->
+            </div>
+
+            <!-- Painel de Ponteiros e Variáveis Locais -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+              <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+                <span class="text-[10px] uppercase text-slate-400 block">Subvetor Ativo</span>
+                <span id="q2-var-range" class="text-white font-bold text-sm">p=1, r=9</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+                <span class="text-[10px] uppercase text-slate-400 block">Pivô ($x = A[p]$)</span>
+                <span id="q2-var-pivot" class="text-amber-400 font-bold text-sm">A[1] = 1</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+                <span class="text-[10px] uppercase text-slate-400 block">Fronteira $m$ / Scan $j$</span>
+                <span id="q2-var-pointers" class="text-indigo-300 font-bold text-sm">m=1, j=2</span>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+                <span class="text-[10px] uppercase text-slate-400 block">Posto $k$ vs Busca $i$</span>
+                <span id="q2-var-rank" class="text-emerald-400 font-bold text-sm">k=?, i=3</span>
+              </div>
+            </div>
+
+            <!-- MENSAGEM DO PASSO ATUAL -->
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
+              <div class="flex items-center justify-between text-xs font-mono text-amber-400 font-bold mb-1">
+                <span id="q2-step-badge">CHAMADA 1 · PASSO 1</span>
+                <span id="q2-action-badge">VARREDURA</span>
+              </div>
+              <p id="q2-step-desc" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                Início do algoritmo. Pivô escolhido: A[1] = 1.
+              </p>
+            </div>
+
+            <!-- CONTROLES DO DEBUGGER -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <div class="flex items-center gap-2">
+                <button onclick="q2StepPrev()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Passo Anterior">
+                  <i class="ph-bold ph-skip-back text-lg"></i>
+                </button>
+                <button onclick="q2TogglePlay()" id="q2-play-btn" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-bold text-white text-xs flex items-center gap-1.5 transition">
+                  <i class="ph-bold ph-play"></i> Play
+                </button>
+                <button onclick="q2StepNext()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Próximo Passo">
+                  <i class="ph-bold ph-skip-forward text-lg"></i>
+                </button>
+                <button onclick="q2Reset()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition" title="Reiniciar">
+                  <i class="ph-bold ph-arrow-counter-clockwise text-lg"></i>
+                </button>
+              </div>
+
+              <!-- Slider de Velocidade -->
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 font-mono">Velocidade:</span>
+                <input type="range" id="q2-speed" min="200" max="1800" value="800" step="100" class="w-24 accent-indigo-500">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- HISTÓRICO DE CHAMADAS (CALL STACK) -->
+          <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-3">
+            <h3 class="text-xs uppercase text-slate-400 font-bold tracking-wider flex items-center gap-2">
+              <i class="ph-bold ph-stack"></i> Pilha de Chamadas Recursivas & Histórico
+            </h3>
+            <div id="q2-call-stack" class="space-y-2">
+              <!-- Renderizado via JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA DIREITA (5 COLS): PSEUDOCÓDIGO ILUMINADO -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Pseudocódigo em Execução</span>
+              <span class="text-xs font-mono text-indigo-400">SELECTION + PARTITION</span>
+            </div>
+
+            <!-- Bloco de Código com Linhas Ativas -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-0.5 overflow-x-auto custom-scrollbar">
+              <div id="q2-code-1" class="code-line"><span class="line-num">1</span><span>SELECTION(A, p, r, i):</span></div>
+              <div id="q2-code-2" class="code-line"><span class="line-num">2</span><span>  se p == r então retorne A[p]</span></div>
+              <div id="q2-code-3" class="code-line"><span class="line-num">3</span><span>  x <- A[p]; m <- p</span></div>
+              <div id="q2-code-4" class="code-line"><span class="line-num">4</span><span>  para j <- p + 1 até r faça:</span></div>
+              <div id="q2-code-5" class="code-line"><span class="line-num">5</span><span>    se A[j] <= x então:</span></div>
+              <div id="q2-code-6" class="code-line"><span class="line-num">6</span><span>      m <- m + 1; troca(A[m], A[j])</span></div>
+              <div id="q2-code-7" class="code-line"><span class="line-num">7</span><span>  troca(A[p], A[m]); q <- m</span></div>
+              <div id="q2-code-8" class="code-line"><span class="line-num">8</span><span>  k <- q - p + 1  // rank do pivô</span></div>
+              <div id="q2-code-9" class="code-line"><span class="line-num">9</span><span>  se i == k: retorne A[q]  // achou!</span></div>
+              <div id="q2-code-10" class="code-line"><span class="line-num">10</span><span>  senão se i < k:</span></div>
+              <div id="q2-code-11" class="code-line"><span class="line-num">11</span><span>    retorne SELECTION(A, p, q - 1, i)</span></div>
+              <div id="q2-code-12" class="code-line"><span class="line-num">12</span><span>  senão:</span></div>
+              <div id="q2-code-13" class="code-line"><span class="line-num">13</span><span>    retorne SELECTION(A, q + 1, r, i - k)</span></div>
+            </div>
+
+            <!-- Explicação do Invariante -->
+            <div class="bg-indigo-950/30 border border-indigo-900/40 p-3 rounded-xl text-xs text-slate-300 space-y-1">
+              <strong class="text-indigo-400 block font-semibold">Por que a busca à direita vira $i - k$?</strong>
+              <p class="leading-relaxed">
+                Ao descartar a partição esquerda e o próprio pivô, eliminamos exatamente $k$ chaves que são estritamente menores que todos os elementos da partição direita. Portanto, o elemento de posto $i$ global equivale ao de posto $i - k$ no novo subvetor.
+              </p>
+            </div>
+          </div>
+
+          <!-- TABELA RESUMO FINAL -->
+          <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-3">
+            <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Gabarito Consolidado</span>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400">
+                    <th class="py-1.5">Etapa</th>
+                    <th class="py-1.5">Pivô</th>
+                    <th class="py-1.5">$q$</th>
+                    <th class="py-1.5">$k$</th>
+                    <th class="py-1.5">$i$</th>
+                    <th class="py-1.5">Ação</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                  <tr><td class="py-1">1</td><td>A[1]=1</td><td>1</td><td>1</td><td>3</td><td class="text-amber-400">Direita (i=2)</td></tr>
+                  <tr><td class="py-1">2</td><td>A[2]=8</td><td>7</td><td>6</td><td>2</td><td class="text-indigo-400">Esquerda (i=2)</td></tr>
+                  <tr><td class="py-1">3</td><td>A[2]=2</td><td>2</td><td>1</td><td>2</td><td class="text-amber-400">Direita (i=1)</td></tr>
+                  <tr><td class="py-1">4</td><td>A[3]=7</td><td>6</td><td>4</td><td>1</td><td class="text-indigo-400">Esquerda (i=1)</td></tr>
+                  <tr class="bg-emerald-950/30 font-bold text-emerald-400"><td class="py-1">5</td><td>A[3]=3</td><td>3</td><td>1</td><td>1</td><td>Retorna 3</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: QUESTÃO 3 (COMPARADOR DOS 3 MÉTODOS) -->
+    <!-- ========================================================================= -->
+    <div id="tab-q3" class="tab-content hidden space-y-6">
+      
+      <!-- HEADER DO MÓDULO -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-darkcard p-5 rounded-2xl border border-darkborder">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Questão 3</span>
+            <h2 class="text-xl font-bold text-white">Comparador de Complexidade dos 3 Métodos</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Imprimir em <strong>ordem crescente</strong> os $i$ maiores elementos de $A[1 \dots n]$.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-right">
+          <div class="text-slate-400">Relação Assintótica Geral:</div>
+          <div class="text-emerald-400 font-bold text-sm">$\Theta(n + i \lg i) \le \Theta(n + i \lg n) \le \Theta(n \lg n)$</div>
+        </div>
+      </div>
+
+      <!-- SLIDERS E CONFIGURAÇÃO DE N E I -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- CARD CONTROLES -->
+        <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-5">
+          <h3 class="text-xs uppercase text-slate-400 font-bold tracking-wider flex items-center gap-2">
+            <i class="ph-bold ph-faders"></i> Parâmetros de Entrada ($n$ e $i$)
+          </h3>
+
+          <!-- Slider N -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-slate-400">Tamanho do Vetor ($n$):</span>
+              <span id="q3-val-n" class="text-white font-bold">10.000</span>
+            </div>
+            <input type="range" id="q3-slider-n" min="100" max="100000" value="10000" step="500" oninput="q3Update()" class="w-full accent-indigo-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>100</span>
+              <span>50.000</span>
+              <span>100.000</span>
+            </div>
+          </div>
+
+          <!-- Slider I -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-slate-400">Quantidade de Maiores ($i$):</span>
+              <span id="q3-val-i" class="text-emerald-400 font-bold">50</span>
+            </div>
+            <input type="range" id="q3-slider-i" min="1" max="10000" value="50" step="1" oninput="q3Update()" class="w-full accent-emerald-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>1</span>
+              <span>n/2</span>
+              <span>n</span>
+            </div>
+          </div>
+
+          <!-- Predefinições de regimes de i -->
+          <div class="space-y-2 pt-2 border-t border-slate-800">
+            <span class="text-[11px] uppercase text-slate-400 font-bold block">Testar Regimes Assintóticos de $i$:</span>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button onclick="q3SetPreset('constant')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition text-left">
+                $i = 1$ ($O(1)$)
+              </button>
+              <button onclick="q3SetPreset('sqrt')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition text-left">
+                $i = \lfloor\sqrt{n}\rfloor$
+              </button>
+              <button onclick="q3SetPreset('logn')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition text-left">
+                $i = \lfloor n/\lg n\rfloor$
+              </button>
+              <button onclick="q3SetPreset('half')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition text-left">
+                $i = \lfloor n/2\rfloor$
+              </button>
+              <button onclick="q3SetPreset('all')" class="col-span-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition text-center">
+                $i = n$ (Todos os Elementos)
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- GRÁFICO DINÂMICO E COMPARAÇÃO VISUAL -->
+        <div class="lg:col-span-2 bg-darkcard p-5 rounded-2xl border border-darkborder flex flex-col justify-between space-y-5">
+          
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Curvas de Complexidade em Função de $i \in [1, n]$</span>
+              <div class="flex items-center gap-3 text-xs font-mono">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Método (a): $\Theta(n \lg n)$</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-500 inline-block"></span> Método (b): $\Theta(n + i \lg n)$</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Método (c): $\Theta(n + i \lg i)$</span>
+              </div>
+            </div>
+
+            <!-- ÁREA DO GRÁFICO SVG DINÂMICO -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <svg id="q3-chart-svg" viewBox="0 0 600 240" class="w-full h-56">
+                <!-- Desenhado via JS -->
+              </svg>
+            </div>
+          </div>
+
+          <!-- PLACAR DE OPERAÇÕES COMPUTADAS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-rose-900/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-rose-400 uppercase">(a) Ordenação Total</span>
+                <i class="ph-bold ph-sort-ascending text-rose-400"></i>
+              </div>
+              <div id="q3-ops-a" class="font-mono text-lg font-bold text-white mt-1">--</div>
+              <span class="text-[11px] text-slate-400 block mt-0.5">$\Theta(n \lg n)$ (independente de $i$)</span>
+            </div>
+
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-blue-900/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-blue-400 uppercase">(b) Max-Heap</span>
+                <i class="ph-bold ph-tree text-blue-400"></i>
+              </div>
+              <div id="q3-ops-b" class="font-mono text-lg font-bold text-white mt-1">--</div>
+              <span class="text-[11px] text-slate-400 block mt-0.5">$\Theta(n + i \lg n)$</span>
+            </div>
+
+            <div class="bg-slate-950 p-3.5 rounded-xl border border-emerald-900/40 bg-emerald-950/10">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-400 uppercase">(c) Seleção + Partição</span>
+                <i class="ph-bold ph-check-circle text-emerald-400"></i>
+              </div>
+              <div id="q3-ops-c" class="font-mono text-lg font-bold text-emerald-300 mt-1">--</div>
+              <span class="text-[11px] text-emerald-400/80 block mt-0.5">$\Theta(n + i \lg i)$ (Ótimo!)</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- TABELA COMPARATIVA DETALHADA -->
+      <div class="bg-darkcard p-5 rounded-2xl border border-darkborder space-y-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="ph-bold ph-table"></i> Comparação nos Regimes Assintóticos Extremos
+        </h3>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400">
+                <th class="py-2">Regime de $i$</th>
+                <th class="py-2">Método (a): Ordenar Todo</th>
+                <th class="py-2">Método (b): Max-Heap ($i$ extrações)</th>
+                <th class="py-2">Método (c): Seleção + Ordenar $i$</th>
+                <th class="py-2">Veredito Teórico</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 text-slate-300">
+              <tr>
+                <td class="py-2 font-bold text-white">$i = O(1)$</td>
+                <td class="text-rose-400">$\Theta(n \lg n)$</td>
+                <td class="text-emerald-400">$\Theta(n)$</td>
+                <td class="text-emerald-400">$\Theta(n)$</td>
+                <td>(b) e (c) são estritamente superiores ao método (a).</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-bold text-white">$i = \Theta(\sqrt{n})$</td>
+                <td class="text-rose-400">$\Theta(n \lg n)$</td>
+                <td class="text-emerald-400">$\Theta(n + \sqrt{n}\lg n) = \Theta(n)$</td>
+                <td class="text-emerald-400">$\Theta(n + \sqrt{n}\lg\sqrt{n}) = \Theta(n)$</td>
+                <td>(b) e (c) permanecem lineares $\Theta(n)$.</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-bold text-white">$i = \Theta(n / \lg n)$</td>
+                <td class="text-rose-400">$\Theta(n \lg n)$</td>
+                <td class="text-emerald-400">$\Theta(n)$</td>
+                <td class="text-emerald-400">$\Theta(n)$</td>
+                <td>Fronteira onde o custo de ordenação parcial é dominado por $\Theta(n)$.</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-bold text-white">$i = \Theta(n)$ (ex: $n/2$)</td>
+                <td>$\Theta(n \lg n)$</td>
+                <td>$\Theta(n \lg n)$</td>
+                <td class="text-emerald-400">$\Theta(n \lg n)$ (menor constante)</td>
+                <td>Empate assintótico; (c) possui menor constante no termo logarítmico.</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-bold text-white">$i = n$</td>
+                <td>$\Theta(n \lg n)$</td>
+                <td>$\Theta(n \lg n)$</td>
+                <td>$\Theta(n \lg n)$</td>
+                <td>Todos equivalem a uma ordenação completa do vetor.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: QUESTÃO 4 (QUICKSORT ÓTIMO NO PIOR CASO) -->
+    <!-- ========================================================================= -->
+    <div id="tab-q4" class="tab-content hidden space-y-6">
+      
+      <!-- HEADER DO MÓDULO -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-darkcard p-5 rounded-2xl border border-darkborder">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Questão 4</span>
+            <h2 class="text-xl font-bold text-white">QuickSort com Tempo $\Theta(n \lg n)$ no Pior Caso</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Como a escolha da <strong>mediana exata</strong> elimina o pior caso $\Theta(n^2)$ e garante balanceamento perfeito.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-right">
+          <div class="text-slate-400">Caso 2 do Teorema Mestre:</div>
+          <div class="text-blue-400 font-bold text-sm">$T(n) = 2T(n/2) + \Theta(n) \implies \Theta(n \lg n)$</div>
+        </div>
+      </div>
+
+      <!-- COMPARAÇÃO LADO A LADO DAS ÁRVORES DE RECURSÃO -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- CARD ESQUERDA: QUICKSORT CLÁSSICO DEGENERADO -->
+        <div class="bg-darkcard p-5 rounded-2xl border border-rose-950/60 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">QuickSort Clássico (Pior Caso)</span>
+            <span class="text-xs font-mono text-rose-400 font-bold">Altura = $n$</span>
+          </div>
+
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Se o pivô for sempre o menor ou maior elemento (ex: vetor ordenado), os subproblemas ficam com tamanhos $0$ e $n-1$.
+          </p>
+
+          <!-- Árvore Degenerada em SVG -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center">
+            <svg viewBox="0 0 320 220" class="w-full max-w-[280px] h-52">
+              <!-- Nível 1 -->
+              <circle cx="160" cy="25" r="16" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+              <text x="160" y="29" fill="#f8fafc" font-size="11" font-family="JetBrains Mono" text-anchor="middle">n</text>
+              
+              <line x1="160" y1="41" x2="160" y2="70" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3"/>
+              
+              <!-- Nível 2 -->
+              <circle cx="160" cy="85" r="15" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+              <text x="160" y="89" fill="#f8fafc" font-size="10" font-family="JetBrains Mono" text-anchor="middle">n-1</text>
+              
+              <line x1="160" y1="100" x2="160" y2="128" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3"/>
+              
+              <!-- Nível 3 -->
+              <circle cx="160" cy="142" r="14" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+              <text x="160" y="146" fill="#f8fafc" font-size="9" font-family="JetBrains Mono" text-anchor="middle">n-2</text>
+              
+              <line x1="160" y1="156" x2="160" y2="182" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2"/>
+              <text x="160" y="200" fill="#64748b" font-size="10" font-family="JetBrains Mono" text-anchor="middle">... 1 (Folha)</text>
+              
+              <!-- Legenda lateral de custo -->
+              <text x="215" y="29" fill="#fca5a5" font-size="10" font-family="JetBrains Mono">c · n</text>
+              <text x="215" y="89" fill="#fca5a5" font-size="10" font-family="JetBrains Mono">c(n - 1)</text>
+              <text x="215" y="146" fill="#fca5a5" font-size="10" font-family="JetBrains Mono">c(n - 2)</text>
+            </svg>
+          </div>
+
+          <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl font-mono text-xs text-rose-300">
+            $$T(n) = T(n-1) + \Theta(n) \implies T(n) = \sum_{k=1}^n \Theta(k) = \mathbf{\Theta(n^2)}$$
+          </div>
+        </div>
+
+        <!-- CARD DIREITA: QUICKSORT MODIFICADO (MEDIANA DAS MEDIANAS) -->
+        <div class="bg-darkcard p-5 rounded-2xl border border-blue-950/60 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">QuickSort Ótimo com Mediana</span>
+            <span class="text-xs font-mono text-emerald-400 font-bold">Altura = $\lg n$</span>
+          </div>
+
+          <p class="text-xs text-slate-400 leading-relaxed">
+            A sub-rotina linear determinística <code class="text-blue-300">SELECT</code> seleciona a mediana exata como pivô, dividindo sempre em dois subproblemas $\le n/2$.
+          </p>
+
+          <!-- Árvore Perfeitamente Balanceada em SVG -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center">
+            <svg viewBox="0 0 320 220" class="w-full max-w-[280px] h-52">
+              <!-- Raiz -->
+              <circle cx="160" cy="25" r="16" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+              <text x="160" y="29" fill="#f8fafc" font-size="11" font-family="JetBrains Mono" text-anchor="middle">n</text>
+              
+              <!-- Arestas nível 1 -->
+              <line x1="148" y1="36" x2="95" y2="75" stroke="#3b82f6" stroke-width="1.5"/>
+              <line x1="172" y1="36" x2="225" y2="75" stroke="#3b82f6" stroke-width="1.5"/>
+              
+              <!-- Nível 2 -->
+              <circle cx="95" cy="85" r="14" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="95" y="89" fill="#f8fafc" font-size="10" font-family="JetBrains Mono" text-anchor="middle">n/2</text>
+              
+              <circle cx="225" cy="85" r="14" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="225" y="89" fill="#f8fafc" font-size="10" font-family="JetBrains Mono" text-anchor="middle">n/2</text>
+              
+              <!-- Arestas nível 2 -->
+              <line x1="88" y1="97" x2="55" y2="135" stroke="#3b82f6" stroke-width="1.2"/>
+              <line x1="102" y1="97" x2="135" y2="135" stroke="#3b82f6" stroke-width="1.2"/>
+              <line x1="218" y1="97" x2="185" y2="135" stroke="#3b82f6" stroke-width="1.2"/>
+              <line x1="232" y1="97" x2="265" y2="135" stroke="#3b82f6" stroke-width="1.2"/>
+              
+              <!-- Nível 3 -->
+              <circle cx="55" cy="145" r="12" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+              <text x="55" y="148" fill="#f8fafc" font-size="8" font-family="JetBrains Mono" text-anchor="middle">n/4</text>
+              <circle cx="135" cy="145" r="12" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+              <text x="135" y="148" fill="#f8fafc" font-size="8" font-family="JetBrains Mono" text-anchor="middle">n/4</text>
+              <circle cx="185" cy="145" r="12" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+              <text x="185" y="148" fill="#f8fafc" font-size="8" font-family="JetBrains Mono" text-anchor="middle">n/4</text>
+              <circle cx="265" cy="145" r="12" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+              <text x="265" y="148" fill="#f8fafc" font-size="8" font-family="JetBrains Mono" text-anchor="middle">n/4</text>
+              
+              <!-- Custo por nível -->
+              <text x="295" y="29" fill="#93c5fd" font-size="10" font-family="JetBrains Mono">c · n</text>
+              <text x="295" y="89" fill="#93c5fd" font-size="10" font-family="JetBrains Mono">c · n</text>
+              <text x="295" y="148" fill="#93c5fd" font-size="10" font-family="JetBrains Mono">c · n</text>
+              
+              <text x="160" y="200" fill="#10b981" font-size="11" font-family="JetBrains Mono" font-weight="bold" text-anchor="middle">lg(n) níveis de custo cn = cn lg(n)</text>
+            </svg>
+          </div>
+
+          <div class="bg-blue-950/20 border border-blue-900/40 p-3 rounded-xl font-mono text-xs text-blue-300">
+            $$T(n) \le 2\,T(n/2) + \Theta(n) \implies \mathbf{T(n) \in \Theta(n \lg n)}$$
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DISCUSSÃO PRÁTICA: POR QUE AS BIBLIOTECAS USAM INTROSORT? -->
+      <div class="bg-darkcard p-6 rounded-2xl border border-darkborder space-y-3">
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ph-lightbulb text-amber-400 text-xl"></i>
+          <h3 class="text-base font-bold text-white">Insight da Prática: Por que o C++ usa Introsort e não o SELECT?</h3>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Embora o algoritmo com <code class="text-indigo-400">SELECT</code> seja assintoticamente perfeito ($\Theta(n \lg n)$ no pior caso), ele carrega uma constante multiplicativa alta devido à divisão em blocos de 5 elementos e chamadas recursivas adicionais.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <strong class="text-white block mb-1">1. QuickSort Rápido</strong>
+            <p class="text-slate-400">Inicia rodando o QuickSort convencional (com pivô mediano de 3), que é imbatível no caso médio devido à localidade de cache.</p>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <strong class="text-amber-400 block mb-1">2. Monitor de Profundidade</strong>
+            <p class="text-slate-400">Monitora o nível de recursão. Se ultrapassar $2\lfloor\lg n\rfloor$, detecta que o caso médio falhou e o pior caso se aproxima.</p>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <strong class="text-emerald-400 block mb-1">3. Fallback para HeapSort</strong>
+            <p class="text-slate-400">Comuta automaticamente para o HeapSort, que é $\Theta(n \lg n)$ garantido in-place, salvando a execução!</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: QUESTÃO 5 (SELEÇÃO LINEAR COM CAIXA-PRETA) -->
+    <!-- ========================================================================= -->
+    <div id="tab-q5" class="tab-content hidden space-y-6">
+      
+      <!-- HEADER DO MÓDULO -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-darkcard p-5 rounded-2xl border border-darkborder">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Questão 5</span>
+            <h2 class="text-xl font-bold text-white">Algoritmo Linear Simples com Caixa-Preta de Mediana</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Redução geométrica contínua: $T(n) \le T(n/2) + cn = \Theta(n)$ para qualquer estatística de ordem $i$.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl font-mono text-xs text-right">
+          <div class="text-slate-400">Soma da Série Geométrica:</div>
+          <div class="text-purple-400 font-bold text-sm">$\sum_{j=0}^{\infty} (1/2)^j = 2 \implies 2cn = \Theta(n)$</div>
+        </div>
+      </div>
+
+      <!-- VISUALIZADOR DA REDUÇÃO GEOMÉTRICA (PRUNE-AND-SEARCH) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- CARD ESQUERDA: SIMULADOR VISUAL DE DESCARTE (7 COLS) -->
+        <div class="lg:col-span-7 bg-darkcard p-5 rounded-2xl border border-darkborder space-y-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Visualização da Redução do Subproblema</span>
+            <span class="text-xs font-mono text-purple-300 font-bold">Apenas 1 Chamada por Nível</span>
+          </div>
+
+          <!-- Barras de Tamanho Decrescente -->
+          <div class="space-y-3 p-4 bg-slate-950 rounded-xl border border-slate-800">
+            
+            <!-- Nível 0: n -->
+            <div>
+              <div class="flex justify-between text-xs font-mono text-slate-400 mb-1">
+                <span>Nível 0 (Entrada Inicial)</span>
+                <span>Tamanho: $n$ | Custo: $cn$</span>
+              </div>
+              <div class="w-full bg-slate-800 h-6 rounded-lg overflow-hidden flex">
+                <div class="w-1/2 bg-purple-600 h-full flex items-center justify-center text-[10px] font-mono text-white font-bold">Subproblema Escolhido (n/2)</div>
+                <div class="w-1/2 bg-slate-700/60 h-full flex items-center justify-center text-[10px] font-mono text-slate-400">Metade Descartada (Podada)</div>
+              </div>
+            </div>
+
+            <!-- Nível 1: n/2 -->
+            <div>
+              <div class="flex justify-between text-xs font-mono text-slate-400 mb-1">
+                <span>Nível 1 (Recursão 1)</span>
+                <span>Tamanho: $n/2$ | Custo: $cn/2$</span>
+              </div>
+              <div class="w-full bg-slate-800 h-6 rounded-lg overflow-hidden flex">
+                <div class="w-1/4 bg-purple-600 h-full flex items-center justify-center text-[10px] font-mono text-white font-bold">n/4</div>
+                <div class="w-1/4 bg-slate-700/60 h-full flex items-center justify-center text-[10px] font-mono text-slate-400">Podada</div>
+                <div class="w-1/2 bg-transparent h-full"></div>
+              </div>
+            </div>
+
+            <!-- Nível 2: n/4 -->
+            <div>
+              <div class="flex justify-between text-xs font-mono text-slate-400 mb-1">
+                <span>Nível 2 (Recursão 2)</span>
+                <span>Tamanho: $n/4$ | Custo: $cn/4$</span>
+              </div>
+              <div class="w-full bg-slate-800 h-6 rounded-lg overflow-hidden flex">
+                <div class="w-[12.5%] bg-purple-600 h-full flex items-center justify-center text-[9px] font-mono text-white">n/8</div>
+                <div class="w-[12.5%] bg-slate-700/60 h-full flex items-center justify-center text-[9px] font-mono text-slate-400">Podada</div>
+                <div class="w-3/4 bg-transparent h-full"></div>
+              </div>
+            </div>
+
+            <!-- Nível 3: n/8 -->
+            <div>
+              <div class="flex justify-between text-xs font-mono text-slate-400 mb-1">
+                <span>Nível 3 (Recursão 3)</span>
+                <span>Tamanho: $n/8$ | Custo: $cn/8$</span>
+              </div>
+              <div class="w-full bg-slate-800 h-6 rounded-lg overflow-hidden flex">
+                <div class="w-[6.25%] bg-purple-600 h-full"></div>
+                <div class="w-[6.25%] bg-slate-700/60 h-full"></div>
+                <div class="w-[87.5%] bg-transparent h-full"></div>
+              </div>
+            </div>
+
+            <div class="text-center pt-2 text-xs font-mono text-purple-400">
+              $$\text{Trabalho Total} = cn \left( 1 + \frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \dots \right) = cn \cdot 2 = \mathbf{2cn} \in \mathbf{\Theta(n)}$$
+            </div>
+          </div>
+
+          <div class="bg-indigo-950/20 border border-indigo-900/40 p-4 rounded-xl text-xs text-slate-300 space-y-2">
+            <strong class="text-indigo-300 font-semibold block">Diferença Fundamental entre QuickSort e Seleção:</strong>
+            <p class="leading-relaxed">
+              O QuickSort precisa conquistar <strong>ambos os lados</strong> ($a = 2 \implies 2T(n/2) + cn$), gerando uma soma de $cn$ em cada um dos $\lg n$ níveis, totalizando $cn \lg n$.
+            </p>
+            <p class="leading-relaxed">
+              A Seleção precisa explorar <strong>apenas um dos lados</strong> ($a = 1 \implies T(n/2) + cn$), gerando uma progressão geométrica decrescente que converge para uma constante vezes $n$, sem fator logarítmico!
+            </p>
+          </div>
+
+        </div>
+
+        <!-- CARD DIREITA: DEMONSTRAÇÕES FORMAIS (5 COLS) -->
+        <div class="lg:col-span-5 bg-darkcard p-5 rounded-2xl border border-darkborder space-y-4">
+          <span class="text-xs uppercase text-slate-400 font-bold tracking-wider">Dupla Prova Matemática</span>
+
+          <!-- Prova 1: Expansão -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-purple-400 font-bold">
+              <span>MÉTODO 1: EXPANSÃO DE SÉRIE</span>
+              <i class="ph-bold ph-sigma"></i>
+            </div>
+            <div class="text-xs text-slate-300 space-y-1 font-mono leading-relaxed">
+              <div>$T(n) \le T(n/2) + cn$</div>
+              <div>$T(n) \le cn + c(n/2) + c(n/4) + \dots + T(1)$</div>
+              <div>$T(n) \le cn \sum_{j=0}^{\infty} (1/2)^j$</div>
+              <div class="pt-1 text-emerald-400 font-bold">$\sum_{j=0}^{\infty} (1/2)^j = \frac{1}{1 - 1/2} = 2 \implies T(n) \le 2cn = O(n)$</div>
+            </div>
+          </div>
+
+          <!-- Prova 2: Teorema Mestre -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-blue-400 font-bold">
+              <span>MÉTODO 2: TEOREMA MESTRE</span>
+              <i class="ph-bold ph-scales"></i>
+            </div>
+            <div class="text-xs text-slate-300 space-y-1 font-mono leading-relaxed">
+              <div>$a = 1, \; b = 2, \; f(n) = cn$</div>
+              <div>$n^{\log_b a} = n^{\log_2 1} = n^0 = 1$</div>
+              <div>$f(n) = cn \in \Omega(n^{0 + 1}) \implies$ Caso 3!</div>
+              <div class="text-slate-400">Regularidade: $a f(n/b) = cn/2 \le d(cn)$ com $d = 1/2 < 1$.</div>
+              <div class="pt-1 text-emerald-400 font-bold">Pelo Caso 3: $T(n) \in \Theta(f(n)) = \Theta(n)$</div>
+            </div>
+          </div>
+
+          <!-- Conclusão em Caixa -->
+          <div class="bg-emerald-950/20 border border-emerald-900/40 p-3.5 rounded-xl text-center">
+            <span class="text-xs uppercase text-slate-400 font-bold block mb-1">Resultado Final Provado</span>
+            <div class="font-mono text-emerald-400 font-extrabold text-base">
+              $$\boxed{T(n) \in \Theta(n) \quad \forall\, i \in \{1, \dots, n\}}$$
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-darkborder bg-slate-950 py-4 px-6 text-center text-xs text-slate-500 font-mono">
+    Universidade Federal de Uberlândia · Faculdade de Engenharia Elétrica · Projeto e Análise de Algoritmos (Prof. Felipe A. Louza) · Arthur Pires Lopes (12221EEL001)
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- TAB SWITCHER LOGIC ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-400');
+      });
+      
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.remove('hidden');
+      
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+      }
+
+      // Se mudar para a aba 1, garante inicialização
+      if (tabId === 'tab-q1' && q1Steps.length === 0) {
+        q1Initialize();
+      }
+      // Se mudar para a aba 2, garante inicialização
+      if (tabId === 'tab-q2' && q2Steps.length === 0) {
+        q2Initialize();
+      }
+      // Se mudar para a aba 3, desenha gráfico
+      if (tabId === 'tab-q3') {
+        q3Update();
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 1: JAVASCRIPT ENGINE (MIN & MAX EM PARES)
+    // =========================================================================
+    let q1Array = [12, 45, 7, 89, 23, 56, 3, 91, 34];
+    let q1Steps = [];
+    let q1CurrentStepIdx = 0;
+    let q1Timer = null;
+
+    function q1LoadPreset(type) {
+      if (type === 'default') {
+        q1Array = [12, 45, 7, 89, 23, 56, 3, 91, 34];
+      } else if (type === 'even') {
+        q1Array = [25, 14, 99, 32, 67, 8, 43, 51];
+      }
+      document.getElementById('q1-input-array').value = q1Array.join(', ');
+      q1Initialize();
+    }
+
+    function q1RandomArray(n) {
+      q1Array = [];
+      for (let i = 0; i < n; i++) {
+        q1Array.push(Math.floor(Math.random() * 95) + 3);
+      }
+      document.getElementById('q1-input-array').value = q1Array.join(', ');
+      q1Initialize();
+    }
+
+    function q1ParseInput() {
+      const raw = document.getElementById('q1-input-array').value;
+      const parts = raw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+      if (parts.length >= 2) {
+        q1Array = parts;
+      }
+    }
+
+    function q1BuildSteps() {
+      q1Steps = [];
+      const n = q1Array.length;
+      let minVal = null;
+      let maxVal = null;
+      let comps = 0;
+
+      // Passo Inicial (Estado 0)
+      q1Steps.push({
+        pairIndices: [],
+        minVal: null,
+        maxVal: null,
+        comps: 0,
+        desc: `Início do algoritmo. Vetor com n = ${n} elementos (${n % 2 !== 0 ? 'ÍMPAR' : 'PAR'}).`
+      });
+
+      let startIdx = 0;
+
+      if (n % 2 !== 0) {
+        // Ímpar: min = max = A[0]
+        minVal = q1Array[0];
+        maxVal = q1Array[0];
+        startIdx = 1;
+        q1Steps.push({
+          pairIndices: [0],
+          minVal: minVal,
+          maxVal: maxVal,
+          comps: comps,
+          desc: `n é Ímpar: Inicializa min = max = A[1] = ${minVal} sem nenhuma comparação entre chaves.`
+        });
+      } else {
+        // Par: compara A[0] e A[1]
+        comps++;
+        if (q1Array[0] <= q1Array[1]) {
+          minVal = q1Array[0];
+          maxVal = q1Array[1];
+        } else {
+          minVal = q1Array[1];
+          maxVal = q1Array[0];
+        }
+        startIdx = 2;
+        q1Steps.push({
+          pairIndices: [0, 1],
+          minVal: minVal,
+          maxVal: maxVal,
+          comps: comps,
+          desc: `n é Par: Compara A[1]=${q1Array[0]} com A[2]=${q1Array[1]} (1 comparação). min = ${minVal}, max = ${maxVal}.`
+        });
+      }
+
+      // Laço de pares
+      for (let i = startIdx; i < n; i += 2) {
+        const a = q1Array[i];
+        const b = q1Array[i + 1];
+
+        // Comparação 1 do par: a com b
+        comps++;
+        let localMin, localMax;
+        if (a <= b) {
+          localMin = a;
+          localMax = b;
+        } else {
+          localMin = b;
+          localMax = a;
+        }
+        q1Steps.push({
+          pairIndices: [i, i + 1],
+          minVal: minVal,
+          maxVal: maxVal,
+          comps: comps,
+          desc: `Par (A[${i+1}]=${a}, A[${i+2}]=${b}): Comp 1 do par: ${a} <= ${b} ? LocalMin = ${localMin}, LocalMax = ${localMax}.`
+        });
+
+        // Comparação 2: localMin com minVal
+        comps++;
+        let minUpdated = false;
+        if (localMin < minVal) {
+          minVal = localMin;
+          minUpdated = true;
+        }
+        q1Steps.push({
+          pairIndices: [i, i + 1],
+          minVal: minVal,
+          maxVal: maxVal,
+          comps: comps,
+          desc: `Comp 2 do par: LocalMin (${localMin}) com Min Corrente (${minVal}). ${minUpdated ? 'Novo mínimo encontrado: ' + minVal : 'Mínimo mantido.'}`
+        });
+
+        // Comparação 3: localMax com maxVal
+        comps++;
+        let maxUpdated = false;
+        if (localMax > maxVal) {
+          maxVal = localMax;
+          maxUpdated = true;
+        }
+        q1Steps.push({
+          pairIndices: [i, i + 1],
+          minVal: minVal,
+          maxVal: maxVal,
+          comps: comps,
+          desc: `Comp 3 do par: LocalMax (${localMax}) com Max Corrente (${maxVal}). ${maxUpdated ? 'Novo máximo encontrado: ' + maxVal : 'Máximo mantido.'}`
+        });
+      }
+
+      // Passo final
+      q1Steps.push({
+        pairIndices: [],
+        minVal: minVal,
+        maxVal: maxVal,
+        comps: comps,
+        desc: `Algoritmo concluído! Mínimo = ${minVal}, Máximo = ${maxVal}. Total de comparações: ${comps}.`
+      });
+    }
+
+    function q1Initialize() {
+      q1ParseInput();
+      q1BuildSteps();
+      q1CurrentStepIdx = 0;
+      if (q1Timer) {
+        clearInterval(q1Timer);
+        q1Timer = null;
+        document.getElementById('q1-play-btn').innerHTML = '<i class="ph-bold ph-play"></i> Play';
+      }
+
+      const n = q1Array.length;
+      const cota = Math.floor(3 * Math.floor(n / 2));
+      document.getElementById('q1-cota-display').innerText = `3⌊${n}/2⌋ = ${cota} comps`;
+      document.getElementById('q1-naive-count').innerText = `${2 * n - 2} comps`;
+      document.getElementById('q1-target-count').innerText = `${cota} comps`;
+
+      q1Render();
+    }
+
+    function q1Render() {
+      const step = q1Steps[q1CurrentStepIdx];
+      const n = q1Array.length;
+
+      // Render cells
+      const container = document.getElementById('q1-cells-container');
+      container.innerHTML = '';
+
+      q1Array.forEach((val, idx) => {
+        const isPair = step.pairIndices.includes(idx);
+        const isMin = step.minVal !== null && val === step.minVal;
+        const isMax = step.maxVal !== null && val === step.maxVal;
+
+        let bgClass = "bg-slate-900 border-slate-800 text-slate-200";
+        if (isPair) {
+          bgClass = "bg-amber-500/20 border-amber-500 text-amber-200 scan-active ring-2 ring-amber-500/50";
+        } else if (isMin && isMax) {
+          bgClass = "bg-gradient-to-r from-emerald-500/30 to-rose-500/30 border-indigo-400 text-white font-extrabold";
+        } else if (isMin) {
+          bgClass = "bg-emerald-500/20 border-emerald-500 text-emerald-200 font-bold";
+        } else if (isMax) {
+          bgClass = "bg-rose-500/20 border-rose-500 text-rose-200 font-bold";
+        }
+
+        const div = document.createElement('div');
+        div.className = `w-14 sm:w-16 p-2 rounded-xl border text-center cell-transition ${bgClass}`;
+        div.innerHTML = `
+          <span class="block text-[10px] text-slate-400 font-mono">A[${idx+1}]</span>
+          <span class="block text-base font-extrabold font-mono mt-0.5">${val}</span>
+        `;
+        container.appendChild(div);
+      });
+
+      // Update text & badges
+      document.getElementById('q1-step-badge').innerText = `PASSO ${q1CurrentStepIdx} DE ${q1Steps.length - 1}`;
+      document.getElementById('q1-comps-badge').innerText = `Comparações: ${step.comps}`;
+      document.getElementById('q1-step-desc').innerText = step.desc;
+
+      document.getElementById('q1-val-min').innerText = step.minVal !== null ? step.minVal : '--';
+      document.getElementById('q1-val-max').innerText = step.maxVal !== null ? step.maxVal : '--';
+      document.getElementById('q1-val-comps').innerText = step.comps;
+
+      const cota = 3 * Math.floor(n / 2);
+      const statusEl = document.getElementById('q1-val-status');
+      if (step.comps <= cota) {
+        statusEl.innerText = "DENTRO DA COTA";
+        statusEl.className = "font-mono text-xs font-bold text-emerald-400 leading-6";
+      } else {
+        statusEl.innerText = "ULTRAPASSOU";
+        statusEl.className = "font-mono text-xs font-bold text-rose-400 leading-6";
+      }
+    }
+
+    function q1StepNext() {
+      if (q1CurrentStepIdx < q1Steps.length - 1) {
+        q1CurrentStepIdx++;
+        q1Render();
+      } else if (q1Timer) {
+        q1TogglePlay();
+      }
+    }
+
+    function q1StepPrev() {
+      if (q1CurrentStepIdx > 0) {
+        q1CurrentStepIdx--;
+        q1Render();
+      }
+    }
+
+    function q1Reset() {
+      q1CurrentStepIdx = 0;
+      if (q1Timer) q1TogglePlay();
+      q1Render();
+    }
+
+    function q1TogglePlay() {
+      const btn = document.getElementById('q1-play-btn');
+      if (q1Timer) {
+        clearInterval(q1Timer);
+        q1Timer = null;
+        btn.innerHTML = '<i class="ph-bold ph-play"></i> Play';
+      } else {
+        if (q1CurrentStepIdx >= q1Steps.length - 1) q1CurrentStepIdx = 0;
+        btn.innerHTML = '<i class="ph-bold ph-pause"></i> Pause';
+        const speed = 2000 - parseInt(document.getElementById('q1-speed').value, 10);
+        q1Timer = setInterval(() => {
+          q1StepNext();
+        }, speed);
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 2: JAVASCRIPT ENGINE (DEBUGGER DO SELECTION)
+    // =========================================================================
+    let q2OriginalArray = [1, 8, 7, 6, 5, 3, 2, 10, 9];
+    let q2TargetI = 3;
+    let q2Steps = [];
+    let q2CurrentStepIdx = 0;
+    let q2Timer = null;
+
+    function q2BuildSelectionTrace() {
+      q2Steps = [];
+      let A = [...q2OriginalArray];
+      let callStack = [];
+
+      function lomutoPartition(p, r, callId, currentI) {
+        const x = A[p];
+        let m = p;
+
+        q2Steps.push({
+          A: [...A],
+          p, r, currentI,
+          pivotIdx: p,
+          pivotVal: x,
+          m, j: p + 1,
+          line: 3,
+          action: "INÍCIO PARTIÇÃO",
+          desc: `[Chamada ${callId}] Escolhe pivô x = A[${p+1}] = ${x}. Inicializa fronteira m = ${m+1}.`,
+          callStack: [...callStack]
+        });
+
+        for (let j = p + 1; j <= r; j++) {
+          const isLess = A[j] <= x;
+          q2Steps.push({
+            A: [...A],
+            p, r, currentI,
+            pivotIdx: p,
+            pivotVal: x,
+            m, j,
+            line: 5,
+            action: "COMPARAÇÃO",
+            desc: `Testa se A[${j+1}]=${A[j]} <= x (${x}): ${isLess ? 'SIM' : 'NÃO'}.`,
+            callStack: [...callStack]
+          });
+
+          if (isLess) {
+            m++;
+            const temp = A[m];
+            A[m] = A[j];
+            A[j] = temp;
+            q2Steps.push({
+              A: [...A],
+              p, r, currentI,
+              pivotIdx: p,
+              pivotVal: x,
+              m, j,
+              line: 6,
+              action: "TROCA (SWAP)",
+              desc: `Incrementa m para ${m+1}. Troca A[${m+1}] com A[${j+1}].`,
+              callStack: [...callStack]
+            });
+          }
+        }
+
+        // Troca final: A[p] com A[m]
+        const temp = A[p];
+        A[p] = A[m];
+        A[m] = temp;
+        const q = m;
+
+        q2Steps.push({
+          A: [...A],
+          p, r, currentI,
+          pivotIdx: q,
+          pivotVal: x,
+          m, j: r,
+          line: 7,
+          action: "POSICIONA PIVÔ",
+          desc: `Troca final: pivô A[${p+1}]=${x} troca com A[${m+1}] e fixa na posição definitiva q = ${q+1}.`,
+          callStack: [...callStack]
+        });
+
+        return q;
+      }
+
+      function selectionRecursive(p, r, i, depth) {
+        callStack.push({ p, r, i, depth });
+
+        q2Steps.push({
+          A: [...A],
+          p, r, currentI: i,
+          pivotIdx: null, pivotVal: null,
+          m: null, j: null,
+          line: 1,
+          action: `CHAMADA ${depth}`,
+          desc: `SELECTION(A, p=${p+1}, r=${r+1}, i=${i}): Buscando o ${i}º menor elemento no subvetor.`,
+          callStack: [...callStack]
+        });
+
+        if (p === r) {
+          q2Steps.push({
+            A: [...A],
+            p, r, currentI: i,
+            pivotIdx: p, pivotVal: A[p],
+            m: p, j: p,
+            line: 2,
+            action: "CASO BASE",
+            desc: `p == r (${p+1}): subvetor unitário! Retorna elemento A[${p+1}] = ${A[p]}.`,
+            callStack: [...callStack]
+          });
+          callStack.pop();
+          return A[p];
+        }
+
+        const q = lomutoPartition(p, r, depth, i);
+        const k = q - p + 1; // rank do pivô
+
+        q2Steps.push({
+          A: [...A],
+          p, r, currentI: i,
+          pivotIdx: q, pivotVal: A[q],
+          m: q, j: r,
+          line: 8,
+          action: "RANK DO PIVÔ",
+          desc: `Pivô ${A[q]} está na posição q = ${q+1}. Seu posto relativo no subvetor é k = q - p + 1 = ${k}.`,
+          callStack: [...callStack]
+        });
+
+        if (i === k) {
+          q2Steps.push({
+            A: [...A],
+            p, r, currentI: i,
+            pivotIdx: q, pivotVal: A[q],
+            m: q, j: r,
+            line: 9,
+            action: "ELEMENTO ENCONTRADO!",
+            desc: `Como i == k (${i} == ${k}): O PIVÔ É A RESPOSTA! Retorna ${A[q]}.`,
+            callStack: [...callStack]
+          });
+          callStack.pop();
+          return A[q];
+        } else if (i < k) {
+          q2Steps.push({
+            A: [...A],
+            p, r, currentI: i,
+            pivotIdx: q, pivotVal: A[q],
+            m: q, j: r,
+            line: 11,
+            action: "BUSCA À ESQUERDA",
+            desc: `Como i (${i}) < k (${k}): O elemento procurado está na metade esquerda (índices ${p+1} até ${q}).`,
+            callStack: [...callStack]
+          });
+          const res = selectionRecursive(p, q - 1, i, depth + 1);
+          callStack.pop();
+          return res;
+        } else {
+          const newI = i - k;
+          q2Steps.push({
+            A: [...A],
+            p, r, currentI: i,
+            pivotIdx: q, pivotVal: A[q],
+            m: q, j: r,
+            line: 13,
+            action: "BUSCA À DIREITA",
+            desc: `Como i (${i}) > k (${k}): O elemento procurado está na metade direita. Nova ordem procurada: i' = i - k = ${newI}.`,
+            callStack: [...callStack]
+          });
+          const res = selectionRecursive(q + 1, r, newI, depth + 1);
+          callStack.pop();
+          return res;
+        }
+      }
+
+      selectionRecursive(0, A.length - 1, q2TargetI, 1);
+    }
+
+    function q2Initialize() {
+      q2BuildSelectionTrace();
+      q2CurrentStepIdx = 0;
+      if (q2Timer) {
+        clearInterval(q2Timer);
+        q2Timer = null;
+        document.getElementById('q2-play-btn').innerHTML = '<i class="ph-bold ph-play"></i> Play';
+      }
+      q2Render();
+    }
+
+    function q2Render() {
+      const step = q2Steps[q2CurrentStepIdx];
+      const container = document.getElementById('q2-cells-container');
+      container.innerHTML = '';
+
+      step.A.forEach((val, idx) => {
+        const inSubarray = idx >= step.p && idx <= step.r;
+        const isPivot = step.pivotIdx !== null && idx === step.pivotIdx;
+        const isScanJ = step.j !== null && idx === step.j;
+        const isBoundaryM = step.m !== null && idx === step.m;
+
+        let bgClass = "bg-slate-900 border-slate-800 text-slate-300";
+        if (!inSubarray) {
+          bgClass = "bg-slate-950/40 border-slate-900/60 text-slate-600 opacity-40";
+        } else if (isPivot) {
+          bgClass = "bg-amber-500/25 border-amber-500 text-amber-200 font-extrabold ring-2 ring-amber-500 pivot-pulse";
+        } else if (step.pivotVal !== null && inSubarray) {
+          if (step.m !== null && idx > step.p && idx <= step.m) {
+            bgClass = "bg-emerald-500/20 border-emerald-500 text-emerald-200 font-semibold";
+          } else if (step.j !== null && idx > step.m && idx < step.j) {
+            bgClass = "bg-indigo-500/20 border-indigo-500 text-indigo-200 font-semibold";
+          }
+        }
+
+        if (isScanJ) {
+          bgClass += " scan-active border-indigo-400";
+        }
+
+        const div = document.createElement('div');
+        div.className = `w-14 sm:w-16 p-2 rounded-xl border text-center cell-transition relative ${bgClass}`;
+        div.innerHTML = `
+          <span class="block text-[10px] font-mono text-slate-400">A[${idx+1}]</span>
+          <span class="block text-base font-extrabold font-mono mt-0.5">${val}</span>
+          ${isPivot ? '<span class="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 font-mono text-[9px] font-extrabold px-1 rounded">PIVÔ</span>' : ''}
+          ${isScanJ ? '<span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-indigo-500 text-white font-mono text-[9px] font-extrabold px-1 rounded">j</span>' : ''}
+        `;
+        container.appendChild(div);
+      });
+
+      // Atualiza variáveis
+      document.getElementById('q2-var-range').innerText = `p=${step.p+1}, r=${step.r+1}`;
+      document.getElementById('q2-var-pivot').innerText = step.pivotVal !== null ? `A[${(step.pivotIdx??step.p)+1}] = ${step.pivotVal}` : '--';
+      document.getElementById('q2-var-pointers').innerText = `m=${step.m !== null ? step.m+1 : '-'}, j=${step.j !== null ? step.j+1 : '-'}`;
+      document.getElementById('q2-var-rank').innerText = `i = ${step.currentI}`;
+
+      document.getElementById('q2-step-badge').innerText = `PASSO ${q2CurrentStepIdx + 1} DE ${q2Steps.length}`;
+      document.getElementById('q2-action-badge').innerText = step.action;
+      document.getElementById('q2-step-desc').innerText = step.desc;
+
+      // Highlight code line
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      const activeLineEl = document.getElementById('q2-code-' + step.line);
+      if (activeLineEl) activeLineEl.classList.add('active');
+
+      // Call Stack
+      const stackContainer = document.getElementById('q2-call-stack');
+      stackContainer.innerHTML = '';
+      step.callStack.forEach((call, cIdx) => {
+        const div = document.createElement('div');
+        div.className = `p-2 rounded-lg font-mono text-xs flex justify-between items-center ${cIdx === step.callStack.length - 1 ? 'bg-indigo-600/30 border border-indigo-500 text-indigo-200' : 'bg-slate-900 border border-slate-800 text-slate-400'}`;
+        div.innerHTML = `
+          <span>#${cIdx+1} SELECTION(A, p=${call.p+1}, r=${call.r+1}, i=${call.i})</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-950">profundidade ${call.depth}</span>
+        `;
+        stackContainer.appendChild(div);
+      });
+    }
+
+    function q2StepNext() {
+      if (q2CurrentStepIdx < q2Steps.length - 1) {
+        q2CurrentStepIdx++;
+        q2Render();
+      } else if (q2Timer) {
+        q2TogglePlay();
+      }
+    }
+
+    function q2StepPrev() {
+      if (q2CurrentStepIdx > 0) {
+        q2CurrentStepIdx--;
+        q2Render();
+      }
+    }
+
+    function q2Reset() {
+      q2CurrentStepIdx = 0;
+      if (q2Timer) q2TogglePlay();
+      q2Render();
+    }
+
+    function q2TogglePlay() {
+      const btn = document.getElementById('q2-play-btn');
+      if (q2Timer) {
+        clearInterval(q2Timer);
+        q2Timer = null;
+        btn.innerHTML = '<i class="ph-bold ph-play"></i> Play';
+      } else {
+        if (q2CurrentStepIdx >= q2Steps.length - 1) q2CurrentStepIdx = 0;
+        btn.innerHTML = '<i class="ph-bold ph-pause"></i> Pause';
+        const speed = 2000 - parseInt(document.getElementById('q2-speed').value, 10);
+        q2Timer = setInterval(() => {
+          q2StepNext();
+        }, speed);
+      }
+    }
+
+    // =========================================================================
+    // QUESTÃO 3: JAVASCRIPT ENGINE (COMPARADOR DE MÉTODOS)
+    // =========================================================================
+    function q3SetPreset(type) {
+      const n = parseInt(document.getElementById('q3-slider-n').value, 10);
+      const sliderI = document.getElementById('q3-slider-i');
+
+      if (type === 'constant') {
+        sliderI.value = 1;
+      } else if (type === 'sqrt') {
+        sliderI.value = Math.max(1, Math.floor(Math.sqrt(n)));
+      } else if (type === 'logn') {
+        sliderI.value = Math.max(1, Math.floor(n / Math.log2(n)));
+      } else if (type === 'half') {
+        sliderI.value = Math.max(1, Math.floor(n / 2));
+      } else if (type === 'all') {
+        sliderI.value = n;
+      }
+      q3Update();
+    }
+
+    function q3Update() {
+      const n = parseInt(document.getElementById('q3-slider-n').value, 10);
+      const sliderI = document.getElementById('q3-slider-i');
+      sliderI.max = n;
+      const i = parseInt(sliderI.value, 10);
+
+      document.getElementById('q3-val-n').innerText = n.toLocaleString('pt-BR');
+      document.getElementById('q3-val-i').innerText = i.toLocaleString('pt-BR');
+
+      // Fórmulas de Operações
+      const opsA = Math.round(n * Math.log2(n));
+      const opsB = Math.round(n + i * Math.log2(n));
+      const opsC = Math.round(n + i * (i > 1 ? Math.log2(i) : 0));
+
+      document.getElementById('q3-ops-a').innerText = opsA.toLocaleString('pt-BR') + ' ops';
+      document.getElementById('q3-ops-b').innerText = opsB.toLocaleString('pt-BR') + ' ops';
+      document.getElementById('q3-ops-c').innerText = opsC.toLocaleString('pt-BR') + ' ops';
+
+      // Desenhar SVG Chart
+      q3DrawChart(n, i, opsA, opsB, opsC);
+    }
+
+    function q3DrawChart(n, currentI, opsA, opsB, opsC) {
+      const svg = document.getElementById('q3-chart-svg');
+      const w = 600;
+      const h = 240;
+      const padL = 60;
+      const padR = 25;
+      const padT = 25;
+      const padB = 40;
+
+      const chartW = w - padL - padR;
+      const chartH = h - padT - padB;
+
+      // Pontos para traçar as curvas ao longo de x in [1, n]
+      const maxVal = n * Math.log2(n) * 1.15; // teto para normalizar Y
+
+      let pathA = "";
+      let pathB = "";
+      let pathC = "";
+
+      const sampleCount = 60;
+      for (let s = 0; s <= sampleCount; s++) {
+        const xVal = Math.max(1, Math.round((s / sampleCount) * n));
+        const px = padL + (xVal / n) * chartW;
+
+        const valA = n * Math.log2(n);
+        const valB = n + xVal * Math.log2(n);
+        const valC = n + xVal * (xVal > 1 ? Math.log2(xVal) : 0);
+
+        const pyA = padT + chartH - (valA / maxVal) * chartH;
+        const pyB = padT + chartH - (valB / maxVal) * chartH;
+        const pyC = padT + chartH - (valC / maxVal) * chartH;
+
+        if (s === 0) {
+          pathA = `M ${px} ${pyA}`;
+          pathB = `M ${px} ${pyB}`;
+          pathC = `M ${px} ${pyC}`;
+        } else {
+          pathA += ` L ${px} ${pyA}`;
+          pathB += ` L ${px} ${pyB}`;
+          pathC += ` L ${px} ${pyC}`;
+        }
+      }
+
+      // Posição atual de i
+      const curX = padL + (currentI / n) * chartW;
+      const curYA = padT + chartH - (opsA / maxVal) * chartH;
+      const curYB = padT + chartH - (opsB / maxVal) * chartH;
+      const curYC = padT + chartH - (opsC / maxVal) * chartH;
+
+      svg.innerHTML = `
+        <!-- Eixos -->
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="#334155" stroke-width="1.5" />
+        <line x1="${padL}" y1="${padT + chartH}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#334155" stroke-width="1.5" />
+        
+        <!-- Linhas de Grade Verticais -->
+        <line x1="${padL + chartW / 2}" y1="${padT}" x2="${padL + chartW / 2}" y2="${padT + chartH}" stroke="#1e293b" stroke-dasharray="3" />
+        <line x1="${padL + chartW}" y1="${padT}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#1e293b" stroke-dasharray="3" />
+        
+        <!-- Labels dos Eixos -->
+        <text x="${padL}" y="${padT + chartH + 18}" fill="#64748b" font-size="10" font-family="JetBrains Mono">i=1</text>
+        <text x="${padL + chartW / 2}" y="${padT + chartH + 18}" fill="#64748b" font-size="10" font-family="JetBrains Mono" text-anchor="middle">i=n/2</text>
+        <text x="${padL + chartW}" y="${padT + chartH + 18}" fill="#64748b" font-size="10" font-family="JetBrains Mono" text-anchor="end">i=n</text>
+        
+        <text x="${padL - 10}" y="${padT + 12}" fill="#64748b" font-size="9" font-family="JetBrains Mono" text-anchor="end">n lg n</text>
+        <text x="${padL - 10}" y="${padT + chartH - 5}" fill="#64748b" font-size="9" font-family="JetBrains Mono" text-anchor="end">n</text>
+
+        <!-- Curvas -->
+        <path d="${pathA}" fill="none" stroke="#ef4444" stroke-width="2.5" />
+        <path d="${pathB}" fill="none" stroke="#3b82f6" stroke-width="2.5" />
+        <path d="${pathC}" fill="none" stroke="#10b981" stroke-width="2.5" />
+
+        <!-- Linha do cursor atual -->
+        <line x1="${curX}" y1="${padT}" x2="${curX}" y2="${padT + chartH}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4" />
+        <circle cx="${curX}" cy="${curYA}" r="5" fill="#ef4444" />
+        <circle cx="${curX}" cy="${curYB}" r="5" fill="#3b82f6" />
+        <circle cx="${curX}" cy="${curYC}" r="5" fill="#10b981" />
+      `;
+    }
+
+    // Inicialização ao carregar
+    window.addEventListener('DOMContentLoaded', () => {
+      q1Initialize();
+      q2Initialize();
+      q3Update();
+    });
+  </script>
+</body>
+</html>

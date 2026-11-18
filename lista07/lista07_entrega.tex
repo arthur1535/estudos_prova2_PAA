@@ -1,0 +1,437 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.25cm]{geometry}
+\usepackage{booktabs,array}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{azul}{HTML}{183B56}
+\definecolor{cinza}{RGB}{245,245,245}
+\definecolor{cinzaEscuro}{RGB}{80,80,80}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Projeto e Análise de Algoritmos -- Prof. Felipe A. Louza}
+\fancyhead[R]{\small Lista 7}
+\fancyfoot[L]{\small Arthur Pires Lopes -- 12221EEL001}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.3}
+
+\newcommand{\res}[1]{\[\boxed{#1}\]}
+\newcommand{\topico}[1]{\par\medskip\textbf{\color{azul}#1}\par}
+\newcommand{\questao}[2]{\section*{Questão #1 -- #2}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{cinza},
+  frame=single,
+  rulecolor=\color{black!20},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{cinzaEscuro},
+  numbersep=7pt,
+  literate={á}{{\'a}}1 {ã}{{\~a}}1 {ç}{{\c c}}1 {é}{{\'e}}1
+           {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1
+           {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+           {à}{{\`a}}1 {õ}{{\~o}}1 {â}{{\^a}}1 {ê}{{\^e}}1
+           {ô}{{\^o}}1 {<=}{{$\le$}}1 {>=}{{$\ge$}}1 {!=}{{$\neq$}}1
+           {<-}{{$\leftarrow$}}1
+}
+
+\begin{document}
+
+\begin{center}
+  {\small Universidade Federal de Uberlândia -- UFU\\Faculdade de Engenharia Elétrica}\par
+  \vspace{4pt}
+  {\LARGE\bfseries\color{azul} Lista 7: O Problema da Seleção}\par
+  \vspace{4pt}
+  \textbf{Arthur Pires Lopes}\quad Matrícula: \textbf{12221EEL001}\par
+  \textit{Resolução formal para entrega -- Projeto e Análise de Algoritmos (Prof. Felipe A. Louza)}
+\end{center}
+\hrule
+\vspace{6pt}
+
+% ==============================================================================
+% QUESTÃO 1
+% ==============================================================================
+\questao{1}{Mínimo e Máximo Simultâneos com no Máximo $3\lfloor n/2 \rfloor$ Comparações}
+
+\textbf{Enunciado:} Escreva o pseudocódigo de algoritmo que encontre o máximo e o mínimo em um vetor $A[1, n]$ realizando no máximo $3\lfloor n/2 \rfloor$ comparações.
+
+\topico{Estratégia Algorítmica}
+Em vez de comparar cada elemento independentemente com o mínimo e o máximo correntes (o que demandaria $2n - 2$ comparações), processamos os elementos \textbf{aos pares}. 
+\begin{enumerate}
+    \item Para cada par $(A[i], A[i+1])$, realizamos 1 comparação entre seus dois elementos para determinar qual é o menor e qual é o maior do par.
+    \item Comparamos o menor do par com o mínimo corrente $\min$ (1 comparação).
+    \item Comparamos o maior do par com o máximo corrente $\max$ (1 comparação).
+\end{enumerate}
+Dessa forma, processamos 2 elementos utilizando exatamente $3$ comparações.
+
+\topico{Pseudocódigo}
+\begin{lstlisting}
+MIN-MAX(A, n)
+ 1  se n == 1 então
+ 2      retorne (A[1], A[1])
+ 3  se n é ímpar então
+ 4      min <- A[1]
+ 5      max <- A[1]
+ 6      inicio <- 2
+ 7  senão
+ 8      se A[1] <= A[2] então
+ 9          min <- A[1]; max <- A[2]
+10      senão
+11          min <- A[2]; max <- A[1]
+12      inicio <- 3
+13  para i <- inicio até n com passo 2 faça
+14      se A[i] <= A[i+1] então
+15          se A[i] < min então min <- A[i]
+16          se A[i+1] > max então max <- A[i+1]
+17      senão
+18          se A[i+1] < min então min <- A[i+1]
+19          se A[i] > max então max <- A[i]
+20  retorne (min, max)
+\end{lstlisting}
+
+\topico{Contagem Exata de Comparações de Elementos}
+\begin{itemize}
+    \item \textbf{Se $n$ é ímpar:} Inicializamos $\min = \max = A[1]$ sem nenhuma comparação entre chaves. Restam $n-1$ elementos, formando $\frac{n-1}{2} = \lfloor n/2 \rfloor$ pares. Cada par realiza $3$ comparações no laço:
+    \[
+    C(n) = 0 + 3 \cdot \left(\frac{n-1}{2}\right) = 3\left\lfloor \frac{n}{2} \right\rfloor.
+    \]
+    \item \textbf{Se $n$ é par:} Inicializamos comparando $A[1]$ e $A[2]$ ($1$ comparação). Restam $n-2$ elementos, agrupados em $\frac{n-2}{2} = \frac{n}{2} - 1 = \lfloor n/2 \rfloor - 1$ pares. Cada par realiza $3$ comparações:
+    \[
+    C(n) = 1 + 3 \cdot \left(\frac{n}{2} - 1\right) = \frac{3n}{2} - 2 = 3\left\lfloor \frac{n}{2} \right\rfloor - 2.
+    \]
+\end{itemize}
+Em ambos os casos, o número total de comparações satisfaz:
+\res{C(n) \le 3\left\lfloor \frac{n}{2} \right\rfloor.}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+% ==============================================================================
+% QUESTÃO 2
+% ==============================================================================
+\questao{2}{Execução Passo a Passo do Algoritmo \texttt{SELECTION}}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \texttt{SELECTION} para encontrar o $3^\circ$ menor elemento para o seguinte vetor:
+\[
+A = \langle 1, 8, 7, 6, 5, 3, 2, 10, 9 \rangle
+\]
+Considere que o pivot é escolhido sempre como o primeiro elemento do vetor.
+
+\topico{Definição do Algoritmo e da Partição}
+O algoritmo busca a $i$-ésima menor estatística de ordem no subvetor $A[p \dots r]$.
+\begin{lstlisting}
+SELECTION(A, p, r, i)
+ 1  se p == r então retorne A[p]
+ 2  q <- PARTITION-PRIMEIRO(A, p, r)
+ 3  k <- q - p + 1   // rank relativo do pivô no subvetor
+ 4  se i == k então retorne A[q]
+ 5  senão se i < k então retorne SELECTION(A, p, q - 1, i)
+ 6  senão retorne SELECTION(A, q + 1, r, i - k)
+\end{lstlisting}
+A sub-rotina \texttt{PARTITION-PRIMEIRO(A, p, r)} fixa o pivô $x = A[p]$, mantém o índice de fronteira $m = p$ para elementos menores ou iguais a $x$, percorre $j$ de $p+1$ até $r$, trocando $A[++m]$ com $A[j]$ sempre que $A[j] \le x$, e por fim troca $A[p]$ com $A[m]$, retornando a posição final $q = m$.
+
+\topico{Rastreamento Passo a Passo}
+Buscamos o $3^\circ$ menor elemento no vetor global com $n = 9$, ou seja, chamada inicial \texttt{SELECTION(A, 1, 9, 3)}.
+
+\begin{enumerate}
+    \item \textbf{Chamada 1:} \texttt{SELECTION(A, 1, 9, 3)}
+    \begin{itemize}
+        \item Subvetor: $A[1 \dots 9] = \langle \mathbf{1}, 8, 7, 6, 5, 3, 2, 10, 9 \rangle$, buscando $i = 3$.
+        \item Pivô: $x = A[1] = 1$.
+        \item Varredura ($j = 2 \dots 9$): todos os elementos $\{8, 7, 6, 5, 3, 2, 10, 9\}$ são maiores que $1$. Nenhuma troca ocorre; $m = 1$.
+        \item Troca do pivô: $A[1] \leftrightarrow A[1]$. Posição final do pivô: $q = 1$.
+        \item Estado do vetor: $\langle \underline{1}, 8, 7, 6, 5, 3, 2, 10, 9 \rangle$.
+        \item Posto relativo: $k = q - p + 1 = 1 - 1 + 1 = 1$.
+        \item Como $i = 3 > k = 1$: o elemento procurado está à direita. Nova ordem: $i' = 3 - 1 = 2$.
+    \end{itemize}
+
+    \item \textbf{Chamada 2:} \texttt{SELECTION(A, 2, 9, 2)}
+    \begin{itemize}
+        \item Subvetor: $A[2 \dots 9] = \langle \mathbf{8}, 7, 6, 5, 3, 2, 10, 9 \rangle$, buscando $i = 2$.
+        \item Pivô: $x = A[2] = 8$. Índice $m$ inicializa em $2$.
+        \item Varredura ($j = 3 \dots 9$):
+        \begin{itemize}
+            \item $j=3: A[3]=7 \le 8 \implies m=3$, troca $A[3] \leftrightarrow A[3]$.
+            \item $j=4: A[4]=6 \le 8 \implies m=4$, troca $A[4] \leftrightarrow A[4]$.
+            \item $j=5: A[5]=5 \le 8 \implies m=5$, troca $A[5] \leftrightarrow A[5]$.
+            \item $j=6: A[6]=3 \le 8 \implies m=6$, troca $A[6] \leftrightarrow A[6]$.
+            \item $j=7: A[7]=2 \le 8 \implies m=7$, troca $A[7] \leftrightarrow A[7]$.
+            \item $j=8: A[8]=10 > 8 \implies$ nenhuma troca.
+            \item $j=9: A[9]=9 > 8 \implies$ nenhuma troca.
+        \end{itemize}
+        \item Troca final: $A[p]=A[2]$ troca com $A[m]=A[7]$ (troca $8$ com $2$).
+        \item Estado do vetor: $\langle 1, \mathbf{2, 7, 6, 5, 3}, \underline{8}, \mathbf{10, 9} \rangle$. Posição final: $q = 7$.
+        \item Posto relativo: $k = 7 - 2 + 1 = 6$.
+        \item Como $i = 2 < k = 6$: o elemento procurado está à esquerda. Ordem mantida: $i = 2$.
+    \end{itemize}
+
+    \item \textbf{Chamada 3:} \texttt{SELECTION(A, 2, 6, 2)}
+    \begin{itemize}
+        \item Subvetor: $A[2 \dots 6] = \langle \mathbf{2}, 7, 6, 5, 3 \rangle$, buscando $i = 2$.
+        \item Pivô: $x = A[2] = 2$. Índice $m = 2$.
+        \item Varredura ($j = 3 \dots 6$): todos os elementos $\{7, 6, 5, 3\}$ são maiores que $2$. Logo $m = 2$.
+        \item Troca final: $A[2] \leftrightarrow A[2]$. Posição final: $q = 2$.
+        \item Estado do vetor: $\langle 1, \underline{2}, \mathbf{7, 6, 5, 3}, 8, 10, 9 \rangle$.
+        \item Posto relativo: $k = 2 - 2 + 1 = 1$.
+        \item Como $i = 2 > k = 1$: o elemento está à direita. Nova ordem: $i' = 2 - 1 = 1$.
+    \end{itemize}
+
+    \item \textbf{Chamada 4:} \texttt{SELECTION(A, 3, 6, 1)}
+    \begin{itemize}
+        \item Subvetor: $A[3 \dots 6] = \langle \mathbf{7}, 6, 5, 3 \rangle$, buscando $i = 1$.
+        \item Pivô: $x = A[3] = 7$. Índice $m$ inicializa em $3$.
+        \item Varredura ($j = 4 \dots 6$):
+        \begin{itemize}
+            \item $j=4: A[4]=6 \le 7 \implies m=4$, troca $A[4] \leftrightarrow A[4]$.
+            \item $j=5: A[5]=5 \le 7 \implies m=5$, troca $A[5] \leftrightarrow A[5]$.
+            \item $j=6: A[6]=3 \le 7 \implies m=6$, troca $A[6] \leftrightarrow A[6]$.
+        \end{itemize}
+        \item Troca final: $A[p]=A[3]$ troca com $A[m]=A[6]$ (troca $7$ com $3$).
+        \item Estado do vetor: $\langle 1, 2, \mathbf{3, 6, 5}, \underline{7}, 8, 10, 9 \rangle$. Posição final: $q = 6$.
+        \item Posto relativo: $k = 6 - 3 + 1 = 4$.
+        \item Como $i = 1 < k = 4$: o elemento está à esquerda. Ordem mantida: $i = 1$.
+    \end{itemize}
+
+    \item \textbf{Chamada 5:} \texttt{SELECTION(A, 3, 5, 1)}
+    \begin{itemize}
+        \item Subvetor: $A[3 \dots 5] = \langle \mathbf{3}, 6, 5 \rangle$, buscando $i = 1$.
+        \item Pivô: $x = A[3] = 3$. Índice $m = 3$.
+        \item Varredura ($j = 4 \dots 5$): elementos $\{6, 5\}$ são maiores que $3$. Nenhuma troca; $m = 3$.
+        \item Troca final: $A[3] \leftrightarrow A[3]$. Posição final: $q = 3$.
+        \item Estado do vetor: $\langle 1, 2, \underline{3}, 6, 5, 7, 8, 10, 9 \rangle$.
+        \item Posto relativo: $k = 3 - 3 + 1 = 1$.
+        \item Como $i = 1 == k = 1$: \textbf{condição de parada satisfeita!}
+        \item O algoritmo retorna o elemento no pivô: $A[q] = A[3] = 3$.
+    \end{itemize}
+\end{enumerate}
+
+\topico{Quadro Síntese das Chamadas}
+\begin{center}
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{Chamada} & \textbf{Subvetor} & \textbf{Pivô ($x$)} & \textbf{Posição ($q$)} & \textbf{Posto ($k$)} & \textbf{Ordem ($i$)} & \textbf{Ação} \\ \midrule
+1 & $A[1 \dots 9]$ & $A[1]=1$ & 1 & 1 & 3 & Recurso à direita ($i \leftarrow 2$) \\
+2 & $A[2 \dots 9]$ & $A[2]=8$ & 7 & 6 & 2 & Recurso à esquerda ($i \leftarrow 2$) \\
+3 & $A[2 \dots 6]$ & $A[2]=2$ & 2 & 1 & 2 & Recurso à direita ($i \leftarrow 1$) \\
+4 & $A[3 \dots 6]$ & $A[3]=7$ & 6 & 4 & 1 & Recurso à esquerda ($i \leftarrow 1$) \\
+5 & $A[3 \dots 5]$ & $A[3]=3$ & 3 & 1 & 1 & \textbf{Retorna $A[3] = 3$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\res{\text{O } 3^\circ \text{ menor elemento retornado pelo algoritmo é } 3.}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+% ==============================================================================
+% QUESTÃO 3
+% ==============================================================================
+\questao{3}{Comparação de Métodos para Listar os $i$ Maiores Elementos em Ordem Crescente}
+
+\textbf{Enunciado:} Dado um vetor $A[1, n]$, queremos imprimir em ordem crescente os $i$ maiores elementos de $A$. Compare a complexidade dos seguinte métodos em função de $n$ e $i$.
+\begin{itemize}
+    \item[(a)] Ordene o vetor e liste os $i$ maiores elementos.
+    \item[(b)] Construa uma fila de prioridade (max-heap) e chame a rotina para extrair o máximo $i$ vezes.
+    \item[(c)] Use um algoritmo de seleção para encontrar o $i$-ésimo maior elemento, particione o vetor em torno dele e ordene os $i$ maiores elementos.
+\end{itemize}
+
+\topico{Análise do Método (a): Ordenação Total}
+\begin{enumerate}
+    \item \textbf{Ordenação de todo o vetor $A[1 \dots n]$:} Utilizando um algoritmo ótimo baseado em comparações (como \texttt{MergeSort} ou \texttt{HeapSort}), o custo no pior caso é $\Theta(n \lg n)$.
+    \item \textbf{Listagem dos $i$ maiores elementos:} Com o vetor ordenado de forma não decrescente, os $i$ maiores elementos ocupam as posições finais $A[n - i + 1 \dots n]$. Percorrer e imprimir essas posições consome tempo $\Theta(i)$.
+\end{enumerate}
+\[
+T_a(n, i) = \Theta(n \lg n) + \Theta(i) = \Theta(n \lg n), \quad \text{pois } 1 \le i \le n.
+\]
+
+\topico{Análise do Método (b): Max-Heap e $i$ Extrações}
+\begin{enumerate}
+    \item \textbf{Construção da fila de prioridade (\texttt{BUILD-MAX-HEAP}):} Constrói o max-heap em tempo linear $\Theta(n)$.
+    \item \textbf{Extração do máximo $i$ vezes:} Cada operação \texttt{EXTRACT-MAX} remove a raiz e restaura a propriedade de heap via \texttt{MAX-HEAPIFY} em tempo $O(\lg n)$ no pior caso. O custo acumulado das $i$ extrações é:
+    \[
+    \sum_{j=0}^{i-1} O(\lg(n - j)) = \Theta(i \lg n).
+    \]
+    \item \textbf{Ajuste para ordem crescente:} As extrações fornecem os elementos em ordem \textit{decrescente}. Armazená-los em um vetor auxiliar de trás para frente (ou inverter o resultado) custa $\Theta(i)$.
+\end{enumerate}
+\[
+T_b(n, i) = \Theta(n) + \Theta(i \lg n) + \Theta(i) = \Theta(n + i \lg n).
+\]
+
+\topico{Análise do Método (c): Seleção Linear, Partição e Ordenação Parcial}
+\begin{enumerate}
+    \item \textbf{Seleção da estatística de ordem:} O $i$-ésimo maior elemento corresponde exatamente ao $(n - i + 1)$-ésimo menor elemento de $A$. Utilizando o algoritmo de seleção determinístico em tempo linear no pior caso (\texttt{SELECT} das medianas das medianas, Seção 9.3 do Cormen), esta etapa leva tempo $\Theta(n)$.
+    \item \textbf{Particionamento:} Particionar o vetor em torno do elemento encontrado coloca os $i$ maiores elementos no subvetor final $A[n - i + 1 \dots n]$, com custo $\Theta(n)$.
+    \item \textbf{Ordenação dos $i$ maiores elementos:} Ordenamos apenas o subvetor de tamanho $i$ em ordem crescente usando um algoritmo ótimo (\texttt{MergeSort}), com custo $\Theta(i \lg i)$.
+    \item \textbf{Listagem:} Percorrer o subvetor já ordenado consome $\Theta(i)$.
+\end{enumerate}
+\[
+T_c(n, i) = \Theta(n) + \Theta(n) + \Theta(i \lg i) + \Theta(i) = \Theta(n + i \lg i).
+\]
+
+\topico{Quadro Comparativo e Conclusão}
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{p{1.2cm}p{8.8cm}p{3.8cm}}
+\toprule
+\textbf{Método} & \textbf{Etapas Fundamentais} & \textbf{Complexidade} \\ \midrule
+\textbf{(a)} & Ordenação total de $A$ + listagem dos $i$ maiores & $\Theta(n \lg n)$ \\
+\textbf{(b)} & \texttt{BUILD-MAX-HEAP} + $i \times$ \texttt{EXTRACT-MAX} + reversão & $\Theta(n + i \lg n)$ \\
+\textbf{(c)} & \texttt{SELECT} linear + partição + ordenação de $i$ elementos & $\Theta(n + i \lg i)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Como $1 \le i \le n$, vale sempre $\lg i \le \lg n$, de modo que:
+\[
+\Theta(n + i \lg i) \le \Theta(n + i \lg n) \le \Theta(n \lg n).
+\]
+\begin{itemize}
+    \item Para $i = O(1)$ ou $i = O(n/\lg n)$: os métodos (b) e (c) operam em tempo linear $\Theta(n)$, superando assintoticamente o método (a).
+    \item Para $i = \Theta(n)$: todos os três métodos têm ordem assintótica $\Theta(n \lg n)$, mas o método (c) apresenta constante proporcional menor ($\alpha \lg(\alpha n) < \lg n$).
+\end{itemize}
+\res{\text{O Método (c) é assintoticamente o mais eficiente: } T_c(n, i) = \Theta(n + i \lg i).}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+% ==============================================================================
+% QUESTÃO 4
+% ==============================================================================
+\questao{4}{QuickSort Modificado com Tempo $\Theta(n \lg n)$ no Pior Caso}
+
+\textbf{Enunciado:} Mostre como modificar \texttt{QuickSort} de modo que tenha complexidade de tempo $\Theta(n \lg n)$ no pior caso.
+
+\topico{Diagnóstico do QuickSort Convencional}
+O \texttt{QuickSort} clássico exibe tempo $\Theta(n^2)$ no pior caso quando as partições são severamente desbalanceadas (por exemplo, subproblemas de tamanhos $0$ e $n-1$), resultando na relação $T(n) = T(n-1) + \Theta(n) = \Theta(n^2)$.
+
+\topico{A Modificação Proposta}
+Para eliminar o desbalanceamento no pior caso, selecionamos a \textbf{mediana exata} do subvetor como pivô antes de cada particionamento. 
+Como estabelecido pelo algoritmo \texttt{SELECT} (Cormen et al., Seção 9.3 -- algoritmo da mediana das medianas), a mediana de qualquer conjunto de $m$ elementos pode ser encontrada no pior caso em tempo linear $O(m)$.
+
+\topico{Pseudocódigo do QuickSort Modificado}
+\begin{lstlisting}
+QUICKSORT-PIOR-CASO-OTIMO(A, p, r)
+ 1  se p < r então
+ 2      m <- r - p + 1
+ 3      k <- piso((m + 1) / 2)               // posto da mediana
+ 4      med <- SELECT(A, p, r, k)            // determina a mediana em tempo O(m)
+ 5      localiza indice idx em [p, r] onde A[idx] == med
+ 6      troca A[idx] com A[r]               // posiciona a mediana como pivo
+ 7      q <- PARTITION(A, p, r)              // particiona em torno da mediana
+ 8      QUICKSORT-PIOR-CASO-OTIMO(A, p, q - 1)
+ 9      QUICKSORT-PIOR-CASO-OTIMO(A, q + 1, r)
+\end{lstlisting}
+
+\topico{Demonstração da Complexidade $\Theta(n \lg n)$ no Pior Caso}
+Ao utilizar a mediana exata como pivô em um subvetor de tamanho $m$:
+\begin{itemize}
+    \item O subvetor à esquerda tem tamanho no máximo $\lfloor (m - 1)/2 \rfloor \le m/2$.
+    \item O subvetor à direita tem tamanho no máximo $\lceil (m - 1)/2 \rceil \le m/2$.
+\end{itemize}
+Portanto, a partição divide o problema em dois subproblemas de tamanho no máximo $n/2$. 
+O trabalho não recursivo em cada nível é composto por:
+\begin{itemize}
+    \item Execução de \texttt{SELECT}: $O(n)$ no pior caso;
+    \item Localização do índice e troca: $O(n)$;
+    \item Execução de \texttt{PARTITION}: $\Theta(n)$.
+\end{itemize}
+Logo, o custo não recursivo total é limitado por $c \cdot n$, para alguma constante $c > 0$. A recorrência do pior caso satisfaz:
+\[
+T(n) \le 2\,T\left(\frac{n}{2}\right) + c\,n.
+\]
+Aplicando o \textbf{Teorema Mestre}:
+\begin{itemize}
+    \item Parâmetros: $a = 2$, $b = 2$, $f(n) = c n$.
+    \item Expoente crítico: $n^{\log_b a} = n^{\log_2 2} = n^1 = n$.
+    \item Como $f(n) \in \Theta(n^{\log_b a}) = \Theta(n)$, estamos no \textbf{Caso 2} do Teorema Mestre.
+\end{itemize}
+Dessa forma:
+\[
+T(n) \in \Theta(n^1 \lg n) = \Theta(n \lg n).
+\]
+Como qualquer algoritmo de ordenação por comparações possui cota inferior $\Omega(n \lg n)$ no pior caso, concluímos:
+\res{T(n) \in \Theta(n \lg n) \quad \text{no pior caso.}}
+
+\vspace{12pt}
+\hrule
+\vspace{6pt}
+% ==============================================================================
+% QUESTÃO 5
+% ==============================================================================
+\questao{5}{Algoritmo Linear de Seleção Usando Caixa-Preta de Mediana}
+
+\textbf{Enunciado:} Suponha que você tenha uma subrotina do tipo ``caixa-preta'' que determina a mediana em tempo linear (no pior caso). Descreva um algoritmo linear simples que resolve o problema da seleção para todo $i$.
+
+\topico{Descrição do Algoritmo}
+Seja \texttt{MEDIANA(A, p, r)} a sub-rotina caixa-preta que retorna a mediana do subvetor $A[p \dots r]$ em tempo $c_1 \cdot m$, onde $m = r - p + 1$. O algoritmo \texttt{SELECAO-LINEAR} utiliza essa mediana como pivô perfeito para o particionamento, descartando garantidamente metade dos elementos a cada passo recursivo.
+
+\topico{Pseudocódigo}
+\begin{lstlisting}
+SELECAO-LINEAR(A, p, r, i)
+ 1  se p == r então
+ 2      retorne A[p]
+ 3  med <- MEDIANA(A, p, r)                 // caixa-preta: custo O(m) no pior caso
+ 4  localiza indice idx em [p, r] tal que A[idx] == med
+ 5  troca A[idx] com A[r]                   // posiciona o pivo no final
+ 6  q <- PARTITION(A, p, r)                 // particiona em torno da mediana
+ 7  k <- q - p + 1                          // posto relativo do pivo
+ 8  se i == k então
+ 9      retorne A[q]
+10  senão se i < k então
+11      retorne SELECAO-LINEAR(A, p, q - 1, i)
+12  senão
+13      retorne SELECAO-LINEAR(A, q + 1, r, i - k)
+\end{lstlisting}
+
+\topico{Análise da Complexidade de Tempo no Pior Caso}
+Como o pivô escolhido é a mediana exata de $A[p \dots r]$, o número de elementos estritamente menores que a mediana é no máximo $\lfloor (m - 1)/2 \rfloor \le m/2$, e o número de elementos estritamente maiores é no máximo $\lceil (m - 1)/2 \rceil \le m/2$.
+
+Diferentemente do \texttt{QuickSort}, o algoritmo de seleção realiza \textbf{apenas uma chamada recursiva} (ou no lado esquerdo ou no lado direito), reduzindo o tamanho da entrada para no máximo $\lfloor n/2 \rfloor \le n/2$.
+
+O custo não recursivo de cada etapa é dominado por:
+\begin{itemize}
+    \item Chamada a \texttt{MEDIANA}: $c_1 n$;
+    \item Busca linear de \texttt{idx} e troca: $c_2 n$;
+    \item Particionamento linear \texttt{PARTITION}: $c_3 n$.
+\end{itemize}
+Somando essas parcelas, o trabalho por etapa é limitado por $d \cdot n$ para uma constante $d > 0$. Assim, a relação de recorrência para o pior caso é:
+\[
+T(n) \le T\left(\frac{n}{2}\right) + d\,n.
+\]
+
+\topico{Resolução da Recorrência por Expansão (Série Geométrica)}
+Expandindo a relação sucessivamente:
+\begin{align*}
+T(n) &\le d n + T(n/2) \\
+     &\le d n + d\left(\frac{n}{2}\right) + T(n/4) \\
+     &\le d n \left(1 + \frac{1}{2} + \frac{1}{4} + \dots + \frac{1}{2^{\lfloor \lg n \rfloor}}\right) + \Theta(1).
+\end{align*}
+Limitando a soma finita pela série geométrica infinita convergente de razão $1/2$:
+\[
+T(n) \le d n \sum_{j=0}^{\infty} \left(\frac{1}{2}\right)^j = d n \cdot \left(\frac{1}{1 - 1/2}\right) = 2 d n.
+\]
+Portanto, $T(n) \le 2 d n = O(n)$. 
+
+Como qualquer algoritmo que resolve o problema da seleção precisa examinar os $n$ elementos no pior caso ($T(n) \in \Omega(n)$), temos:
+\res{T(n) \in \Theta(n) \quad \text{no pior caso, para todo } i.}
+
+\end{document}

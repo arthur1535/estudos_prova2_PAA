@@ -1,0 +1,425 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,array,graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,trees}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{azul}{HTML}{183B56}
+\definecolor{cinzaClaro}{HTML}{F8F9FA}
+\definecolor{bordaTabela}{HTML}{CCCCCC}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Projeto e Análise de Algoritmos}
+\fancyhead[R]{\small Lista 6 -- Divisão e Conquista}
+\fancyfoot[L]{\small Arthur Pires Lopes -- 12221EEL001}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.25}
+
+\newcommand{\res}[1]{\[\boxed{#1}\]}
+\newcommand{\topico}[1]{\par\medskip\textbf{\color{azul}#1}\par}
+\newcommand{\questao}[2]{\section*{Questão #1 -- #2}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{cinzaClaro},
+  frame=single,
+  rulecolor=\color{bordaTabela},
+  tabsize=2,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.2em,
+  literate={á}{{\'a}}1 {ã}{{\~a}}1 {ç}{{\c c}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1 {←}{{$\leftarrow$}}1
+}
+
+\begin{document}
+
+\begin{center}
+  {\small Universidade Federal de Uberlândia -- UFU\\Faculdade de Engenharia Elétrica -- FEELT}\par
+  \vspace{4pt}
+  {\LARGE\bfseries\color{azul} Lista 6: Divisão e Conquista}\par
+  \vspace{4pt}
+  \textbf{Arthur Pires Lopes}\quad Matrícula: \textbf{12221EEL001}\par
+  \textit{Projeto e Análise de Algoritmos -- Prof. Felipe A. Louza}\par
+  \vspace{2pt}
+  \textit{Resolução para Entrega}
+\end{center}
+\hrule
+\vspace{6pt}
+
+% ==============================================================================
+% QUESTÃO 1
+% ==============================================================================
+\questao{1}{Execução Passo a Passo do Merge Sort}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Merge Sort} para a seguinte entrada:
+\[
+A = \langle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 \rangle
+\]
+
+\topico{1. Funcionamento e Árvore de Divisão}
+O algoritmo divide o vetor recursivamente pelo índice médio $q = \lfloor (p+r)/2 \rfloor$ até subvetores unitários ($p = r$), intercalando-os em seguida via \textsc{Merge}($A, p, q, r$).
+Para $n = 10$ elementos indexados de $1$ a $10$, a árvore de divisões e chamadas recursivas é:
+
+\begin{center}
+\resizebox{0.92\linewidth}{!}{
+\begin{tikzpicture}[
+  level distance=1.1cm,
+  level 1/.style={sibling distance=7.2cm},
+  level 2/.style={sibling distance=3.6cm},
+  level 3/.style={sibling distance=1.8cm},
+  level 4/.style={sibling distance=1.0cm},
+  every node/.style={draw=azul, thick, rounded corners=2pt, inner sep=2.5pt, font=\scriptsize, align=center, fill=cinzaClaro}
+]
+\node {$A[1\dots 10]$\\\tiny$\langle 1,2,3,4,5,6,7,8,9,10\rangle$}
+  child {node {$A[1\dots 5]$\\\tiny$\langle 1,2,3,4,5\rangle$}
+    child {node {$A[1\dots 3]$\\\tiny$\langle 1,2,3\rangle$}
+      child {node {$A[1\dots 2]$\\\tiny$\langle 1,2\rangle$}
+        child {node {$[1]$}}
+        child {node {$[2]$}}
+      }
+      child {node {$A[3\dots 3]$\\\tiny$[3]$}}
+    }
+    child {node {$A[4\dots 5]$\\\tiny$\langle 4,5\rangle$}
+      child {node {$[4]$}}
+      child {node {$[5]$}}
+    }
+  }
+  child {node {$A[6\dots 10]$\\\tiny$\langle 6,7,8,9,10\rangle$}
+    child {node {$A[6\dots 8]$\\\tiny$\langle 6,7,8\rangle$}
+      child {node {$A[6\dots 7]$\\\tiny$\langle 6,7\rangle$}
+        child {node {$[6]$}}
+        child {node {$[7]$}}
+      }
+      child {node {$A[8\dots 8]$\\\tiny$[8]$}}
+    }
+    child {node {$A[9\dots 10]$\\\tiny$\langle 9,10\rangle$}
+      child {node {$[9]$}}
+      child {node {$[10]$}}
+    }
+  };
+\end{tikzpicture}
+}
+\end{center}
+
+\topico{2. Sequência Cronológica das Intercalações (\textsc{Merge})}
+A recursão opera em pós-ordem. Como o vetor já está ordenado, em cada operação $\textsc{Merge}(A, p, q, r)$ com subvetores $L = A[p \dots q]$ e $R = A[q+1 \dots r]$, todos os elementos de $L$ são estritamente menores que os de $R$. Portanto, realizam-se exatamente $|L|$ comparações (compara-se cada elemento de $L$ com o primeiro de $R$, esgotando $L$), copiando-se os restantes de $R$:
+
+\begin{center}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cclccc}
+\toprule
+\textbf{Etapa} & \textbf{Chamada} & \textbf{Subvetores de Entrada} & \textbf{Comparações Realizadas} & \textbf{Nº Comp.} & \textbf{Resultado} \\
+\midrule
+1 & $\textsc{Merge}(A, 1, 1, 2)$ & $L=\langle 1\rangle, R=\langle 2\rangle$ & $1 \le 2$ & 1 & $\langle 1, 2\rangle$ \\
+2 & $\textsc{Merge}(A, 1, 2, 3)$ & $L=\langle 1,2\rangle, R=\langle 3\rangle$ & $1 \le 3,\; 2 \le 3$ & 2 & $\langle 1, 2, 3\rangle$ \\
+3 & $\textsc{Merge}(A, 4, 4, 5)$ & $L=\langle 4\rangle, R=\langle 5\rangle$ & $4 \le 5$ & 1 & $\langle 4, 5\rangle$ \\
+4 & $\textsc{Merge}(A, 1, 3, 5)$ & $L=\langle 1,2,3\rangle, R=\langle 4,5\rangle$ & $1 \le 4,\; 2 \le 4,\; 3 \le 4$ & 3 & $\langle 1, 2, 3, 4, 5\rangle$ \\
+5 & $\textsc{Merge}(A, 6, 6, 7)$ & $L=\langle 6\rangle, R=\langle 7\rangle$ & $6 \le 7$ & 1 & $\langle 6, 7\rangle$ \\
+6 & $\textsc{Merge}(A, 6, 7, 8)$ & $L=\langle 6,7\rangle, R=\langle 8\rangle$ & $6 \le 8,\; 7 \le 8$ & 2 & $\langle 6, 7, 8\rangle$ \\
+7 & $\textsc{Merge}(A, 9, 9, 10)$ & $L=\langle 9\rangle, R=\langle 10\rangle$ & $9 \le 10$ & 1 & $\langle 9, 10\rangle$ \\
+8 & $\textsc{Merge}(A, 6, 8, 10)$ & $L=\langle 6,7,8\rangle, R=\langle 9,10\rangle$ & $6 \le 9,\; 7 \le 9,\; 8 \le 9$ & 3 & $\langle 6, 7, 8, 9, 10\rangle$ \\
+9 & $\textsc{Merge}(A, 1, 5, 10)$ & $L=\langle 1..5\rangle, R=\langle 6..10\rangle$ & $1 \le 6,\; 2 \le 6,\; 3 \le 6,\; 4 \le 6,\; 5 \le 6$ & 5 & $\langle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\rangle$ \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\topico{3. Conclusão Analítica}
+Mesmo estando ordenado, o algoritmo executa a árvore completa de recursão:
+\res{
+\begin{aligned}
+\text{Chamadas a \textsc{MergeSort}} &= 2n - 1 = 19, \qquad \text{Comparações de Chaves} = 19 \\
+T(n) &\in \Theta(n \lg n)
+\end{aligned}
+}
+
+\newpage
+% ==============================================================================
+% QUESTÃO 2
+% ==============================================================================
+\questao{2}{Execução Passo a Passo do Quick Sort com Diferentes Pivôs}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Quick Sort} para a entrada $A = \langle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 \rangle$ sob três estratégias de escolha de pivô.
+
+\topico{(a) Pivô como o primeiro elemento do vetor ($p = A[1]$)}
+Como o vetor já se encontra ordenado, o primeiro elemento é sempre o \textbf{menor elemento} do subvetor considerado. O particionamento divide o arranjo de tamanho $m$ em um subvetor vazio à esquerda ($\text{tamanho } 0$) e um subvetor à direita com todos os demais elementos ($\text{tamanho } m-1$).
+
+\begin{center}
+\resizebox{0.95\linewidth}{!}{
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Nível} & \textbf{Subvetor Atual} & \textbf{Pivô Escolhido} & \textbf{Subvetores Resultantes} & \textbf{Comparações} \\
+\midrule
+1 & $\langle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\rangle$ & $x = 1$ & Esquerda: $\emptyset$,\; Direita: $\langle 2, 3, 4, 5, 6, 7, 8, 9, 10\rangle$ & 9 \\
+2 & $\langle 2, 3, 4, 5, 6, 7, 8, 9, 10\rangle$ & $x = 2$ & Esquerda: $\emptyset$,\; Direita: $\langle 3, 4, 5, 6, 7, 8, 9, 10\rangle$ & 8 \\
+3 & $\langle 3, 4, 5, 6, 7, 8, 9, 10\rangle$ & $x = 3$ & Esquerda: $\emptyset$,\; Direita: $\langle 4, 5, 6, 7, 8, 9, 10\rangle$ & 7 \\
+4 & $\langle 4, 5, 6, 7, 8, 9, 10\rangle$ & $x = 4$ & Esquerda: $\emptyset$,\; Direita: $\langle 5, 6, 7, 8, 9, 10\rangle$ & 6 \\
+5 & $\langle 5, 6, 7, 8, 9, 10\rangle$ & $x = 5$ & Esquerda: $\emptyset$,\; Direita: $\langle 6, 7, 8, 9, 10\rangle$ & 5 \\
+6 & $\langle 6, 7, 8, 9, 10\rangle$ & $x = 6$ & Esquerda: $\emptyset$,\; Direita: $\langle 7, 8, 9, 10\rangle$ & 4 \\
+7 & $\langle 7, 8, 9, 10\rangle$ & $x = 7$ & Esquerda: $\emptyset$,\; Direita: $\langle 8, 9, 10\rangle$ & 3 \\
+8 & $\langle 8, 9, 10\rangle$ & $x = 8$ & Esquerda: $\emptyset$,\; Direita: $\langle 9, 10\rangle$ & 2 \\
+9 & $\langle 9, 10\rangle$ & $x = 9$ & Esquerda: $\emptyset$,\; Direita: $\langle 10\rangle$ & 1 \\
+10 & $\langle 10\rangle$ & -- & Caso base (tamanho 1) & 0 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+A árvore recursiva degenera em uma lista de profundidade $n = 10$. A relação de recorrência é:
+\[
+T(n) = T(n-1) + T(0) + \Theta(n) = T(n-1) + \Theta(n)
+\]
+Número total de comparações: $\sum_{i=1}^{9} i = \frac{9 \times 10}{2} = 45$.
+\res{\text{Pior caso clássico:} \quad T(n) \in \Theta(n^2)}
+
+\topico{(b) Pivô como a mediana entre $A[1]$, $A[\lfloor n/2 \rfloor]$ e $A[n]$ (Mediana de Três)}
+Em qualquer subvetor ordenado $A[l \dots r]$, temos $A[l] \le A[\lfloor (l+r)/2 \rfloor] \le A[r]$. A mediana de três sempre seleciona o elemento central $A[\lfloor (l+r)/2 \rfloor]$, dividindo o arranjo de forma balanceada.
+
+\begin{center}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cllccc}
+\toprule
+\textbf{Nível} & \textbf{Subvetor} & \textbf{Candidatos a Pivô} & \textbf{Mediana (Pivô)} & \textbf{Partição Resultante} \\
+\midrule
+1 & $A[1\dots 10]$ & $A[1]=1, A[5]=5, A[10]=10$ & $x=5$ & $\langle 1, 2, 3, 4\rangle \;\mid\; [5] \;\mid\; \langle 6, 7, 8, 9, 10\rangle$ \\
+\midrule
+2 & $A[1\dots 4]$ & $A[1]=1, A[2]=2, A[4]=4$ & $x=2$ & $\langle 1\rangle \;\mid\; [2] \;\mid\; \langle 3, 4\rangle$ \\
+  & $A[6\dots 10]$ & $A[6]=6, A[8]=8, A[10]=10$ & $x=8$ & $\langle 6, 7\rangle \;\mid\; [8] \;\mid\; \langle 9, 10\rangle$ \\
+\midrule
+3 & $A[1\dots 1]$ & Caso base (tam 1) & -- & $\langle 1\rangle$ ordenado \\
+  & $A[3\dots 4]$ & $A[3]=3, A[3]=3, A[4]=4$ & $x=3$ & $\emptyset \;\mid\; [3] \;\mid\; \langle 4\rangle$ \\
+  & $A[6\dots 7]$ & $A[6]=6, A[6]=6, A[7]=7$ & $x=6$ & $\emptyset \;\mid\; [6] \;\mid\; \langle 7\rangle$ \\
+  & $A[9\dots 10]$ & $A[9]=9, A[9]=9, A[10]=10$ & $x=9$ & $\emptyset \;\mid\; [9] \;\mid\; \langle 10\rangle$ \\
+\midrule
+4 & Subvetores unitários restantes & Casos base & -- & Conclusão \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+A profundidade da árvore é $\lceil \lg 10 \rceil = 4$. A recorrência é balanceada:
+\[
+T(n) = T(\lfloor (n-1)/2 \rfloor) + T(\lceil (n-1)/2 \rceil) + \Theta(n) \implies T(n) = 2T(n/2) + \Theta(n)
+\]
+\res{\text{Caso ótimo/balanceado:} \quad T(n) \in \Theta(n \lg n)}
+
+\topico{(c) Escolha aleatória para o pivô (\textsc{Randomized Quick Sort})}
+Um índice $k \in [l, r]$ é sorteado com probabilidade uniforme $1/(r-l+1)$ e trocado com a posição do pivô antes de particionar.
+\begin{itemize}
+  \item \textbf{Imunidade a entradas pré-ordenadas:} A ordenação inicial não induz determinismo no particionamento; o pior caso sucessivo tem probabilidade desprezível de $\frac{2^{n-1}}{n!} = \frac{512}{3.628.800} \approx 0{,}014\%$.
+  \item \textbf{Execução ilustrativa:} Supondo o sorteio do elemento $6$ na primeira chamada, o particionamento gera $\langle 1, 2, 3, 4, 5 \rangle$ à esquerda e $\langle 7, 8, 9, 10 \rangle$ à direita. Em chamadas subsequentes, pivôs centrais sorteados levam à ordenação em profundidade $O(\lg n)$.
+  \item \textbf{Custo Esperado:} Resolvendo a recorrência pela esperança matemática sobre todas as permutações de pivôs:
+  \[
+  \mathbb{E}[T(n)] = \frac{1}{n}\sum_{q=0}^{n-1} \left( \mathbb{E}[T(q)] + \mathbb{E}[T(n-1-q)] \right) + \Theta(n)
+  \]
+\end{itemize}
+\res{\mathbb{E}[T(n)] \in \Theta(n \lg n)}
+
+\newpage
+% ==============================================================================
+% QUESTÃO 3
+% ==============================================================================
+\questao{3}{Particionamento de Lomuto, Corretude e Complexidade}
+
+\textbf{Enunciado:} Mostre a execução passo-a-passo do algoritmo \textsc{Partition-Lomuto} para a entrada $A = \langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10 \rangle$. Mostre que o algoritmo está correto e calcule o custo computacional.
+
+\begin{lstlisting}[language=C]
+PARTITION-LOMUTO(A, l, r)
+1  x = A[r]
+2  i = l - 1
+3  for j = l to r - 1
+4      if A[j] <= x
+5          i = i + 1
+6          SWAP(A[i], A[j])
+7  SWAP(A[i + 1], A[r])
+8  return i + 1
+\end{lstlisting}
+
+\topico{1. Execução Passo a Passo ($l=1, r=10$)}
+Temos $x = A[10] = 10$ e inicialmente $i = 0$.
+Como $x = 10$ é o elemento máximo de todo o vetor, a condição $A[j] \le 10$ é \textbf{verdadeira} para todas as iterações $j = 1, \dots, 9$. O índice $i$ é incrementado a cada passo e cada elemento é trocado consigo mesmo ($A[i] \leftrightarrow A[j]$ com $i=j$):
+
+\begin{center}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cclccl}
+\toprule
+\textbf{Iteração $j$} & $A[j]$ & \textbf{Teste $A[j] \le 10$} & $i$ & \textbf{Troca Efetuada} & \textbf{Estado do Vetor $A[1\dots 10]$} \\
+\midrule
+Início & -- & -- & 0 & Nenhuma & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 1$ & 4 & $4 \le 10$ (V) & 1 & $\textsc{Swap}(A[1], A[1])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 2$ & 8 & $8 \le 10$ (V) & 2 & $\textsc{Swap}(A[2], A[2])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 3$ & 2 & $2 \le 10$ (V) & 3 & $\textsc{Swap}(A[3], A[3])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 4$ & 7 & $7 \le 10$ (V) & 4 & $\textsc{Swap}(A[4], A[4])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 5$ & 6 & $6 \le 10$ (V) & 5 & $\textsc{Swap}(A[5], A[5])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 6$ & 3 & $3 \le 10$ (V) & 6 & $\textsc{Swap}(A[6], A[6])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 7$ & 5 & $5 \le 10$ (V) & 7 & $\textsc{Swap}(A[7], A[7])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 8$ & 1 & $1 \le 10$ (V) & 8 & $\textsc{Swap}(A[8], A[8])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+$j = 9$ & 9 & $9 \le 10$ (V) & 9 & $\textsc{Swap}(A[9], A[9])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+\midrule
+Linha 7 & -- & Fim do laço ($i=9$) & -- & $\textsc{Swap}(A[10], A[10])$ & $\langle 4, 8, 2, 7, 6, 3, 5, 1, 9, 10\rangle$ \\
+Linha 8 & -- & Retorno $i+1 = 10$ & -- & Posição final do pivô: & \textbf{Retorna 10} \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\topico{2. Prova de Corretude (Invariante de Laço)}
+\textbf{Invariante:} No início de cada iteração do laço \texttt{for} das linhas 3--6:
+\begin{enumerate}
+  \item Para todo índice $k \in [l, i]$, temos $A[k] \le x$.
+  \item Para todo índice $k \in [i+1, j-1]$, temos $A[k] > x$.
+  \item Para $k = r$, temos $A[k] = x$.
+\end{enumerate}
+\textbf{Inicialização:} Antes da 1ª iteração ($j = l$), $i = l - 1$. Os intervalos $[l, i]$ e $[i+1, j-1]$ são vazios; as condições 1 e 2 são satisfeitas por vacuidade. A linha 1 garante $A[r] = x$.
+
+\textbf{Manutenção:} Suponha o invariante verdadeiro no início da iteração $j$.
+\begin{itemize}
+  \item Se $A[j] > x$: as linhas 4--6 não alteram $i$. Ao incrementar $j$ para a próxima iteração, o elemento $A[j]$ passa a fazer parte do intervalo $[i+1, j]$, mantendo a condição 2 verdadeira.
+  \item Se $A[j] \le x$: a linha 5 faz $i \leftarrow i + 1$ e a linha 6 permuta $A[i]$ com $A[j]$. O elemento $A[j] \le x$ é colocado na posição $i$, estendendo a condição 1. O elemento deslocado para a posição $j$ era estritamente maior que $x$ (caso $i < j$), de modo que ao avançar $j$, o intervalo $[i+1, j-1]$ segue composto apenas por valores $> x$.
+\end{itemize}
+
+\textbf{Término:} Ao término, $j = r$. Pelo invariante, $A[l \dots i] \le x$ e $A[i+1 \dots r-1] > x$. A linha 7 troca $A[i+1]$ com $A[r]$, posicionando o pivô $x$ em $i+1$. Logo:
+\[
+A[l \dots i] \le A[i+1] = x < A[i+2 \dots r]
+\]
+O pivô está em sua posição ordenada final e o algoritmo retorna $i+1$. O algoritmo é correto.
+
+\topico{3. Custo Computacional}
+O laço executa exatamente $(r-1) - l + 1 = r - l = n - 1$ iterações. Cada iteração realiza $\Theta(1)$ operações (1 comparação e no máximo 1 troca). Fora do laço há $\Theta(1)$ instruções.
+\res{\text{Tempo: } T(n) = \Theta(n), \qquad \text{Espaço auxiliar: } \Theta(1) \text{ (in-place)}}
+
+\newpage
+% ==============================================================================
+% QUESTÃO 4
+% ==============================================================================
+\questao{4}{Merge de $k$ Vetores Ordenados de Tamanho $n$ em $O(nk \lg k)$}
+
+\textbf{Enunciado:} Projete um algoritmo que faça o merge de $k$ vetores ordenados de tamanho $n$ cada em tempo $O(nk \lg k)$.
+
+\topico{1. Projeto do Algoritmo por Divisão e Conquista}
+Inspirado no \textsc{Merge Sort}, o algoritmo divide o conjunto de $k$ vetores em duas metades de $\lfloor k/2 \rfloor$ e $\lceil k/2 \rceil$ vetores, resolve recursivamente cada metade e intercala os dois supervetores resultantes usando a rotina clássica \textsc{Merge-Duas-Vias} em tempo linear no tamanho total.
+
+\begin{lstlisting}[language=C]
+MERGE-K-VETORES(V, ini, fim, n)
+1  if ini == fim
+2      return V[ini]   // caso base: vetor unico de tamanho n
+3  meio = floor((ini + fim) / 2)
+4  Esq = MERGE-K-VETORES(V, ini, meio, n)
+5  Dir = MERGE-K-VETORES(V, meio + 1, fim, n)
+6  return MERGE-DUAS-VIAS(Esq, Dir)
+\end{lstlisting}
+
+\topico{2. Análise da Complexidade Temporal}
+Seja $T(k)$ o tempo para mesclar $k$ vetores de tamanho $n$.
+\begin{itemize}
+  \item \textbf{Caso base ($k=1$):} Retorna o próprio vetor em $T(1) = \Theta(1)$.
+  \item \textbf{Divisão e Conquista:} O problema de tamanho $k$ gera 2 subproblemas de tamanho $k/2$.
+  \item \textbf{Combinação:} A intercalação \textsc{Merge-Duas-Vias} recebe dois vetores ordenados contendo juntos $k \cdot n$ elementos. O custo de intercalar dois vetores ordenados é proporcional à soma de seus tamanhos, logo $\Theta(nk)$.
+\end{itemize}
+Obtém-se a relação de recorrência na variável $k$:
+\[
+T(k) = 2\,T\left(\frac{k}{2}\right) + \Theta(nk)
+\]
+
+\textbf{Resolução pelo Teorema Mestre:}
+Temos $a = 2$, $b = 2$, e custo de partição/combinação $f(k) = c \cdot n \cdot k$.
+O expoente crítico é:
+\[
+k^{\log_b a} = k^{\log_2 2} = k^1
+\]
+Como $f(k) = (c \cdot n) \cdot k^1 \in \Theta(k^{\log_b a})$, aplica-se diretamente o \textbf{Caso 2 do Teorema Mestre}:
+\[
+T(k) \in \Theta(k^1 \lg k \cdot n) = \Theta(nk \lg k)
+\]
+
+\textbf{Resolução pela Árvore de Recorrência:}
+\begin{itemize}
+  \item A árvore possui altura $\lceil \lg k \rceil$.
+  \item No nível $j$ (para $j = 0, 1, \dots, \lg k$), existem $2^j$ chamadas, cada uma intercalando dois blocos de tamanho $(k/2^j)n$. O trabalho total do nível é:
+  \[
+  2^j \times \Theta\left(\frac{k}{2^j} \cdot n\right) = \Theta(nk)
+  \]
+  \item Somando sobre todos os $\lg k + 1$ níveis:
+  \[
+  T(k) = \sum_{j=0}^{\lg k} \Theta(nk) = \Theta(nk \lg k)
+  \]
+\end{itemize}
+\res{T(k) \in O(nk \lg k)}
+
+\topico{3. Abordagem Alternativa via Min-Heap (Heap de Mínimo)}
+Mantém-se um Min-Heap com os menores elementos não processados de cada um dos $k$ vetores:
+\begin{enumerate}
+  \item Constrói-se um Min-Heap com o 1º elemento de cada vetor: custo $O(k)$.
+  \item Repete-se $N = nk$ vezes:
+  \begin{itemize}
+    \item Extrai a raiz (mínimo global) e insere no vetor ordenado de saída: custo $O(\lg k)$.
+    \item Insere o próximo elemento do mesmo vetor de onde a raiz foi extraída: custo $O(\lg k)$.
+  \end{itemize}
+\end{enumerate}
+Custo total: $O(k) + nk \cdot O(\lg k) = O(nk \lg k)$ com espaço auxiliar $O(k)$ para o heap.
+
+\newpage
+% ==============================================================================
+% QUESTÃO 5
+% ==============================================================================
+\questao{5}{Algoritmo Quick-Find (Quickselect) para Ordem Estatística}
+
+\textbf{Enunciado:} Implemente o algoritmo \textsc{Quick-Find} que utiliza o \textsc{Partition} do \textsc{Quick Sort} para encontrar o $k$-ésimo menor elemento de um vetor $V$ em tempo $O(\log n)$ (caso médio).
+
+\topico{1. Implementação do Algoritmo}
+O algoritmo \textsc{Quick-Find} (denominado \textsc{Quickselect} na literatura de Cormen et al.) seleciona o $k$-ésimo menor elemento particionando o vetor e recursando em apenas \textbf{um} dos subvetores, descartando o outro:
+
+\begin{lstlisting}[language=C]
+QUICK-FIND(V, l, r, k)
+1  if l == r
+2      return V[l]
+3  q = PARTITION(V, l, r)       // q e o indice final do pivo em V
+4  m = q - l + 1                // quantidade de elementos em V[l .. q]
+5  if k == m
+6      return V[q]              // pivo e exatamente o k-esimo elemento
+7  else if k < m
+8      return QUICK-FIND(V, l, q - 1, k)
+9  else
+10     return QUICK-FIND(V, q + 1, r, k - m)
+\end{lstlisting}
+
+\topico{2. Análise da Complexidade e Esclarecimento sobre $O(\log n)$ vs $O(n)$}
+Diferentemente do \textsc{Quick Sort}, que faz chamadas em ambas as partições gerando árvore binária com $\Theta(n)$ trabalho por nível em $\lg n$ níveis, o \textsc{Quick-Find} faz chamada recursiva para \textbf{apenas uma partição}:
+
+\textbf{1. Profundidade Média da Recursão (Número de Chamadas):}
+No caso médio, a partição divide o vetor de forma aproximadamente balanceada (razão $1/2$). O tamanho do subvetor decresce exponencialmente: $n \to n/2 \to n/4 \to \dots \to 1$.
+O número de níveis / passos recursivos executados é:
+\res{\text{Profundidade Média da Árvore de Busca} = \Theta(\log n)}
+Essa redução logarítmica do espaço de busca é análoga à busca binária e justifica a menção a $O(\log n)$ no enunciado.
+
+\textbf{2. Custo Temporal Total (Tempo de Execução):}
+A relação de recorrência para o tempo no caso médio é:
+\[
+T(n) \le T(n/2) + c \cdot n
+\]
+Expandindo a soma ao longo dos $\Theta(\log n)$ níveis recursivos:
+\[
+T(n) \le c\,n + c\,\frac{n}{2} + c\,\frac{n}{4} + \dots + c \cdot 1 = c\,n \sum_{i=0}^{\lfloor \lg n \rfloor} \left(\frac{1}{2}\right)^i < c\,n \sum_{i=0}^{\infty} \left(\frac{1}{2}\right)^i = 2cn \in \Theta(n)
+\]
+Pelo Teorema Mestre ($a = 1, b = 2, f(n) = cn$): $n^{\log_2 1} = n^0 = 1$. Como $f(n) \in \Omega(n^{0+1})$ e satisfaz a condição de regularidade $1 \cdot c(n/2) \le d \cdot cn$ com $d = 1/2 < 1$ (Caso 3), o tempo médio é estritamente linear:
+\res{\text{Tempo no Caso Médio: } T(n) \in \Theta(n), \qquad \text{Pior Caso: } T(n) \in \Theta(n^2)}
+
+\textbf{Conclusão:} O algoritmo atinge a profundidade de recursão de $O(\log n)$ chamadas particionantes no caso médio, e o tempo total de processamento é linear ótimo $\Theta(n)$, superando a ordenação completa $\Theta(n \lg n)$.
+
+\end{document}

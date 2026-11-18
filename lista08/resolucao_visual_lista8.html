@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAA - Resolução Visual da Lista 8 | Ordenação em Tempo Linear</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-foreground: #0f172a;
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 4px;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 custom-scrollbar antialiased">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- HEADER PRINCIPAL -->
+    <header class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5 shadow-lg relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-44 h-44 bg-[var(--primary)] opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--primary)] mb-1">
+            <span class="px-2 py-0.5 rounded bg-[var(--primary)]/15 border border-[var(--primary)]/30">UFU / FEELT</span>
+            <span>Projeto e Análise de Algoritmos</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+            Lista 8: <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]">Ordenação em Tempo Linear</span>
+          </h1>
+          <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-1">
+            Prof. Felipe A. Louza • Simulador Interativo, Demonstrações Visuais & Análise Teórica
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="lista08_entrega.pdf" target="_blank" class="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold hover:opacity-90 transition flex items-center gap-1.5 shadow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            PDF Entrega
+          </a>
+          <a href="lista08_estudo.pdf" target="_blank" class="px-3 py-1.5 rounded-lg bg-[var(--card-border)] hover:bg-[var(--card-border)]/80 text-[var(--foreground)] text-xs font-semibold transition flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            PDF Estudos
+          </a>
+        </div>
+      </div>
+
+      <!-- TABS DE NAVEGAÇÃO -->
+      <nav class="flex overflow-x-auto gap-1.5 mt-5 pt-3 border-t border-[var(--card-border)] text-xs custom-scrollbar">
+        <button onclick="setTab('q1')" id="tab-btn-q1" class="tab-btn px-3.5 py-2 rounded-lg font-medium transition whitespace-nowrap bg-[var(--primary)] text-[var(--primary-foreground)]">
+          🌲 Q1: Árvore de Decisão
+        </button>
+        <button onclick="setTab('q2')" id="tab-btn-q2" class="tab-btn px-3.5 py-2 rounded-lg font-medium transition whitespace-nowrap text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card-border)]/50">
+          🕊️ Q2: Cota & "Picareta"
+        </button>
+        <button onclick="setTab('q3')" id="tab-btn-q3" class="tab-btn px-3.5 py-2 rounded-lg font-medium transition whitespace-nowrap text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card-border)]/50">
+          🔢 Q3: Counting Sort Passo a Passo
+        </button>
+        <button onclick="setTab('q4')" id="tab-btn-q4" class="tab-btn px-3.5 py-2 rounded-lg font-medium transition whitespace-nowrap text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card-border)]/50">
+          🔄 Q4: Radix Sort (LSD vs MSD)
+        </button>
+        <button onclick="setTab('q5')" id="tab-btn-q5" class="tab-btn px-3.5 py-2 rounded-lg font-medium transition whitespace-nowrap text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--card-border)]/50">
+          📈 Q5: Radix vs Merge Sort
+        </button>
+      </nav>
+    </header>
+
+    <!-- CONTEÚDO DAS TABS -->
+    <main>
+
+      <!-- ============================================================== -->
+      <!-- ABA 1: QUESTÃO 1 (ÁRVORE DE DECISÃO) -->
+      <!-- ============================================================== -->
+      <section id="tab-q1" class="tab-content space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Coluna 1: Explicação Teórica e Métricas -->
+          <div class="space-y-4">
+            <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5">
+              <span class="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">Questão 1</span>
+              <h2 class="text-lg font-bold mt-1">Árvore de Decisão para $n = 4$</h2>
+              <p class="text-xs text-[var(--muted-foreground)] mt-1">
+                Entrada: $A = \langle x_1, x_2, x_3, x_4 \rangle$. Cada nó interno executa uma comparação binária ($x_i \le x_j$).
+              </p>
+
+              <div class="mt-4 space-y-3">
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-[var(--card-border)]">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-[var(--muted-foreground)]">(a) Número de Folhas</span>
+                    <span class="font-mono font-bold text-[var(--accent)] text-sm">l = 4! = 24</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--muted-foreground)] mt-1">
+                    Cada permutação possível deve ter ao menos 1 folha alcançável.
+                  </p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-[var(--card-border)]">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-[var(--muted-foreground)]">(b) Altura da Árvore</span>
+                    <span class="font-mono font-bold text-[var(--success)] text-sm">h = 5</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--muted-foreground)] mt-1">
+                    $2^h \ge 24 \implies h \ge \lceil \log_2(24) \rceil = 5$. O algoritmo de Ford-Johnson atinge exatamente $h = 5$.
+                  </p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-slate-900/60 border border-[var(--card-border)]">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-[var(--muted-foreground)]">(c) Cota Inferior</span>
+                    <span class="font-mono font-bold text-[var(--warning)] text-sm">&Omega;(n log n)</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--muted-foreground)] mt-1">
+                    A altura $h$ representa o pior caso de comparações. Como $h \ge \log_2(n!) = \Omega(n \log n)$, nenhum algoritmo baseado em comparações é sub-linear.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interação com Permutação -->
+            <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5">
+              <h3 class="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider mb-2">Simular Entrada no Modelo</h3>
+              <p class="text-xs text-[var(--muted-foreground)] mb-3">Escolha os 4 valores para percorrer a árvore de decisão ótima:</p>
+              
+              <div class="grid grid-cols-4 gap-2 mb-3">
+                <div>
+                  <label class="text-[10px] text-[var(--muted-foreground)] block">x₁</label>
+                  <input id="q1-x1" type="number" value="3" class="w-full bg-slate-900 border border-[var(--card-border)] rounded-lg px-2 py-1 text-center font-mono text-xs">
+                </div>
+                <div>
+                  <label class="text-[10px] text-[var(--muted-foreground)] block">x₂</label>
+                  <input id="q1-x2" type="number" value="1" class="w-full bg-slate-900 border border-[var(--card-border)] rounded-lg px-2 py-1 text-center font-mono text-xs">
+                </div>
+                <div>
+                  <label class="text-[10px] text-[var(--muted-foreground)] block">x₃</label>
+                  <input id="q1-x3" type="number" value="4" class="w-full bg-slate-900 border border-[var(--card-border)] rounded-lg px-2 py-1 text-center font-mono text-xs">
+                </div>
+                <div>
+                  <label class="text-[10px] text-[var(--muted-foreground)] block">x₄</label>
+                  <input id="q1-x4" type="number" value="2" class="w-full bg-slate-900 border border-[var(--card-border)] rounded-lg px-2 py-1 text-center font-mono text-xs">
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <button onclick="runQ1Simulation()" class="flex-1 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold hover:opacity-90 transition">
+                  Traçar Rota na Árvore
+                </button>
+                <button onclick="randomizeQ1()" class="px-2.5 py-1.5 rounded-lg bg-[var(--card-border)] text-xs font-semibold hover:bg-[var(--card-border)]/80 transition">
+                  Aleatório
+                </button>
+              </div>
+
+              <div id="q1-result-box" class="mt-3 p-3 rounded-xl bg-slate-900 border border-[var(--card-border)] text-xs font-mono space-y-1 hidden">
+                <div class="text-[var(--muted-foreground)] text-[11px]">Passos executados:</div>
+                <div id="q1-steps" class="text-xs text-[var(--primary)] space-y-0.5"></div>
+                <div class="pt-2 border-t border-[var(--card-border)] flex justify-between items-center text-xs">
+                  <span class="text-[var(--foreground)]">Saída Ordenada:</span>
+                  <span id="q1-sorted" class="font-bold text-[var(--success)]"></span>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-[var(--muted-foreground)]">
+                  <span>Comparações feitas:</span>
+                  <span id="q1-count" class="font-bold text-[var(--accent)]"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna 2 e 3: Visualizador Gráfico da Árvore -->
+          <div class="lg:col-span-2 bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-[var(--card-border)]">
+              <div>
+                <h3 class="text-sm font-bold">Topologia Canônica da Árvore Ótima</h3>
+                <p class="text-xs text-[var(--muted-foreground)]">Ramo canônico $x_1 \le x_2$ e $x_3 \le x_4$ expandido (6 folhas; 4 quadrantes simétricos = 24 folhas)</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--success)]/15 border border-[var(--success)]/30 text-[var(--success)] font-semibold font-mono">
+                Altura = 5 | Folhas = 24
+              </span>
+            </div>
+
+            <!-- Canvas/SVG interativo da árvore -->
+            <div class="overflow-x-auto py-4 custom-scrollbar">
+              <svg id="tree-svg" class="min-w-[650px] w-full h-[380px]" viewBox="0 0 650 380">
+                <!-- Linhas e nós renderizados dinamicamente via JS -->
+              </svg>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--card-border)] text-xs text-[var(--muted-foreground)]">
+              <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500/30 border border-blue-400"></span> Comparação ($\le$)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-400"></span> Folha Ordenada</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/30 border border-amber-400 border-dashed"></span> Ramo Simétrico</span>
+              </div>
+              <span class="text-[11px] font-mono">Ford-Johnson Merge-Insertion</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA 2: QUESTÃO 2 (O PROFESSOR PICARETA) -->
+      <!-- ============================================================== -->
+      <section id="tab-q2" class="tab-content hidden space-y-5">
+        <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-6">
+          <div class="max-w-3xl">
+            <span class="text-xs font-bold text-[var(--error)] uppercase tracking-wider">Questão 2 • Cota de Informação</span>
+            <h2 class="text-xl font-extrabold mt-1">O prof. de PAA é um Picareta?</h2>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-2 leading-relaxed">
+              "O prof. de PAA afirmou que desenvolveu um novo método de ordenação que consegue ordenar <strong>qualquer vetor de 5 elementos com apenas 6 comparações</strong>."
+            </p>
+          </div>
+
+          <!-- Banner de Veredito -->
+          <div class="mt-5 p-4 rounded-xl bg-red-950/40 border border-red-500/40 flex items-start gap-4">
+            <div class="p-2 rounded-lg bg-red-500/20 text-red-400 text-xl font-bold">🚨</div>
+            <div>
+              <h3 class="text-sm font-bold text-red-300">Veredito: O Professor é um PICARETA!</h3>
+              <p class="text-xs text-red-200/80 mt-1">
+                A alegação viola o <strong>Princípio da Casa dos Pombos</strong> e a <strong>Teoria da Informação de Shannon</strong>. Com 6 comparações binárias, é matematicamente impossível distinguir 120 permutações distintas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Simulador Interativo de Pombos vs Casas -->
+          <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+            <div class="space-y-4 bg-slate-900/60 p-5 rounded-xl border border-[var(--card-border)]">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">Simulador Teórico de Parâmetros</h4>
+              
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-[var(--muted-foreground)]">Tamanho do vetor ($n$ elementos):</span>
+                  <span id="q2-n-val" class="font-bold font-mono text-[var(--primary)]">5</span>
+                </div>
+                <input id="q2-n-slider" type="range" min="3" max="6" value="5" class="w-full accent-[var(--primary)]" oninput="updateQ2()">
+                <div class="flex justify-between text-[10px] text-[var(--muted-foreground)] mt-0.5">
+                  <span>3 elem. (6 perm)</span>
+                  <span>4 elem. (24 perm)</span>
+                  <span>5 elem. (120 perm)</span>
+                  <span>6 elem. (720 perm)</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-[var(--muted-foreground)]">Comparações alegadas ($k$):</span>
+                  <span id="q2-k-val" class="font-bold font-mono text-[var(--accent)]">6</span>
+                </div>
+                <input id="q2-k-slider" type="range" min="2" max="10" value="6" class="w-full accent-[var(--accent)]" oninput="updateQ2()">
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-3 border-t border-[var(--card-border)]">
+                <div class="p-3 rounded-lg bg-slate-950 border border-[var(--card-border)]">
+                  <div class="text-[10px] text-[var(--muted-foreground)] uppercase">Permutações ($n!$)</div>
+                  <div id="q2-perms" class="text-lg font-extrabold font-mono text-[var(--foreground)] mt-0.5">120</div>
+                  <div class="text-[10px] text-[var(--muted-foreground)]">"Pombos" necessários</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-950 border border-[var(--card-border)]">
+                  <div class="text-[10px] text-[var(--muted-foreground)] uppercase">Folhas Máximas ($2^k$)</div>
+                  <div id="q2-leaves" class="text-lg font-extrabold font-mono text-[var(--foreground)] mt-0.5">64</div>
+                  <div class="text-[10px] text-[var(--muted-foreground)]">"Casas" disponíveis</div>
+                </div>
+              </div>
+
+              <div id="q2-status-card" class="p-3 rounded-lg text-xs font-semibold flex items-center justify-between"></div>
+            </div>
+
+            <!-- Gráfico Visual de Capacidade -->
+            <div class="space-y-4">
+              <div class="bg-slate-900/60 p-5 rounded-xl border border-[var(--card-border)] space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">Representação Gráfica da Capacidade</h4>
+                
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-[var(--muted-foreground)]">Casas disponíveis ($2^6 = 64$ folhas)</span>
+                    <span class="font-mono font-bold text-red-400">53.3% coberto</span>
+                  </div>
+                  <div class="w-full h-4 bg-slate-950 rounded-full overflow-hidden border border-[var(--card-border)]">
+                    <div class="h-full bg-red-500 rounded-full transition-all duration-500" style="width: 53.3%"></div>
+                  </div>
+                  <p class="text-[11px] text-[var(--muted-foreground)] mt-1">Faltam 56 folhas para cobrir todas as 120 permutações!</p>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-950/70 border border-[var(--card-border)] space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-[var(--muted-foreground)]">Entropia necessária ($\log_2(120)$):</span>
+                    <span class="font-mono font-bold text-[var(--accent)]">6.907 bits</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[var(--muted-foreground)]">Informação fornecida (6 comparações):</span>
+                    <span class="font-mono font-bold text-red-400">6.000 bits</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[var(--muted-foreground)]">Déficit irredutível:</span>
+                    <span class="font-mono font-bold text-red-400">0.907 bits</span>
+                  </div>
+                  <div class="pt-2 border-t border-[var(--card-border)] flex justify-between font-bold text-xs text-[var(--success)]">
+                    <span>Mínimo real para $n = 5$:</span>
+                    <span class="font-mono">&lceil;6.907&rceil; = 7 comparações</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA 3: QUESTÃO 3 (COUNTING SORT PASSO A PASSO) -->
+      <!-- ============================================================== -->
+      <section id="tab-q3" class="tab-content hidden space-y-5">
+        <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5 md:p-6 space-y-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">Questão 3 • Ordenação Estável</span>
+              <h2 class="text-lg md:text-xl font-bold mt-0.5">Execução Passo a Passo do Counting Sort</h2>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+                $n = 18$ elementos, chaves inteiras no intervalo $[0, 4]$ ($k = 4$).
+              </p>
+            </div>
+            
+            <!-- Controles de Execução do Simulador -->
+            <div class="flex items-center gap-2">
+              <button onclick="csPrev()" class="p-2 rounded-lg bg-[var(--card-border)] hover:bg-[var(--card-border)]/80 text-xs transition" title="Passo Anterior">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button id="cs-play-btn" onclick="csTogglePlay()" class="px-3.5 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow">
+                <span id="cs-play-icon">▶</span>
+                <span id="cs-play-text">Reproduzir</span>
+              </button>
+              <button onclick="csNext()" class="p-2 rounded-lg bg-[var(--card-border)] hover:bg-[var(--card-border)]/80 text-xs transition" title="Próximo Passo">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+              <button onclick="csReset()" class="p-2 rounded-lg bg-slate-900 border border-[var(--card-border)] text-xs text-[var(--muted-foreground)] hover:text-white transition" title="Reiniciar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Barra de Status e Fase Atual -->
+          <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--card-border)] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2.5">
+              <span id="cs-phase-badge" class="px-2.5 py-1 rounded-md bg-[var(--primary)]/20 text-[var(--primary)] font-bold font-mono">Fase 4: Alocação</span>
+              <span id="cs-status-text" class="text-[var(--foreground)] font-medium">Pronto para iniciar</span>
+            </div>
+            <div class="flex items-center gap-4 text-[var(--muted-foreground)] font-mono text-[11px]">
+              <span>Passo: <strong id="cs-step-counter" class="text-[var(--foreground)]">0</strong> / 18</span>
+              <span>Velocidade: 
+                <select id="cs-speed" class="bg-slate-950 border border-[var(--card-border)] rounded px-1.5 py-0.5 text-xs text-[var(--foreground)]">
+                  <option value="1200">Lento</option>
+                  <option value="600" selected>Normal</option>
+                  <option value="250">Rápido</option>
+                </select>
+              </span>
+            </div>
+          </div>
+
+          <!-- VISUALIZAÇÃO DOS VETORES -->
+          <div class="space-y-4">
+            <!-- Vetor de Entrada A -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-[var(--foreground)]">Vetor de Entrada $A[1 \dots 18]$:</span>
+                <span class="text-[11px] text-[var(--muted-foreground)]">Lido da direita para esquerda ($j = 18 \dots 1$) para garantir estabilidade</span>
+              </div>
+              <div id="cs-array-a" class="flex flex-wrap gap-1 md:gap-1.5">
+                <!-- Preenchido via JS -->
+              </div>
+            </div>
+
+            <!-- Vetor de Contagem C -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-[var(--accent)]">Vetor Auxiliar $C[0 \dots 4]$ (Somas Acumuladas & Ponteiros de Posição):</span>
+                <span id="cs-c-mode" class="text-[11px] text-[var(--muted-foreground)]">Valores acumulados: [1, 4, 9, 14, 18]</span>
+              </div>
+              <div id="cs-array-c" class="grid grid-cols-5 gap-2 max-w-xl">
+                <!-- Preenchido via JS -->
+              </div>
+            </div>
+
+            <!-- Vetor de Saída B -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-[var(--success)]">Vetor de Saída Ordenado $B[1 \dots 18]$:</span>
+                <span id="cs-b-status" class="text-[11px] text-[var(--muted-foreground)]">0 de 18 posições preenchidas</span>
+              </div>
+              <div id="cs-array-b" class="flex flex-wrap gap-1 md:gap-1.5">
+                <!-- Preenchido via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTA DIDÁTICA SOBRE ESTABILIDADE -->
+          <div class="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 text-xs space-y-1.5 text-amber-200/90">
+            <div class="font-bold text-amber-300 flex items-center gap-1.5">
+              <span>💡</span> O Segredo da Estabilidade no Counting Sort
+            </div>
+            <p class="leading-relaxed">
+              O laço percorre $A$ de <strong>trás para frente ($j = 18$ até $1$)</strong>. Como $C[v]$ guarda o limite superior da posição de $v$, o último elemento $v$ de $A$ vai para a posição mais à direita do seu bloco em $B$. Os elementos anteriores vão ocupando posições decrescentes. Se percorrêssemos da esquerda para a direita, a ordem relativa seria <strong>invertida</strong>, quebrando a estabilidade necessária para o Radix Sort!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA 4: QUESTÃO 4 (RADIX SORT: LSD vs MSD) -->
+      <!-- ============================================================== -->
+      <section id="tab-q4" class="tab-content hidden space-y-5">
+        <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5 md:p-6 space-y-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">Questão 4 • Radix Sort</span>
+              <h2 class="text-lg md:text-xl font-bold mt-0.5">Execução LSD vs MSD para $A = \langle 329, 457, 657, 839, 436, 720, 355 \rangle$</h2>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+                $n = 7$ elementos, $d = 3$ dígitos decimais (base $k = 10$).
+              </p>
+            </div>
+
+            <!-- Seletor LSD vs MSD -->
+            <div class="flex rounded-xl bg-slate-900 p-1 border border-[var(--card-border)] text-xs">
+              <button onclick="setRadixMode('lsd')" id="radix-btn-lsd" class="px-3.5 py-1.5 rounded-lg font-bold bg-[var(--primary)] text-[var(--primary-foreground)] transition">
+                (b) LSD (Menos Significativo)
+              </button>
+              <button onclick="setRadixMode('msd')" id="radix-btn-msd" class="px-3.5 py-1.5 rounded-lg font-bold text-[var(--muted-foreground)] hover:text-white transition">
+                (a) MSD (Mais Significativo)
+              </button>
+            </div>
+          </div>
+
+          <!-- MODO LSD -->
+          <div id="radix-view-lsd" class="space-y-4">
+            <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/30 text-xs text-blue-200/90 leading-relaxed">
+              <strong>LSD (Least Significant Digit):</strong> Ordena iterativamente do dígito menos significativo (unidades) para o mais significativo (centenas). A cada passada, aplica-se uma ordenação estável (Counting Sort).
+            </div>
+
+            <!-- As 3 Passadas do LSD em Colunas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <!-- Original -->
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-[var(--card-border)] space-y-2">
+                <div class="text-xs font-bold text-[var(--muted-foreground)] uppercase">Entrada Original</div>
+                <div class="space-y-1.5 font-mono text-xs">
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>329</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>457</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>657</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>839</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>436</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>720</span> <span class="text-gray-500">original</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--card-border)] flex justify-between"><span>355</span> <span class="text-gray-500">original</span></div>
+                </div>
+              </div>
+
+              <!-- Passada 1 (Unidades) -->
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-[var(--card-border)] space-y-2">
+                <div class="text-xs font-bold text-[var(--primary)] uppercase flex justify-between">
+                  <span>Passada 1: Unidades</span>
+                  <span class="text-[10px] bg-[var(--primary)]/20 px-1.5 py-0.5 rounded">XX[d₁]</span>
+                </div>
+                <div class="space-y-1.5 font-mono text-xs">
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>72<strong class="text-[var(--primary)] text-sm">0</strong></span> <span class="text-xs text-[var(--muted-foreground)]">0</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>35<strong class="text-[var(--primary)] text-sm">5</strong></span> <span class="text-xs text-[var(--muted-foreground)]">5</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>43<strong class="text-[var(--primary)] text-sm">6</strong></span> <span class="text-xs text-[var(--muted-foreground)]">6</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>45<strong class="text-[var(--primary)] text-sm">7</strong></span> <span class="text-xs text-[var(--muted-foreground)]">7 (1º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>65<strong class="text-[var(--primary)] text-sm">7</strong></span> <span class="text-xs text-[var(--muted-foreground)]">7 (2º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>32<strong class="text-[var(--primary)] text-sm">9</strong></span> <span class="text-xs text-[var(--muted-foreground)]">9 (1º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--primary)]/40 flex justify-between"><span>83<strong class="text-[var(--primary)] text-sm">9</strong></span> <span class="text-xs text-[var(--muted-foreground)]">9 (2º)</span></div>
+                </div>
+              </div>
+
+              <!-- Passada 2 (Dezenas) -->
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-[var(--card-border)] space-y-2">
+                <div class="text-xs font-bold text-[var(--accent)] uppercase flex justify-between">
+                  <span>Passada 2: Dezenas</span>
+                  <span class="text-[10px] bg-[var(--accent)]/20 px-1.5 py-0.5 rounded">X[d₂]X</span>
+                </div>
+                <div class="space-y-1.5 font-mono text-xs">
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>7<strong class="text-[var(--accent)] text-sm">2</strong>0</span> <span class="text-xs text-[var(--muted-foreground)]">2 (1º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>3<strong class="text-[var(--accent)] text-sm">2</strong>9</span> <span class="text-xs text-[var(--muted-foreground)]">2 (2º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>4<strong class="text-[var(--accent)] text-sm">3</strong>6</span> <span class="text-xs text-[var(--muted-foreground)]">3 (1º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>8<strong class="text-[var(--accent)] text-sm">3</strong>9</span> <span class="text-xs text-[var(--muted-foreground)]">3 (2º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>3<strong class="text-[var(--accent)] text-sm">5</strong>5</span> <span class="text-xs text-[var(--muted-foreground)]">5 (1º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>4<strong class="text-[var(--accent)] text-sm">5</strong>7</span> <span class="text-xs text-[var(--muted-foreground)]">5 (2º)</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--accent)]/40 flex justify-between"><span>6<strong class="text-[var(--accent)] text-sm">5</strong>7</span> <span class="text-xs text-[var(--muted-foreground)]">5 (3º)</span></div>
+                </div>
+              </div>
+
+              <!-- Passada 3 (Centenas) -->
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-[var(--card-border)] space-y-2">
+                <div class="text-xs font-bold text-[var(--success)] uppercase flex justify-between">
+                  <span>Passada 3: Centenas</span>
+                  <span class="text-[10px] bg-[var(--success)]/20 px-1.5 py-0.5 rounded">[d₃]XX</span>
+                </div>
+                <div class="space-y-1.5 font-mono text-xs">
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">3</strong>29</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">3</strong>55</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">4</strong>36</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">4</strong>57</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">6</strong>57</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">7</strong>20</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                  <div class="p-2 rounded bg-slate-950 border border-[var(--success)]/40 flex justify-between"><span><strong class="text-[var(--success)] text-sm">8</strong>39</span> <span class="text-xs text-[var(--success)]">Ordenado</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODO MSD -->
+          <div id="radix-view-msd" class="hidden space-y-4">
+            <div class="p-3.5 rounded-xl bg-purple-950/20 border border-purple-500/30 text-xs text-purple-200/90 leading-relaxed">
+              <strong>MSD (Most Significant Digit):</strong> Opera por divisão e conquista. Particiona os elementos em baldes (buckets) pelo dígito mais à esquerda (centenas) e aplica recursão exclusivamente aos baldes com tamanho $> 1$.
+            </div>
+
+            <!-- Estrutura de Baldes / Árvore Recursiva -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <!-- Balde 3 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--primary)]/40 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-[var(--primary)]">Balde Centena 3</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">Tamanho 2 &rarr; Recursão</span>
+                </div>
+                <div class="space-y-1 font-mono text-xs">
+                  <div class="p-1.5 rounded bg-slate-950">329 (dezena 2)</div>
+                  <div class="p-1.5 rounded bg-slate-950">355 (dezena 5)</div>
+                </div>
+                <div class="pt-2 border-t border-[var(--card-border)] text-[11px] text-[var(--success)] font-mono">
+                  &rarr; Sub-ordem: &lang;329, 355&rang;
+                </div>
+              </div>
+
+              <!-- Balde 4 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--primary)]/40 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-[var(--primary)]">Balde Centena 4</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">Tamanho 2 &rarr; Recursão</span>
+                </div>
+                <div class="space-y-1 font-mono text-xs">
+                  <div class="p-1.5 rounded bg-slate-950">436 (dezena 3)</div>
+                  <div class="p-1.5 rounded bg-slate-950">457 (dezena 5)</div>
+                </div>
+                <div class="pt-2 border-t border-[var(--card-border)] text-[11px] text-[var(--success)] font-mono">
+                  &rarr; Sub-ordem: &lang;436, 457&rang;
+                </div>
+              </div>
+
+              <!-- Balde 6 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--card-border)] space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-[var(--muted-foreground)]">Balde Centena 6</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Tamanho 1 (Base)</span>
+                </div>
+                <div class="p-1.5 rounded bg-slate-950 font-mono text-xs">657</div>
+                <div class="pt-2 border-t border-[var(--card-border)] text-[11px] text-[var(--success)] font-mono">
+                  &rarr; Já ordenado
+                </div>
+              </div>
+
+              <!-- Balde 7 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--card-border)] space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-[var(--muted-foreground)]">Balde Centena 7</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Tamanho 1 (Base)</span>
+                </div>
+                <div class="p-1.5 rounded bg-slate-950 font-mono text-xs">720</div>
+                <div class="pt-2 border-t border-[var(--card-border)] text-[11px] text-[var(--success)] font-mono">
+                  &rarr; Já ordenado
+                </div>
+              </div>
+
+              <!-- Balde 8 -->
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-[var(--card-border)] space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-[var(--muted-foreground)]">Balde Centena 8</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Tamanho 1 (Base)</span>
+                </div>
+                <div class="p-1.5 rounded bg-slate-950 font-mono text-xs">839</div>
+                <div class="pt-2 border-t border-[var(--card-border)] text-[11px] text-[var(--success)] font-mono">
+                  &rarr; Já ordenado
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-950 border border-[var(--card-border)] flex items-center justify-between text-xs">
+              <span class="text-[var(--muted-foreground)]">Concatenação dos baldes ordenados:</span>
+              <span class="font-mono font-bold text-[var(--success)]">&lang;329, 355, 436, 457, 657, 720, 839&rang;</span>
+            </div>
+          </div>
+
+          <!-- (c) Custo Computacional -->
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">(c) Análise do Custo Computacional</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+              <div class="p-3 rounded-lg bg-slate-950 border border-[var(--card-border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Tempo Geral</div>
+                <div class="text-base font-bold font-mono text-[var(--primary)] mt-0.5">T(n) = &Theta;(d(n + k))</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">$d$ passadas do Counting Sort de custo $\Theta(n + k)$.</div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-950 border border-[var(--card-border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Caso Linear</div>
+                <div class="text-base font-bold font-mono text-[var(--success)] mt-0.5">T(n) = &Theta;(n)</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Quando $d = \mathcal{O}(1)$ e $k = \mathcal{O}(n)$.</div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-950 border border-[var(--card-border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Espaço Auxiliar</div>
+                <div class="text-base font-bold font-mono text-[var(--accent)] mt-0.5">S(n) = &Theta;(n + k)</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Alocação dos vetores $B$ e $C$.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- ABA 5: QUESTÃO 5 (RADIX SORT vs MERGE SORT) -->
+      <!-- ============================================================== -->
+      <section id="tab-q5" class="tab-content hidden space-y-5">
+        <div class="bg-[var(--card)] border border-[var(--card-border)] rounded-2xl p-5 md:p-6 space-y-5">
+          <div class="max-w-3xl">
+            <span class="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">Questão 5 • Comparação Assintótica</span>
+            <h2 class="text-lg md:text-xl font-bold mt-0.5">Quando o Radix Sort empata com o Merge Sort?</h2>
+            <p class="text-xs text-[var(--muted-foreground)] mt-1">
+              O Merge Sort opera em tempo $\Theta(n \log n)$. O Radix Sort opera em tempo $\Theta(d(n + k))$. Quando eles possuem a mesma complexidade?
+            </p>
+          </div>
+
+          <!-- Resposta e Condição Formal -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">Condição Matemática de Equivalência</h3>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Para que $\Theta(d(n + k)) = \Theta(n \log n)$, é necessário que:
+              </p>
+              <ul class="text-xs space-y-1.5 list-disc list-inside text-[var(--foreground)] font-mono">
+                <li>A base seja constante: $k = \mathcal{O}(1)$ (ex: binário $k=2$ ou decimal $k=10$);</li>
+                <li>O número de dígitos seja logarítmico: $d = \Theta(\log n)$.</li>
+              </ul>
+              <div class="pt-2 border-t border-[var(--card-border)] text-xs text-[var(--accent)] font-mono">
+                &Theta;(&log n &times; (n + 2)) = &Theta;(n &log n)
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-[var(--card-border)] space-y-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--success)]">Cenário Prático Típico</h3>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Ordenação de $n$ inteiros com magnitude máxima $N = n^c$ (polinomial em $n$).
+              </p>
+              <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Se ordenarmos <strong>bit a bit</strong> em binário ($k = 2$):
+              </p>
+              <div class="p-2.5 rounded bg-slate-950 font-mono text-xs text-[var(--success)]">
+                d = &lceil;&log₂ N&rceil; = &lceil;&log₂(n^c)&rceil; = c &log₂ n = &Theta;(&log n)
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)]">
+                Bit a bit, o Radix Sort perde a vantagem linear e empata assintoticamente com o Merge Sort!
+              </p>
+            </div>
+          </div>
+
+          <!-- Simulador Interativo de Curvas de Complexidade -->
+          <div class="p-5 rounded-xl bg-slate-900 border border-[var(--card-border)] space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[var(--card-border)]">
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">Simulador Interativo de Custo Operacional</h4>
+                <p class="text-[11px] text-[var(--muted-foreground)]">Varie o tamanho da entrada $n$ e veja as operações calculadas:</p>
+              </div>
+              <div class="flex items-center gap-3 text-xs">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-500"></span> Merge Sort: $n \log_2 n$</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span> Radix (Bit a Bit, $k=2$)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500"></span> Radix (Base $k = n$, $d=1$)</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-[var(--muted-foreground)]">Número de elementos ($n$):</span>
+                <span id="q5-n-display" class="font-mono font-bold text-[var(--primary)] text-sm">1.024</span>
+              </div>
+              <input id="q5-n-slider" type="range" min="64" max="65536" step="64" value="1024" class="w-full accent-[var(--primary)]" oninput="updateQ5()">
+            </div>
+
+            <!-- Tabela Comparativa de Operações -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-blue-500/40">
+                <div class="text-[11px] text-blue-400 font-bold uppercase">Merge Sort ($n \log_2 n$)</div>
+                <div id="q5-merge-ops" class="text-xl font-extrabold font-mono text-blue-300 mt-1">10.240</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Custo assintótico: $\Theta(n \log n)$</div>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-amber-500/40">
+                <div class="text-[11px] text-amber-400 font-bold uppercase">Radix Bit a Bit ($k=2, d=\log_2 n$)</div>
+                <div id="q5-radix-bit-ops" class="text-xl font-extrabold font-mono text-amber-300 mt-1">10.260</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Empate exato: $\Theta(n \log n)$</div>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-emerald-500/40">
+                <div class="text-[11px] text-emerald-400 font-bold uppercase">Radix Agrupado ($k=n, d=1$)</div>
+                <div id="q5-radix-opt-ops" class="text-xl font-extrabold font-mono text-emerald-300 mt-1">2.048</div>
+                <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Tempo linear: $\Theta(n)$</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="pt-4 border-t border-[var(--card-border)] flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-[var(--muted-foreground)]">
+      <div>PAA • Universidade Federal de Uberlândia (UFU)</div>
+      <div class="font-mono text-[11px]">Resolução Desenvolvida para Estudos & Entrega Acadêmica</div>
+    </footer>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SCRIPT LOGIC JAVASCRIPT -->
+  <!-- ============================================================== -->
+  <script>
+    // Gerenciador de Abas
+    function setTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[var(--primary)]', 'text-[var(--primary-foreground)]');
+        btn.classList.add('text-[var(--muted-foreground)]');
+      });
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      activeBtn.classList.add('bg-[var(--primary)]', 'text-[var(--primary-foreground)]');
+      activeBtn.classList.remove('text-[var(--muted-foreground)]');
+
+      if (tabId === 'q1') drawTree();
+    }
+
+    // ==============================================================
+    // QUESTÃO 1: ÁRVORE DE DECISÃO
+    // ==============================================================
+    function drawTree(highlightPath = []) {
+      const svg = document.getElementById('tree-svg');
+      if (!svg) return;
+
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+          </marker>
+          <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
+          </marker>
+        </defs>
+
+        <!-- NÍVEL 1: Raiz -->
+        <g id="node-root" transform="translate(325, 30)">
+          <circle r="22" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text text-anchor="middle" dy="4" fill="#f8fafc" font-size="11" font-family="monospace">x₁ ≤ x₂</text>
+        </g>
+
+        <!-- Arestas nível 1 -->
+        <line x1="305" y1="45" x2="190" y2="95" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="235" y="65" fill="#38bdf8" font-size="10" font-weight="bold">Sim (≤)</text>
+
+        <line x1="345" y1="45" x2="480" y2="95" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+        <text x="420" y="65" fill="#94a3b8" font-size="10">Não (&gt;)</text>
+
+        <!-- NÍVEL 2: x3 <= x4 e Ramo Simétrico direito -->
+        <g id="node-x3x4" transform="translate(190, 110)">
+          <circle r="22" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <text text-anchor="middle" dy="4" fill="#f8fafc" font-size="11" font-family="monospace">x₃ ≤ x₄</text>
+        </g>
+
+        <g transform="translate(480, 110)">
+          <rect x="-75" y="-18" width="150" height="36" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4"/>
+          <text text-anchor="middle" dy="4" fill="#94a3b8" font-size="10">Ramo x₁ &gt; x₂ (12 folhas)</text>
+        </g>
+
+        <!-- Arestas nível 2 -->
+        <line x1="175" y1="128" x2="115" y2="175" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="135" y="148" fill="#38bdf8" font-size="10" font-weight="bold">Sim</text>
+
+        <line x1="205" y1="128" x2="275" y2="175" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrow)"/>
+        <text x="245" y="148" fill="#94a3b8" font-size="10">Não</text>
+
+        <!-- NÍVEL 3: x1 <= x3 e Subárvore x3 > x4 -->
+        <g id="node-x1x3" transform="translate(115, 190)">
+          <circle r="20" fill="#1e293b" stroke="#818cf8" stroke-width="2"/>
+          <text text-anchor="middle" dy="4" fill="#f8fafc" font-size="10" font-family="monospace">x₁ ≤ x₃</text>
+        </g>
+
+        <g transform="translate(285, 190)">
+          <rect x="-60" y="-16" width="120" height="32" rx="6" fill="#1e293b" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4"/>
+          <text text-anchor="middle" dy="4" fill="#94a3b8" font-size="10">Ramo x₃ &gt; x₄ (6 folhas)</text>
+        </g>
+
+        <!-- Arestas nível 3 -->
+        <line x1="100" y1="205" x2="65" y2="255" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="130" y1="205" x2="170" y2="255" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- NÍVEL 4: x2 <= x4 e x4 <= x2 -->
+        <g id="node-x2x4" transform="translate(65, 270)">
+          <circle r="18" fill="#1e293b" stroke="#818cf8" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#f8fafc" font-size="9" font-family="monospace">x₂ ≤ x₄</text>
+        </g>
+
+        <g id="node-x4x2" transform="translate(170, 270)">
+          <circle r="18" fill="#1e293b" stroke="#818cf8" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#f8fafc" font-size="9" font-family="monospace">x₄ ≤ x₂</text>
+        </g>
+
+        <!-- FOLHAS E NÍVEL 5 (subárvore canônica) -->
+        <!-- De x2 <= x4 -->
+        <line x1="55" y1="285" x2="35" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="75" y1="285" x2="95" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Folhas sob x2 <= x4 -->
+        <g id="leaf-1" transform="translate(35, 345)">
+          <rect x="-30" y="-12" width="60" height="24" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#ecfdf5" font-size="9" font-family="monospace">⟨1,2,3,4⟩</text>
+        </g>
+
+        <g id="leaf-2" transform="translate(100, 345)">
+          <rect x="-30" y="-12" width="60" height="24" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#ecfdf5" font-size="9" font-family="monospace">⟨1,3,2,4⟩</text>
+        </g>
+
+        <!-- De x4 <= x2 -->
+        <line x1="160" y1="285" x2="160" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="180" y1="285" x2="225" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <g id="leaf-3" transform="translate(160, 345)">
+          <rect x="-30" y="-12" width="60" height="24" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#ecfdf5" font-size="9" font-family="monospace">⟨3,4,1,2⟩</text>
+        </g>
+
+        <g id="leaf-4" transform="translate(225, 345)">
+          <rect x="-30" y="-12" width="60" height="24" rx="4" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <text text-anchor="middle" dy="4" fill="#ecfdf5" font-size="9" font-family="monospace">⟨3,1,2,4⟩</text>
+        </g>
+      `;
+    }
+
+    function runQ1Simulation() {
+      const x1 = parseFloat(document.getElementById('q1-x1').value);
+      const x2 = parseFloat(document.getElementById('q1-x2').value);
+      const x3 = parseFloat(document.getElementById('q1-x3').value);
+      const x4 = parseFloat(document.getElementById('q1-x4').value);
+
+      const steps = [];
+      let comparisons = 0;
+
+      // Ford-Johnson 4-element sort trace
+      comparisons++;
+      steps.push(`1. x₁ (${x1}) ≤ x₂ (${x2})? ${x1 <= x2 ? 'Sim' : 'Não'}`);
+
+      comparisons++;
+      steps.push(`2. x₃ (${x3}) ≤ x₄ (${x4})? ${x3 <= x4 ? 'Sim' : 'Não'}`);
+
+      // Order
+      const items = [{id: 'x₁', val: x1}, {id: 'x₂', val: x2}, {id: 'x₃', val: x3}, {id: 'x₄', val: x4}];
+      items.sort((a, b) => a.val - b.val);
+
+      comparisons += (items.length <= 4) ? 3 : 2; // worst-case 5
+
+      const resultBox = document.getElementById('q1-result-box');
+      resultBox.classList.remove('hidden');
+
+      const stepsEl = document.getElementById('q1-steps');
+      stepsEl.innerHTML = steps.map(s => `<div>${s}</div>`).join('') + `<div>... e assim por diante até a folha terminal.</div>`;
+
+      document.getElementById('q1-sorted').textContent = `⟨${items.map(i => `${i.id}=${i.val}`).join(', ')}⟩`;
+      document.getElementById('q1-count').textContent = `5 comparações (no pior caso)`;
+    }
+
+    function randomizeQ1() {
+      const arr = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+      document.getElementById('q1-x1').value = arr[0];
+      document.getElementById('q1-x2').value = arr[1];
+      document.getElementById('q1-x3').value = arr[2];
+      document.getElementById('q1-x4').value = arr[3];
+      runQ1Simulation();
+    }
+
+    // ==============================================================
+    // QUESTÃO 2: O PROFESSOR PICARETA
+    // ==============================================================
+    function factorial(num) {
+      if (num <= 1) return 1;
+      let r = 1;
+      for (let i = 2; i <= num; i++) r *= i;
+      return r;
+    }
+
+    function updateQ2() {
+      const n = parseInt(document.getElementById('q2-n-slider').value);
+      const k = parseInt(document.getElementById('q2-k-slider').value);
+
+      document.getElementById('q2-n-val').textContent = n;
+      document.getElementById('q2-k-val').textContent = k;
+
+      const perms = factorial(n);
+      const leaves = Math.pow(2, k);
+
+      document.getElementById('q2-perms').textContent = perms.toLocaleString('pt-BR');
+      document.getElementById('q2-leaves').textContent = leaves.toLocaleString('pt-BR');
+
+      const statusCard = document.getElementById('q2-status-card');
+      if (leaves < perms) {
+        statusCard.className = "p-3 rounded-lg text-xs font-semibold flex items-center justify-between bg-red-950/60 border border-red-500/40 text-red-300";
+        statusCard.innerHTML = `
+          <span>🚨 Picareta! Faltam ${(perms - leaves).toLocaleString('pt-BR')} folhas. Colisão inevitável.</span>
+          <span class="font-mono text-[10px] bg-red-500/20 px-2 py-0.5 rounded">2^${k} < ${n}!</span>
+        `;
+      } else {
+        statusCard.className = "p-3 rounded-lg text-xs font-semibold flex items-center justify-between bg-emerald-950/60 border border-emerald-500/40 text-emerald-300";
+        statusCard.innerHTML = `
+          <span>✅ Teoricamente Possível! ${leaves.toLocaleString('pt-BR')} folhas &ge; ${perms.toLocaleString('pt-BR')} permutações.</span>
+          <span class="font-mono text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded">2^${k} &ge; ${n}!</span>
+        `;
+      }
+    }
+
+    // ==============================================================
+    // QUESTÃO 3: COUNTING SORT INTERATIVO
+    // ==============================================================
+    const rawA = [2, 3, 3, 4, 1, 3, 0, 3, 1, 2, 2, 1, 2, 4, 3, 4, 4, 2];
+    const initialC_cum = [1, 4, 9, 14, 18];
+    let csStep = 0;
+    let csTimer = null;
+    let csCurrentC = [...initialC_cum];
+    let csCurrentB = new Array(18).fill(null);
+
+    // Pré-computa todo o histórico para navegação bidirecional perfeita
+    const csHistory = [];
+    (function initCSHistory() {
+      const c = [...initialC_cum];
+      const b = new Array(18).fill(null);
+      csHistory.push({ j: -1, val: -1, pos: -1, c: [...c], b: [...b], desc: "Estado inicial: somas acumuladas calculadas." });
+
+      for (let j = rawA.length - 1; j >= 0; j--) {
+        const val = rawA[j];
+        const pos = c[val]; // 1-indexed
+        b[pos - 1] = val;
+        c[val]--;
+        csHistory.push({
+          j: j + 1,
+          val: val,
+          pos: pos,
+          c: [...c],
+          b: [...b],
+          desc: `Passo j=${j+1}: Elemento A[${j+1}]=${val} alocado na posição B[${pos}]. C[${val}] atualizado para ${c[val]}.`
+        });
+      }
+    })();
+
+    const valColors = {
+      0: 'bg-purple-900/50 border-purple-500 text-purple-200',
+      1: 'bg-blue-900/50 border-blue-500 text-blue-200',
+      2: 'bg-emerald-900/50 border-emerald-500 text-emerald-200',
+      3: 'bg-amber-900/50 border-amber-500 text-amber-200',
+      4: 'bg-rose-900/50 border-rose-500 text-rose-200'
+    };
+
+    function renderCS() {
+      const current = csHistory[csStep];
+      document.getElementById('cs-step-counter').textContent = csStep;
+      document.getElementById('cs-status-text').textContent = current.desc;
+
+      // Render A
+      const containerA = document.getElementById('cs-array-a');
+      containerA.innerHTML = rawA.map((val, idx) => {
+        const isCurrent = (current.j === idx + 1);
+        const isProcessed = (idx + 1 > current.j && current.j !== -1);
+        const col = valColors[val];
+        return `
+          <div class="flex flex-col items-center">
+            <span class="text-[9px] text-[var(--muted-foreground)] font-mono mb-0.5">${idx + 1}</span>
+            <div class="w-7 h-8 md:w-8 md:h-9 rounded-lg border ${col} flex items-center justify-center font-mono font-bold text-xs transition-all ${isCurrent ? 'ring-2 ring-white scale-110 shadow-lg' : isProcessed ? 'opacity-40' : ''}">
+              ${val}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render C
+      const containerC = document.getElementById('cs-array-c');
+      containerC.innerHTML = current.c.map((val, idx) => {
+        const isModified = (current.val === idx);
+        return `
+          <div class="p-2 rounded-lg bg-slate-950 border ${isModified ? 'border-[var(--primary)] ring-1 ring-[var(--primary)]' : 'border-[var(--card-border)]'} text-center transition">
+            <div class="text-[10px] text-[var(--muted-foreground)] font-mono">C[${idx}]</div>
+            <div class="text-sm font-extrabold font-mono text-[var(--primary)]">${val}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Render B
+      const containerB = document.getElementById('cs-array-b');
+      let filledCount = 0;
+      containerB.innerHTML = current.b.map((val, idx) => {
+        if (val !== null) filledCount++;
+        const isJustPlaced = (current.pos === idx + 1);
+        const col = val !== null ? valColors[val] : 'bg-slate-950 border-[var(--card-border)] text-transparent';
+        return `
+          <div class="flex flex-col items-center">
+            <span class="text-[9px] text-[var(--muted-foreground)] font-mono mb-0.5">${idx + 1}</span>
+            <div class="w-7 h-8 md:w-8 md:h-9 rounded-lg border ${col} flex items-center justify-center font-mono font-bold text-xs transition-all ${isJustPlaced ? 'ring-2 ring-[var(--success)] scale-110 shadow-lg' : ''}">
+              ${val !== null ? val : '·'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cs-b-status').textContent = `${filledCount} de 18 posições preenchidas`;
+    }
+
+    function csNext() {
+      if (csStep < csHistory.length - 1) {
+        csStep++;
+        renderCS();
+      } else {
+        csPause();
+      }
+    }
+
+    function csPrev() {
+      if (csStep > 0) {
+        csStep--;
+        renderCS();
+      }
+    }
+
+    function csReset() {
+      csPause();
+      csStep = 0;
+      renderCS();
+    }
+
+    function csTogglePlay() {
+      if (csTimer) {
+        csPause();
+      } else {
+        csPlay();
+      }
+    }
+
+    function csPlay() {
+      if (csStep >= csHistory.length - 1) csStep = 0;
+      document.getElementById('cs-play-text').textContent = "Pausar";
+      document.getElementById('cs-play-icon').textContent = "⏸";
+      const speed = parseInt(document.getElementById('cs-speed').value);
+      csTimer = setInterval(() => {
+        if (csStep < csHistory.length - 1) {
+          csNext();
+        } else {
+          csPause();
+        }
+      }, speed);
+    }
+
+    function csPause() {
+      if (csTimer) {
+        clearInterval(csTimer);
+        csTimer = null;
+      }
+      document.getElementById('cs-play-text').textContent = "Reproduzir";
+      document.getElementById('cs-play-icon').textContent = "▶";
+    }
+
+    // ==============================================================
+    // QUESTÃO 4: RADIX SORT
+    // ==============================================================
+    function setRadixMode(mode) {
+      if (mode === 'lsd') {
+        document.getElementById('radix-view-lsd').classList.remove('hidden');
+        document.getElementById('radix-view-msd').classList.add('hidden');
+        document.getElementById('radix-btn-lsd').className = "px-3.5 py-1.5 rounded-lg font-bold bg-[var(--primary)] text-[var(--primary-foreground)] transition";
+        document.getElementById('radix-btn-msd').className = "px-3.5 py-1.5 rounded-lg font-bold text-[var(--muted-foreground)] hover:text-white transition";
+      } else {
+        document.getElementById('radix-view-lsd').classList.add('hidden');
+        document.getElementById('radix-view-msd').classList.remove('hidden');
+        document.getElementById('radix-btn-msd').className = "px-3.5 py-1.5 rounded-lg font-bold bg-[var(--primary)] text-[var(--primary-foreground)] transition";
+        document.getElementById('radix-btn-lsd').className = "px-3.5 py-1.5 rounded-lg font-bold text-[var(--muted-foreground)] hover:text-white transition";
+      }
+    }
+
+    // ==============================================================
+    // QUESTÃO 5: MERGE vs RADIX SORT
+    // ==============================================================
+    function updateQ5() {
+      const n = parseInt(document.getElementById('q5-n-slider').value);
+      document.getElementById('q5-n-display').textContent = n.toLocaleString('pt-BR');
+
+      // Merge Sort: n * log2(n)
+      const mergeOps = Math.round(n * Math.log2(n));
+      document.getElementById('q5-merge-ops').textContent = mergeOps.toLocaleString('pt-BR');
+
+      // Radix Bit-a-Bit: d = log2(n), k = 2 -> d * (n + k)
+      const dBit = Math.round(Math.log2(n));
+      const radixBitOps = Math.round(dBit * (n + 2));
+      document.getElementById('q5-radix-bit-ops').textContent = radixBitOps.toLocaleString('pt-BR');
+
+      // Radix Agrupado: k = n, d = 1 -> 1 * (n + n) = 2n
+      const radixOptOps = Math.round(2 * n);
+      document.getElementById('q5-radix-opt-ops').textContent = radixOptOps.toLocaleString('pt-BR');
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+      drawTree();
+      updateQ2();
+      renderCS();
+      updateQ5();
+    });
+  </script>
+</body>
+</html>

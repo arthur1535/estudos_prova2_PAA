@@ -1,0 +1,421 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1.6cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{booktabs,array,graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,trees}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{azul}{HTML}{183B56}
+\definecolor{cinzaClaro}{HTML}{F8F9FA}
+\definecolor{cinzaDestaque}{HTML}{E9ECEF}
+\definecolor{verdeEscuro}{HTML}{1B5E20}
+\definecolor{vermelhoEscuro}{HTML}{B71C1C}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Projeto e Análise de Algoritmos -- Prof. Felipe A. Louza}
+\fancyhead[R]{\small\textbf{Revisão Geral -- Prova 2 (Listas 6, 7, 8 e 9)}}
+\fancyfoot[L]{\small Arthur Pires Lopes -- 12221EEL001}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.5pt}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.5em}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.25}
+
+\newcommand{\res}[1]{\[\boxed{#1}\]}
+\newcommand{\topico}[1]{\par\medskip\textbf{\color{azul}#1}\par}
+\newcommand{\secao}[1]{\section*{\color{azul}#1}}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{cinzaClaro},
+  frame=single,
+  rulecolor=\color{black!20},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  literate={á}{{\'a}}1 {ã}{{\~a}}1 {ç}{{\c c}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1 {←}{{$\leftarrow$}}1
+}
+
+\begin{document}
+
+\begin{center}
+  {\small Universidade Federal de Uberlândia -- UFU\\Faculdade de Engenharia Elétrica -- FEELT}\par
+  \vspace{3pt}
+  {\LARGE\bfseries\color{azul} Guia Integrado de Fórmulas e Revisão -- Prova 2}\par
+  \vspace{3pt}
+  {\large\textbf{Conteúdos: Listas 6, 7, 8 e 9}}\par
+  \vspace{3pt}
+  \textbf{Arthur Pires Lopes}\quad Matrícula: \textbf{12221EEL001}\par
+  \textit{Projeto e Análise de Algoritmos -- Prof. Felipe A. Louza}
+\end{center}
+\hrule
+\vspace{6pt}
+
+% ==============================================================================
+% TABELA MESTRA
+% ==============================================================================
+\secao{1. Tabela Comparativa Geral de Todos os Algoritmos da Prova 2}
+
+\begin{center}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lccccp{5.5cm}}
+\toprule
+\textbf{Algoritmo} & \textbf{Melhor} & \textbf{Médio} & \textbf{Pior} & \textbf{Espaço Aux.} & \textbf{Propriedade Chave / Pegadinha} \\
+\midrule
+\textsc{Merge Sort} & $\Theta(n \lg n)$ & $\Theta(n \lg n)$ & $\Theta(n \lg n)$ & $\Theta(n)$ & Estável; independe da ordem de entrada; divisão trivial ($O(1)$) e combinação linear ($\Theta(n)$). \\
+\textsc{Quick Sort (1º el.)} & $\Theta(n \lg n)$ & $\Theta(n \lg n)$ & $\Theta(n^2)$ & $\Theta(\lg n)$ a $\Theta(n)$ & In-place; não estável; degenera em vetores já ordenados ($0 \times (n-1)$). \\
+\textsc{Quick Sort (Med. 3)} & $\Theta(n \lg n)$ & $\Theta(n \lg n)$ & $\Theta(n^2)$ & $\Theta(\lg n)$ & Mediana entre $A[1], A[\lfloor n/2 \rfloor], A[n]$ evita pior caso em vetores ordenados. \\
+\textsc{Quick Sort (Random)} & $\Theta(n \lg n)$ & $\Theta(n \lg n)$ & $\Theta(n^2)$ & $\Theta(\lg n)$ & $\mathbb{E}[T(n)] = 2n \ln n + \Theta(n) \approx 1{,}39 n \lg n$ para qualquer entrada. \\
+\textsc{K-Way Merge} & $\Theta(nk \lg k)$ & $\Theta(nk \lg k)$ & $\Theta(nk \lg k)$ & $\Theta(nk)$ ou $\Theta(k)$ & Divisão e Conquista ($T(k)=2T(k/2)+\Theta(nk)$) ou Min-Heap de tamanho $k$. \\
+\textsc{Min-Max Simultâneo} & $3\lfloor n/2 \rfloor$ & $3\lfloor n/2 \rfloor$ & $3\lfloor n/2 \rfloor$ & $\Theta(1)$ & Compara aos pares: 1 comp interna + 1 com min + 1 com max (economiza 25\%). \\
+\textsc{Quick-Find (Select)} & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n^2)$ & $\Theta(\lg n)$ ou $\Theta(1)$ & Profundidade média $\Theta(\log n)$, tempo total linear $\Theta(n)$ (soma geométrica). \\
+\textsc{Mediana Medianas} & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n)$ & Seleção ótima em tempo linear garantido no pior caso ($T(n) \le T(n/5)+T(7n/10)+\Theta(n)$). \\
+\textsc{Counting Sort} & $\Theta(n + k)$ & $\Theta(n + k)$ & $\Theta(n + k)$ & $\Theta(n + k)$ & Estável; opera por contagem e prefix sums; linear quando $k = O(n)$. \\
+\textsc{Radix Sort} & $\Theta(d(n+k))$ & $\Theta(d(n+k))$ & $\Theta(d(n+k))$ & $\Theta(n + k)$ & Estável se usar sub-rotina estável (LSD); empata com Merge se $d = \Theta(\log n)$. \\
+\textsc{Bucket Sort} & $\Theta(n)$ & $\Theta(n)$ & $\Theta(n^2)$ & $\Theta(n)$ & Assume distribuição uniforme em $[0, 1)$; pior caso quadrático se tudo colidir num balde. \\
+\midrule
+\textsc{Corte de Hastes (Cut-Rod)} & $\Theta(n^2)$ & $\Theta(n^2)$ & $\Theta(n^2)$ & $\Theta(n)$ & Subestrutura ótima: $A[i]=\max(p_j+A[i-j])$; recursão ingênua $\Theta(2^n)$ cai para $\Theta(n^2)$. \\
+\textsc{Maior Subseq. Cresc. (LIS)} & $\Theta(n^2)$ & $\Theta(n^2)$ & $\Theta(n^2)$ & $\Theta(n)$ & $L[i] = 1 + \max_{j < i, s_j < s_i} L[j]$; abordagem com busca binária (Paciência) atinge $\Theta(n \lg n)$. \\
+\textsc{Problema do Troco (Min)} & $\Theta(n \cdot k)$ & $\Theta(n \cdot k)$ & $\Theta(n \cdot k)$ & $\Theta(k)$ & $M[i] = 1 + \min_j M[i - c_j]$; guloso falha para moedas gerais (ex: $\{1, 5, 8, 11\}$). \\
+\textsc{Mochila 0-1 (Knapsack)} & $\Theta(n \cdot W)$ & $\Theta(n \cdot W)$ & $\Theta(n \cdot W)$ & $\Theta(n \cdot W)$ ou $\Theta(W)$ & Pseudo-polinomial ($O(n \cdot 2^m)$ onde $m=\lceil\lg W\rceil$ bits); guloso falha (exige PD 2D ou 1D reverso). \\
+\textsc{Mochila com Repetição} & $\Theta(n \cdot W)$ & $\Theta(n \cdot W)$ & $\Theta(n \cdot W)$ & $\Theta(W)$ & Itens reutilizáveis: $M[w]=\max_i(v_i + M[w-w_i])$; espaço 1D natural com laço crescente. \\
+\textsc{Maior Subseq. Comum (LCS)} & $\Theta(n \cdot m)$ & $\Theta(n \cdot m)$ & $\Theta(n \cdot m)$ & $\Theta(n \cdot m)$ ou $\Theta(\min(n,m))$ & Se $x_i = y_j$, $1 + M[i-1,j-1]$; senão $\max(M[i-1,j], M[i,j-1])$; espaço 1D/2 linhas. \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\vspace{4pt}
+% ==============================================================================
+% MODULO 1: LISTA 6
+% ==============================================================================
+\newpage
+\secao{2. Módulo 1 -- Lista 6: Divisão e Conquista}
+
+\topico{1. Merge Sort}
+\begin{itemize}
+  \item \textbf{Recorrência:} $T(n) = 2T(n/2) + \Theta(n)$. Pelo Teorema Mestre ($a=2, b=2 \implies n^{\log_2 2} = n^1 = f(n)$), recai no \textbf{Caso 2}: $T(n) \in \Theta(n \lg n)$.
+  \item \textbf{Vetor já ordenado ($A = \langle 1, 2, \dots, n \rangle$):} O algoritmo executa a mesma árvore completa de divisões ($2n-1$ chamadas). Na etapa \textsc{Merge}, como $\max(L) < \min(R)$, ocorrem exatamente $|L|$ comparações por chamada. Para $n=10$, realizam-se $19$ chamadas e $19$ comparações no total.
+\end{itemize}
+
+\topico{2. Quick Sort e Estratégias de Pivô}
+\begin{itemize}
+  \item \textbf{Pivô = Primeiro Elemento ($A[1]$) em Vetor Ordenado:} O pivô é sempre o mínimo local. A partição divide o vetor em tamanho $0$ e tamanho $m-1$. A árvore degenera em lista de altura $n$:
+  \[
+  T(n) = T(n-1) + \Theta(n) = \sum_{i=1}^{n-1} i = \frac{n(n-1)}{2} \in \Theta(n^2) \quad (\text{Para } n=10: 45 \text{ comparações})
+  \]
+  \item \textbf{Pivô = Mediana de Três:} Avalia $\text{mediana}(A[1], A[\lfloor n/2 \rfloor], A[n])$. Em vetor ordenado, sempre seleciona o elemento do meio $A[\lfloor n/2 \rfloor]$, forçando divisão balanceada ($T(n) = 2T(n/2) + \Theta(n) \implies \Theta(n \lg n)$) e altura da árvore $\lceil \lg n \rceil = 4$.
+  \item \textbf{Pivô Aleatório:} Sorteia índice uniforme em $[l, r]$. Imune a ordenação prévia do adversário. $\mathbb{P}(\text{Pior Caso}) = \frac{2^{n-1}}{n!} \approx 0{,}014\%$ para $n=10$. Esperança matemática: $\mathbb{E}[T(n)] = \Theta(n \lg n)$.
+\end{itemize}
+
+\topico{3. Particionamento de Lomuto e Prova de Invariante}
+\begin{itemize}
+  \item \textbf{Invariante de Laço:} No início de cada iteração $j$ ($j = l \dots r-1$):
+  \begin{enumerate}
+    \item $A[k] \le x$ para todo $k \in [l, i]$.
+    \item $A[k] > x$ para todo $k \in [i+1, j-1]$.
+    \item $A[r] = x$ (pivô).
+  \end{enumerate}
+  \item \textbf{Corretude:} Ao término ($j=r$), troca-se $A[i+1] \leftrightarrow A[r]$. O pivô $x$ é alocado em $i+1$, satisfazendo $A[l \dots i] \le x < A[i+2 \dots r]$.
+  \item \textbf{Custo:} $\Theta(n)$ tempo ($n-1$ iterações com $\Theta(1)$ por passo) e $\Theta(1)$ espaço in-place.
+\end{itemize}
+
+\topico{4. Merge de $k$ Vetores Ordenados de Tamanho $n$ em $O(nk \lg k)$}
+\begin{itemize}
+  \item \textbf{Divisão e Conquista:} Divide os $k$ vetores em 2 grupos de $k/2$, resolve recursivamente e combina os dois supervetores via \textsc{Merge} linear ($\Theta(nk)$).
+  \[
+  T(k) = 2T(k/2) + \Theta(nk) \implies T(k) \in \Theta(nk \lg k) \quad \text{(Teorema Mestre, Caso 2)}
+  \]
+  \item \textbf{Min-Heap:} Constrói heap com $k$ elementos ($O(k)$). A cada passo, retira o menor ($O(\lg k)$) e insere o próximo do mesmo vetor ($O(\lg k)$). Custo: $O(k) + nk \cdot O(\lg k) = O(nk \lg k)$ com memória auxiliar $O(k)$.
+\end{itemize}
+
+\topico{5. Quick-Find (Quickselect)}
+\begin{itemize}
+  \item \textbf{Diferença Fundamental vs Quick Sort:} O Quick Sort chama a recursão em \textbf{ambos} os subvetores ($a = 2 \implies \Theta(n \lg n)$). O Quick-Find descarta uma metade e chama em \textbf{apenas um} subvetor ($a = 1$).
+  \item \textbf{Profundidade Média de Recursão:} $\Theta(\log n)$ níveis (análogo à busca binária).
+  \item \textbf{Tempo de Execução Médio:} Soma geométrica decrescente:
+  \[
+  T(n) \le T(n/2) + cn \implies cn\left(1 + \frac{1}{2} + \frac{1}{4} + \dots\right) \le 2cn \in \Theta(n) \quad \text{(Caso 3 do Teorema Mestre)}
+  \]
+\end{itemize}
+
+\newpage
+% ==============================================================================
+% MODULO 2: LISTA 7
+% ==============================================================================
+\newpage
+\secao{3. Módulo 2 -- Lista 7: O Problema da Seleção}
+
+\topico{1. Mínimo e Máximo Simultâneos em no Máximo $3\lfloor n/2 \rfloor$ Comparações}
+\begin{itemize}
+  \item \textbf{Abordagem Ingênua:} Compara cada elemento com o mínimo ($n-1$) e com o máximo ($n-1$), totalizando $2n - 2$ comparações.
+  \item \textbf{Abordagem aos Pares:} Processa elementos em pares $(A[i], A[i+1])$:
+  \begin{enumerate}
+    \item 1 comparação entre $A[i]$ e $A[i+1]$ para identificar o menor e o maior do par.
+    \item 1 comparação do menor do par contra o mínimo global corrente.
+    \item 1 comparação do maior do par contra o máximo global corrente.
+  \end{enumerate}
+  \item \textbf{Contagem:} 3 comparações para cada 2 elementos $\implies 3\lfloor n/2 \rfloor$ comparações.
+  \item Se $n$ for ímpar: inicializa $\min = \max = A[1]$ e processa os restantes $n-1$ elementos com $3(n-1)/2 = 3\lfloor n/2 \rfloor$ comparações. Se $n$ for par: inicializa comparando $A[1]$ e $A[2]$ (1 comp) e processa os $n-2$ restantes com $3(n-2)/2$, totalizando $1 + 3(n/2 - 1) = \frac{3n}{2} - 2 \le 3\lfloor n/2 \rfloor$.
+\end{itemize}
+
+\topico{2. Seleção em Tempo Linear no Pior Caso (Mediana das Medianas -- BFPRT)}
+\begin{itemize}
+  \item \textbf{Algoritmo \textsc{Select}:}
+  \begin{enumerate}
+    \item Divide os $n$ elementos em $\lceil n/5 \rceil$ grupos de 5 elementos.
+    \item Encontra a mediana de cada grupo de 5 (no máximo 7 comparações por grupo, custo $O(n)$).
+    \item Determina o pivô $x$ chamando recursivamente $\textsc{Select}$ sobre as $\lceil n/5 \rceil$ medianas.
+    \item Particiona o vetor original em torno do pivô $x$.
+    \item Recursa no lado correspondente à ordem estatística procurada.
+  \end{enumerate}
+  \item \textbf{Garantia de Balanceamento:} Pelo menos metade das $\lceil n/5 \rceil$ medianas são $\ge x$, e cada uma contribui com pelo menos 3 elementos $\ge x$. Logo, o número de elementos $\ge x$ é pelo menos:
+  \[
+  3\left(\left\lceil \frac{1}{2}\left\lceil \frac{n}{5}\right\rceil \right\rceil - 2\right) \ge \frac{3n}{10} - 6
+  \]
+  Portanto, no pior caso o subvetor recursivo tem no máximo $n - (3n/10 - 6) = \frac{7n}{10} + 6$ elementos.
+  \item \textbf{Relação de Recorrência:}
+  \[
+  T(n) \le T\left(\left\lceil \frac{n}{5}\right\rceil\right) + T\left(\frac{7n}{10} + 6\right) + \Theta(n)
+  \]
+  Como $\frac{1}{5} + \frac{7}{10} = \frac{9}{10} < 1$, a soma das frações é estritamente menor que 1. Por indução (método da substituição com $T(n) \le cn$), prova-se que:
+  \[
+  \boxed{T(n) \in \Theta(n) \quad \text{(Tempo Linear no Pior Caso)}}
+  \]
+\end{itemize}
+
+\topico{3. Comparação de Métodos para Listar os $i$ Maiores Elementos em Ordem Crescente}
+\begin{itemize}
+  \item \textbf{Método (a) -- Ordenação Total:} Ordena todo o vetor com MergeSort ($\Theta(n \lg n)$) e imprime os $i$ maiores ($\Theta(i)$). Custo: $\Theta(n \lg n)$.
+  \item \textbf{Método (b) -- Max-Heap com $i$ Extrações:} Constrói max-heap ($\Theta(n)$), extrai o máximo $i$ vezes ($i \cdot \Theta(\lg n)$) e inverte o resultado ($\Theta(i)$). Custo: $\Theta(n + i \lg n)$.
+  \item \textbf{Método (c) -- Seleção Linear + Partição + Ordenação Parcial:} Encontra o $(n-i+1)$-ésimo menor elemento via \textsc{Select} ($\Theta(n)$), particiona $A$ ($\Theta(n)$) e ordena apenas os $i$ maiores com MergeSort ($\Theta(i \lg i)$). Custo: $\Theta(n + i \lg i)$ (ótimo para todo $i$).
+\end{itemize}
+
+\topico{4. QuickSort com Pior Caso Ótimo $\Theta(n \lg n)$ via Mediana Exata}
+\begin{itemize}
+  \item Encontra a mediana exata via \textsc{Select} em tempo linear $\Theta(m)$ e usa-a como pivô. Garante partições $\le n/2$:
+  \[
+  T(n) = 2T(n/2) + \Theta(n) \implies T(n) \in \Theta(n \lg n) \quad \text{no pior caso}.
+  \]
+\end{itemize}
+
+\newpage
+% ==============================================================================
+% MODULO 3: LISTA 8
+% ==============================================================================
+\newpage
+\secao{4. Módulo 3 -- Lista 8: Ordenação em Tempo Linear e Cotas Inferiores}
+
+\topico{1. Cota Inferior para Ordenação por Comparações ($\Omega(n \log n)$)}
+\begin{itemize}
+  \item \textbf{Árvore de Decisão Binária:} Cada nó interno é uma comparação $x_i \le x_j$ (2 filhos). Cada folha representa uma permutação ordenada dos dados.
+  \item \textbf{Condição de Corretude:} Para ordenar qualquer entrada de $n$ elementos distintos, a árvore deve ter pelo menos $l \ge n!$ folhas alcançáveis.
+  \item \textbf{Relação Altura vs Folhas:} Em árvore binária de altura $h$, o número de folhas é no máximo $2^h$.
+  \[
+  2^h \ge l \ge n! \implies 2^h \ge n! \implies h \ge \lceil \log_2(n!) \rceil
+  \]
+  \item \textbf{Aproximação de Stirling / Limite Assintótico:}
+  \[
+  h \ge \sum_{i=1}^{n} \log_2 i \ge \sum_{i=\lfloor n/2 \rfloor}^{n} \log_2(n/2) \ge \frac{n}{2}(\log_2 n - 1) = \Omega(n \log n)
+  \]
+  \item \textbf{Exemplo Clássico de Prova ($n=5$):} $5! = 120$ permutações. Com $h=6$ comparações, $2^6 = 64 < 120$. Pela Casa dos Pombos, ao menos uma folha conteria $\lceil 120/64 \rceil = 2$ permutações, falhando na ordenação. São necessárias no mínimo $h \ge \lceil \log_2(120) \rceil = 7$ comparações.
+\end{itemize}
+
+\topico{2. Counting Sort}
+\begin{itemize}
+  \item \textbf{Hipótese:} Chaves são inteiros no intervalo $[0 \dots k]$.
+  \item \textbf{Fases:} (1) Contagem de frequências $C[0 \dots k]$ em $\Theta(n)$; (2) Somas acumuladas de $C$ em $\Theta(k)$; (3) Alocação em $B[1 \dots n]$ percorrendo $A$ de trás para frente ($j = n \text{ até } 1$), garantindo \textbf{estabilidade}.
+  \item \textbf{Complexidade:} Tempo $\Theta(n + k)$ e Espaço $\Theta(n + k)$. É linear $\Theta(n)$ se $k = O(n)$.
+\end{itemize}
+
+\topico{3. Radix Sort}
+\begin{itemize}
+  \item \textbf{LSD vs MSD:} LSD ordena do dígito menos significativo ao mais significativo usando sub-rotina estável (Counting Sort). MSD usa divisão e conquista a partir do dígito mais significativo.
+  \item \textbf{Complexidade:} $T(n) = \Theta(d(n + k))$.
+  \item \textbf{Empate com Merge Sort:} Quando cada chave tem $d = \Theta(\log n)$ dígitos e a base $k = O(1)$, temos $T(n) = \Theta(\log n \cdot n) = \Theta(n \log n)$.
+\end{itemize}
+
+\topico{4. Bucket Sort}
+\begin{itemize}
+  \item \textbf{Hipótese:} Elementos gerados uniformemente no intervalo real $[0, 1)$.
+  \item \textbf{Funcionamento:} Distribui os $n$ elementos em $n$ baldes pelo índice $\lfloor n \cdot A[i] \rfloor$. Ordena cada balde com Insertion Sort e concatena.
+  \item \textbf{Complexidade:} Caso médio $\Theta(n)$ pois $\mathbb{E}[n_i^2] = 2 - 1/n = O(1)$. Pior caso $\Theta(n^2)$ se todos os elementos caírem no mesmo balde.
+\end{itemize}
+
+\newpage
+% ==============================================================================
+% MODULO 4: LISTA 9 -- PROGRAMAÇÃO DINÂMICA
+% ==============================================================================
+\secao{5. Módulo 4 -- Lista 9: Programação Dinâmica (PD)}
+
+\topico{1. Fundamentos Teóricos de Programação Dinâmica}
+\begin{itemize}
+  \item \textbf{Dois Pilares Essenciais:}
+  \begin{enumerate}
+    \item \textbf{Subestrutura Ótima:} Uma solução ótima para o problema contém em seu interior soluções ótimas para subproblemas relacionados.
+    \item \textbf{Sobreposição de Subproblemas (Overlapping Subproblems):} O espaço de subproblemas é pequeno (polinomial), e um algoritmo recursivo ingênuo resolve os mesmos subproblemas repetidas vezes, gerando uma árvore de chamadas de tamanho exponencial.
+  \end{enumerate}
+  \item \textbf{Divisão e Conquista vs Programação Dinâmica:}
+  \begin{itemize}
+    \item \textit{Divisão e Conquista:} Divide o problema em subproblemas \textbf{independentes/disjuntos}, resolve-os recursivamente e combina as soluções (ex: Merge Sort, Quick Sort). Se os subproblemas não se sobrepõem, não há trabalho redundante.
+    \item \textit{Programação Dinâmica:} Aplica-se quando os subproblemas \textbf{se sobrepõem} (compartilham sub-subproblemas). A PD resolve cada subproblema apenas uma vez e salva seu resultado em uma tabela (vetor ou matriz).
+  \end{itemize}
+  \item \textbf{Grafo de Subproblemas (DAG):}
+  \begin{itemize}
+    \item É um Grafo Acíclico Dirigido onde os vértices $V$ são os subproblemas e uma aresta direcionada $(u, v)$ indica que a solução de $u$ depende diretamente da solução de $v$.
+    \item O tempo de execução da PD é proporcional à soma dos graus de saída de todos os vértices:
+    \[
+    \text{Tempo Total} = \Theta(|V| + |E|) = \Theta\left(\sum_{u \in V} \text{grau\_saída}(u)\right)
+    \]
+  \end{itemize}
+  \item \textbf{Top-Down (com Memoização) vs Bottom-Up (Tabulação):}
+  \begin{itemize}
+    \item \textit{Top-Down com Memoização:} Mantém a estrutura recursiva natural; consulta uma tabela de cache antes de computar; resolve apenas os subproblemas estritamente necessários (sob demanda); possui overhead de chamadas de função e pilha.
+    \item \textit{Bottom-Up com Tabulação:} Avalia subproblemas em ordem topológica inversa (do caso base aos maiores); puramente iterativo (sem recursão); avalia todos os subproblemas da tabela; permite otimização drástica de espaço de memória.
+  \end{itemize}
+\end{itemize}
+
+\topico{2. Corte de Hastes (Cut-Rod)}
+\begin{itemize}
+  \item \textbf{Definição:} Dada uma haste de comprimento $n$ e tabela de preços $p_1, \dots, p_n$, maximizar a receita total obtida cortando a haste em pedaços inteiros.
+  \item \textbf{Equação de Recorrência de Bellman:}
+  \[
+  \boxed{A[0] = 0, \qquad A[i] = \max_{1 \le j \le i} \big(p_j + A[i - j]\big) \quad \text{para } i = 1, \dots, n}
+  \]
+  \item \textbf{Complexidade:}
+  \begin{itemize}
+    \item \textit{Recursivo Ingênuo:} A árvore de recursão possui $2^{n-1}$ folhas, logo $T(n) \in \Theta(2^n)$.
+    \item \textit{Programação Dinâmica:} Dois laços aninhados ($i$ de $1$ a $n$, $j$ de $1$ a $i$):
+    \[
+    T(n) = \sum_{i=1}^{n} \sum_{j=1}^{i} \Theta(1) = \sum_{i=1}^{n} i = \frac{n(n+1)}{2} \in \Theta(n^2), \qquad \text{Espaço: } \Theta(n).
+    \]
+  \end{itemize}
+  \item \textbf{Reconstrução da Solução Ótima:} Mantém-se um vetor $S[1 \dots n]$ onde $S[i]$ armazena o tamanho do primeiro pedaço $j^*$ que maximizou $A[i]$. Imprime $S[n]$ e atualiza $n \leftarrow n - S[n]$ recursivamente até $n=0$ em tempo $\Theta(n)$.
+\end{itemize}
+
+\topico{3. Maior Subsequência Crescente (LIS -- Longest Increasing Subsequence)}
+\begin{itemize}
+  \item \textbf{Definição:} Dada uma sequência $S = \langle s_1, s_2, \dots, s_n \rangle$, encontrar o comprimento máximo de uma subsequência de índices $i_1 < i_2 < \dots < i_k$ tal que $s_{i_1} < s_{i_2} < \dots < s_{i_k}$ (estritamente crescente).
+  \item \textbf{Equação de Recorrência:} Definindo $L[i]$ como o comprimento da LIS que \textbf{obrigatoriamente termina} no elemento $s_i$:
+  \[
+  \boxed{L[i] = 1 + \max \Big(\{L[j] \mid 1 \le j < i \text{ e } s_j < s_i\} \cup \{0\}\Big)}
+  \]
+  \item \textbf{Solução Global:} O tamanho da LIS da sequência inteira é $\text{LIS}(S) = \max_{1 \le i \le n} L[i]$.
+  \item \textbf{Complexidade:} $\sum_{i=1}^{n} (i-1) = \frac{n(n-1)}{2} \in \Theta(n^2)$ tempo e $\Theta(n)$ espaço auxiliar.
+  \item \textbf{Otimização com Busca Binária (Patience Sorting):} Mantendo um vetor com o menor elemento final de todas as subsequências crescentes de cada comprimento, atualiza-se a tabela via busca binária em tempo $\Theta(n \lg n)$.
+  \item \textbf{Reconstrução:} Vetor de predecessores $P[1 \dots n]$ onde $P[i] = \arg\max_{j < i, s_j < s_i} L[j]$. O backtracking parte do índice $k = \arg\max_i L[i]$ e segue $k \leftarrow P[k]$.
+\end{itemize}
+
+\topico{4. O Problema do Troco (Coin Change)}
+\begin{itemize}
+  \item \textbf{Variação 1: Troco Mínimo com Moedas Ilimitadas}
+  \begin{itemize}
+    \item $M[i]$ = menor número de moedas para compor o valor $i$ usando moedas $C = \{c_1, \dots, c_n\}$.
+    \[
+    \boxed{M[0] = 0, \qquad M[i] = 1 + \min_{\substack{1 \le j \le n \\ c_j \le i}} M[i - c_j]}
+    \]
+    \item Complexidade: $\Theta(n \cdot k)$ tempo e $\Theta(k)$ espaço auxiliar.
+    \item \textbf{Falha do Algoritmo Guloso:} Para moedas arbitrárias, o guloso não é ótimo. Exemplo: $C=\{1, 5, 8, 11\}$ e $k=13$. Guloso escolhe $11 + 1 + 1 = 13$ (3 moedas); Solução ótima em PD é $8 + 5 = 13$ (2 moedas).
+  \end{itemize}
+  \item \textbf{Variação 2: Troco Sem Repetição de Moedas (0/1 Coin Change)}
+  \begin{itemize}
+    \item Cada moeda $c_i$ está disponível no máximo 1 vez.
+    \item \textit{Tabulação 2D:} $M[i, j] = \min(M[i-1, j], 1 + M[i-1, j - c_i])$.
+    \item \textit{Otimização para Vetor 1D:} O laço dos valores deve iterar de \textbf{trás para frente} ($j = k \text{ até } c_i$ decrescente):
+    \[
+    \text{Para cada moeda } i: \quad \text{para } j = k \text{ descendo até } c_i: \quad M[j] \leftarrow \min(M[j], 1 + M[j - c_i])
+    \]
+    \textit{Pegadinha:} Se iterar para frente, a mesma moeda será contada múltiplas vezes (transformando-se no caso ilimitado).
+  \end{itemize}
+  \item \textbf{Variação 3: Contagem de Combinações Distintas (Ordem Não Importa)}
+  \begin{itemize}
+    \item $dp[j]$ armazena o número de maneiras de formar a quantia $j$.
+    \item Para evitar contar permutações (ex: $2+3$ e $3+2$ como soluções distintas), o \textbf{laço externo deve ser nas moedas} e o laço interno nos valores:
+    \[
+    dp[0] = 1; \quad \text{Para cada } c \in C: \quad \text{para } j = c \dots k: \quad dp[j] \leftarrow dp[j] + dp[j - c]
+    \]
+    Complexidade: $\Theta(n \cdot k)$ tempo e $\Theta(k)$ espaço.
+  \end{itemize}
+\end{itemize}
+
+\topico{5. Problema da Mochila 0-1 (0-1 Knapsack)}
+\begin{itemize}
+  \item \textbf{Definição:} Dados $n$ itens com pesos $w_1, \dots, w_n$ e valores $v_1, \dots, v_n$, e capacidade máxima inteira $W$. Escolher $x_i \in \{0, 1\}$ maximizando $\sum x_i v_i$ com $\sum x_i w_i \le W$.
+  \item \textbf{Equação de Bellman (2D):}
+  \[
+  \boxed{M[i, k] = \begin{cases}
+  0 & \text{se } i = 0 \text{ ou } k = 0 \\
+  M[i-1, k] & \text{se } w_i > k \\
+  \max\big(M[i-1, k], \, M[i-1, k - w_i] + v_i\big) & \text{se } w_i \le k
+  \end{cases}}
+  \]
+  \item \textbf{Complexidade de Tempo e Espaço:}
+  \begin{itemize}
+    \item Matriz $(n+1) \times (W+1)$: $\Theta(n \cdot W)$ tempo e $\Theta(n \cdot W)$ espaço.
+    \item \textit{Otimização de Espaço para $\Theta(W)$:} Usando vetor 1D com iteração decrescente na capacidade ($k = W \text{ descendo até } w_i$).
+  \end{itemize}
+  \item \textbf{Natureza Pseudo-polinomial (Pegadinha Teórica Essencial):}
+  \begin{itemize}
+    \item A complexidade é $\Theta(n \cdot W)$. O parâmetro $W$ é um número fornecido na entrada.
+    \item O tamanho da entrada em bits para codificar $W$ é $m = \lceil \log_2(W+1) \rceil \implies W \approx 2^m$.
+    \item Portanto, o tempo em função do tamanho dos dados de entrada é:
+    \[
+    T(n, m) = \Theta(n \cdot 2^m) \quad \implies \quad \textbf{Exponencial no tamanho da entrada!}
+    \]
+    \item O algoritmo só é polinomial se o valor numérico de $W$ for limitado por um polinômio em $n$ (ex: $W = O(n^2)$). O problema da Mochila 0-1 é \textbf{NP-difícil} (NP-hard).
+  \end{itemize}
+  \item \textbf{Mochila Fracionária vs Mochila 0-1:}
+  \begin{itemize}
+    \item \textit{Mochila Fracionária:} Permite frações de itens ($0 \le x_i \le 1$). Resolvida otimamente pelo \textbf{Algoritmo Guloso} ordenando por densidade de valor $v_i/w_i$ em tempo $\Theta(n \lg n)$.
+    \item \textit{Mochila Inteira (0-1):} Itens indivisíveis ($x_i \in \{0, 1\}$). O algoritmo guloso \textbf{falha} categoricamente. Exemplo clássico ($W=50$): Item 1 ($w=10, v=60, d=6$), Item 2 ($w=20, v=100, d=5$), Item 3 ($w=30, v=120, d=4$). Guloso pega 1 e 2 ($w=30, v=160$); Solução ótima de PD pega 2 e 3 ($w=50, v=220$).
+  \end{itemize}
+\end{itemize}
+
+\topico{6. Mochila com Repetição (Unbounded Knapsack)}
+\begin{itemize}
+  \item \textbf{Definição:} Disponibilidade ilimitada de cada um dos $n$ itens ($x_i \in \{0, 1, 2, \dots\}$).
+  \item \textbf{Equação de Recorrência 1D:}
+  \[
+  \boxed{M[0] = 0, \qquad M[w] = \max_{\substack{1 \le i \le n \\ w_i \le w}} \big(v_i + M[w - w_i]\big)}
+  \]
+  \item \textbf{Diferença Estrutural vs 0-1:} Na mochila 0-1, ao escolher o item $i$, transita-se para a linha anterior $i-1$. Na mochila com repetição, o subproblema $w - w_i$ ainda pode reutilizar o item $i$. O espaço auxiliar é naturalmente unidimensional $\Theta(W)$ e o laço de capacidades itera em ordem \textbf{crescente} ($w = 1 \dots W$).
+  \item \textbf{Complexidade:} $\Theta(n \cdot W)$ tempo e $\Theta(W)$ espaço auxiliar.
+\end{itemize}
+
+\topico{7. Maior Subsequência Comum (LCS -- Longest Common Subsequence)}
+\begin{itemize}
+  \item \textbf{Definição:} Dadas duas sequências $X = \langle x_1, \dots, x_n \rangle$ e $Y = \langle y_1, \dots, y_m \rangle$, encontrar o comprimento da maior subsequência presente em ambas.
+  \item \textbf{Equação de Recorrência (Teorema da Subestrutura Ótima):}
+  \[
+  \boxed{M[i, j] = \begin{cases}
+  0 & \text{se } i = 0 \text{ ou } j = 0 \\
+  M[i-1, j-1] + 1 & \text{se } x_i = y_j \\
+  \max\big(M[i-1, j], \, M[i, j-1]\big) & \text{se } x_i \neq y_j
+  \end{cases}}
+  \]
+  \item \textbf{Complexidade:} Preenchimento da matriz $(n+1) \times (m+1)$ em $\Theta(n \cdot m)$ tempo e $\Theta(n \cdot m)$ espaço.
+  \item \textbf{Reconstrução do LCS (Backtracking):}
+  \begin{itemize}
+    \item Inicia em $(i, j) = (n, m)$.
+    \item Se $x_i = y_j$: o caractere $x_i$ faz parte da LCS; decrementa diagonalmente $(i-1, j-1)$.
+    \item Se $x_i \neq y_j$: move na direção do maior vizinho: para cima $(i-1, j)$ se $M[i-1, j] \ge M[i, j-1]$, ou para a esquerda $(i, j-1)$ caso contrário.
+    \item Tempo de reconstrução: $O(n + m)$.
+  \end{itemize}
+  \item \textbf{Otimização de Espaço:} Para calcular apenas o comprimento da LCS, cada linha $i$ depende exclusivamente da linha anterior $i-1$. Logo, bastam 2 linhas de tamanho $\min(n, m)$, reduzindo o espaço auxiliar para $\Theta(\min(n, m))$.
+\end{itemize}
+
+\end{document}
