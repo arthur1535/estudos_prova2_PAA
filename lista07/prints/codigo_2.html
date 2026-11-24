@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #181818;
+    color: #cccccc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    width: 1202px;
+    height: 802px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Title bar */
+  .titlebar {
+    height: 35px;
+    background-color: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid #2b2b2b;
+    user-select: none;
+  }
+  .titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #cccccc;
+  }
+  .titlebar-menu {
+    display: flex;
+    gap: 12px;
+    margin-left: 10px;
+    color: #cccccc;
+  }
+  .titlebar-center {
+    color: #9d9d9d;
+    font-size: 12px;
+  }
+  .titlebar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #cccccc;
+  }
+  
+  /* Main workspace */
+  .workspace {
+    display: flex;
+    flex: 1;
+    height: calc(802px - 35px - 22px);
+    background-color: #1f1f1f;
+  }
+  
+  /* Activity bar */
+  .activitybar {
+    width: 48px;
+    background-color: #181818;
+    border-right: 1px solid #2b2b2b;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+  }
+  .activity-top {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+  }
+  .activity-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #858585;
+    cursor: pointer;
+  }
+  .activity-icon.active {
+    color: #ffffff;
+    border-left: 2px solid #ffffff;
+    width: 48px;
+  }
+  
+  /* Editor container */
+  .editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1f1f1f;
+  }
+  
+  /* Tab bar */
+  .tabbar {
+    height: 35px;
+    background-color: #181818;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #1f1f1f;
+  }
+  .tab {
+    height: 35px;
+    background-color: #1f1f1f;
+    border-top: 1px solid #0078d4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    color: #ffffff;
+    font-size: 12px;
+    border-right: 1px solid #252526;
+  }
+  .tab .py-icon {
+    color: #3572A5;
+    font-weight: bold;
+  }
+  
+  /* Breadcrumbs */
+  .breadcrumbs {
+    height: 22px;
+    background-color: #1f1f1f;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: #888888;
+    font-size: 11px;
+    gap: 6px;
+    border-bottom: 1px solid #252526;
+  }
+  
+  /* Code editor */
+  .editor-body {
+    flex: 1;
+    padding-top: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Status bar */
+  .statusbar {
+    height: 22px;
+    background-color: #007acc;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 11px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .statusbar-left, .statusbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pill {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="#007acc"><path d="M14.5 2.5l-3.2-1.5c-.4-.2-.8-.1-1.1.2L5.8 5.4 3.2 3.5c-.3-.2-.7-.2-1 .1L.4 5.3c-.3.3-.4.8-.1 1.1l2.5 2.3-2.5 2.3c-.3.3-.2.8.1 1.1l1.8 1.7c.3.3.7.3 1 .1l2.6-1.9 4.4 4.2c.3.3.7.4 1.1.2l3.2-1.5c.4-.2.6-.6.6-1.1V3.6c0-.5-.2-.9-.6-1.1z"/></svg>
+      <div class="titlebar-menu">
+        <span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>...</span>
+      </div>
+    </div>
+    <div class="titlebar-center">
+      &larr; &rarr; &nbsp; lista07.py - Visual Studio Code - Untracked
+    </div>
+    <div class="titlebar-right">
+      <span>&#9633;</span><span>&#9645;</span><span>&#10005;</span>
+    </div>
+  </div>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Activity bar -->
+    <div class="activitybar">
+      <div class="activity-top">
+        <div class="activity-icon active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg>
+        </div>
+        <div class="activity-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <div class="activity-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v12M18 9a9 9 0 0 0-9 9"/></svg>
+        </div>
+        <div class="activity-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div class="activity-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+      </div>
+      <div class="activity-bottom">
+        <div class="activity-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor-container">
+      <div class="tabbar">
+        <div class="tab">
+          <span class="py-icon">🐍</span>
+          <span>lista07.py</span>
+          <span style="font-size:10px; color:#cccccc;">U</span>
+          <span style="font-size:14px; margin-left:6px; cursor:pointer;">&times;</span>
+        </div>
+      </div>
+      <div class="breadcrumbs">
+        <span>C:</span> &rsaquo; <span>Users</span> &rsaquo; <span>amand</span> &rsaquo; <span>OneDrive Universidade Federal de Uberlândia</span> &rsaquo; <span>2026</span> &rsaquo; <span>analise de algoritmo</span> &rsaquo; <span>prova2</span> &rsaquo; <span>lista07</span> &rsaquo; <span>🐍 lista07.py</span>
+      </div>
+      <div class="editor-body">
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">39</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    i = p</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">40</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">for</span> j <span style="color:#c586c0;">in</span> <span style="color:#dcdcaa;">range</span>(p + <span style="color:#b5cea8;">1</span>, r + <span style="color:#b5cea8;">1</span>):</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">41</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">if</span> v[j] &lt;= pivo:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">42</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            i += <span style="color:#b5cea8;">1</span></div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">43</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            v[i], v[j] = v[j], v[i]</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">44</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    v[p], v[i] = v[i], v[p]</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">45</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">if</span> passos <span style="color:#c586c0;">is</span> <span style="color:#c586c0;">not</span> <span style="color:#569cd6;">None</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">46</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        passos.<span style="color:#dcdcaa;">append</span>(</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">47</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            f&quot;Pivo {pivo} fixado na pos {i + <span style="color:#b5cea8;">1</span>}: {v[p:r + <span style="color:#b5cea8;">1</span>]} (vetor: {v})&quot;</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">48</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        )</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">49</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">return</span> i</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">50</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">&nbsp;</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">51</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">&nbsp;</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">52</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;"><span style="color:#569cd6;">def</span> <span style="color:#dcdcaa;">selection</span>(v, p, r, i, passos=<span style="color:#569cd6;">None</span>):</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">53</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">if</span> p == r:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">54</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">if</span> passos <span style="color:#c586c0;">is</span> <span style="color:#c586c0;">not</span> <span style="color:#569cd6;">None</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">55</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            passos.<span style="color:#dcdcaa;">append</span>(f&quot;Subvetor unitario na pos {p + <span style="color:#b5cea8;">1</span>}: valor {v[p]}&quot;)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">56</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">return</span> v[p]</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">57</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    q = <span style="color:#dcdcaa;">particiona_primeiro</span>(v, p, r, passos)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">58</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    k = q - p + <span style="color:#b5cea8;">1</span></div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">59</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">if</span> i == k:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">60</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">if</span> passos <span style="color:#c586c0;">is</span> <span style="color:#c586c0;">not</span> <span style="color:#569cd6;">None</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">61</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            passos.<span style="color:#dcdcaa;">append</span>(f&quot;Encontrado: i={i} == k={k}, elemento = {v[q]}&quot;)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">62</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">return</span> v[q]</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">63</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">elif</span> i &lt; k:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">64</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">if</span> passos <span style="color:#c586c0;">is</span> <span style="color:#c586c0;">not</span> <span style="color:#569cd6;">None</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">65</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            passos.<span style="color:#dcdcaa;">append</span>(f&quot;Recurso a esquerda: i={i} &lt;= k-<span style="color:#b5cea8;">1</span>={k - <span style="color:#b5cea8;">1</span>}&quot;)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">66</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">return</span> <span style="color:#dcdcaa;">selection</span>(v, p, q - <span style="color:#b5cea8;">1</span>, i, passos)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">67</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">else</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">68</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">if</span> passos <span style="color:#c586c0;">is</span> <span style="color:#c586c0;">not</span> <span style="color:#569cd6;">None</span>:</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">69</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">            passos.<span style="color:#dcdcaa;">append</span>(f&quot;Recurso a direita: novo_i={i - k} (k={k})&quot;)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">70</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">        <span style="color:#c586c0;">return</span> <span style="color:#dcdcaa;">selection</span>(v, q + <span style="color:#b5cea8;">1</span>, r, i - k, passos)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">71</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">&nbsp;</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">72</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">&nbsp;</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">73</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;"><span style="color:#6a9955;"># Questao 3: Tres metodos para os i maiores elementos</span></div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">74</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;"><span style="color:#569cd6;">def</span> <span style="color:#dcdcaa;">top_i_metodo_a</span>(v, i):</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">75</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#6a9955;"># Metodo A: ordenacao completa Theta(n lg n)</span></div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">76</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    ordenado = <span style="color:#dcdcaa;">sorted</span>(v)</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">77</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">    <span style="color:#c586c0;">return</span> ordenado[-i:]</div>
+        </div>
+        
+        <div style="display:flex; height:19px; line-height:19px; ">
+            <div style="width:52px; text-align:right; padding-right:16px; color:#858585; user-select:none; font-size:13px;">78</div>
+            <div style="white-space:pre; font-size:13.5px; font-family:Consolas, 'Courier New', monospace; color:#d4d4d4;">&nbsp;</div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="statusbar">
+    <div class="statusbar-left">
+      <span>&#10005; 0 &nbsp; &#9888; 0</span>
+      <span class="pill">Screen Reader Optimized</span>
+    </div>
+    <div class="statusbar-right">
+      <span>Ln 39, Col 1</span>
+      <span>Spaces: 4</span>
+      <span>UTF-8</span>
+      <span>LF</span>
+      <span>&#123; &#125; Python</span>
+      <span>🔔</span>
+    </div>
+  </div>
+
+</body>
+</html>

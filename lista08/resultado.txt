@@ -1,0 +1,45 @@
+LISTA 8 - ORDENACAO EM TEMPO LINEAR
+
+1) ARVORE DE DECISAO (n = 4 elementos)
+Entrada teste: [3, 1, 4, 2]
+[3, 1, 4, 2] -> [1, 2, 3, 4] (5 comparacoes)
+Total de permutacoes testadas: 24 | Todas corretas: True
+Numero de folhas l = 24 | Altura maxima h = 5
+
+2) COTA DE 5 ELEMENTOS E O PROFESSOR PICARETA
+Permutacoes possiveis (5!): 120
+Folhas maximas com 6 comparacoes (2^6): 64
+Cota minima necessaria ceil(log2(120)): 7 comparacoes
+O professor e picareta? SIM
+
+3) COUNTING SORT PASSO A PASSO
+Entrada A: [2, 3, 3, 4, 1, 3, 0, 3, 1, 2, 2, 1, 2, 4, 3, 4, 4, 2]
+Frequencias C: [1, 3, 5, 5, 4]
+Acumulado C: [1, 4, 9, 14, 18]
+Passo a passo (18 iteracoes reversas):
+j=18, A[j]=2 -> B[ 9], C=[1, 4, 8, 14, 18]
+j=17, A[j]=4 -> B[18], C=[1, 4, 8, 14, 17]
+j=16, A[j]=4 -> B[17], C=[1, 4, 8, 14, 16]
+j=15, A[j]=3 -> B[14], C=[1, 4, 8, 13, 16]
+j=14, A[j]=4 -> B[16], C=[1, 4, 8, 13, 15]
+... (omissao visual de passos intermediarios) ...
+j= 3, A[j]=3 -> B[11], C=[0, 1, 5, 10, 14]
+j= 2, A[j]=3 -> B[10], C=[0, 1, 5, 9, 14]
+j= 1, A[j]=2 -> B[ 5], C=[0, 1, 4, 9, 14]
+Resultado final B: [0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4] 
+
+4) RADIX SORT (LSD e MSD)
+Entrada: [329, 457, 657, 839, 436, 720, 355]
+LSD:
+Passada 1 (exp=  1): [720, 355, 436, 457, 657, 329, 839]
+Passada 2 (exp= 10): [720, 329, 436, 839, 355, 457, 657]
+Passada 3 (exp=100): [329, 355, 436, 457, 657, 720, 839]
+MSD: [329, 355, 436, 457, 657, 720, 839]
+Custo computacional: T(n) = Theta(d(n + k))
+
+5) RADIX SORT vs MERGE SORT
+     n |   Merge Sort (n log n) |  Radix Bit-a-Bit (k=2) |  Radix Base n (Linear)
+    64 |                    384 |                    396 |                    128
+   256 |                   2048 |                   2064 |                    512
+  1024 |                  10240 |                  10260 |                   2048
+  4096 |                  49152 |                  49176 |                   8192

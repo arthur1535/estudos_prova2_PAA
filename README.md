@@ -12,6 +12,7 @@ Este repositório centraliza todos os materiais de estudo, enunciados oficiais o
 ```text
 prova2/
 ├── README.md                            <-- Índice geral e documentação de apoio
+├── revisao_prova2.html                  <-- Revisão interativa das Listas 06 a 09
 ├── resumo_prova2.pdf                    <-- GUIA INTEGRADO DE REVISÃO DA PROVA 2 (4 páginas modulares)
 ├── resumo_prova2.tex                    <-- Código-fonte LaTeX do resumo integrado
 │
@@ -23,12 +24,15 @@ prova2/
 │   └── resolucao_visual_lista6.html     <-- Simulador visual interativo local (Merge, Quick, Lomuto)
 │
 ├── lista07/                             <-- MÓDULO 2: O PROBLEMA DA SELEÇÃO
+│   ├── aula07.pdf                       <-- Slides oficiais da Aula 07 (68 slides)
 │   ├── lista07.pdf                      <-- Enunciado oficial original da Lista 7
+│   ├── lista07_4paginas.tex / .pdf      <-- Resolução compacta em 4 páginas (HandTextAI)
 │   ├── lista07_entrega.tex / .pdf       <-- Resolução formal direta para entrega (8 páginas)
 │   ├── lista07_estudo.tex  / .pdf       <-- Resolução estendida comentada para estudos (12 páginas)
 │   └── resolucao_visual_lista7.html     <-- Simulador visual interativo local (MinMax, Selection, BFPRT)
 │
 ├── lista08/                             <-- MÓDULO 3: ORDENAÇÃO LINEAR E COTAS INFERIORES
+│   ├── aula08.pdf                       <-- Slides oficiais da Aula 08 (41 slides)
 │   ├── lista08.pdf                      <-- Enunciado oficial original da Lista 8
 │   ├── lista08_entrega.tex / .pdf       <-- Resolução formal direta para entrega (7 páginas)
 │   ├── lista08_estudo.tex  / .pdf       <-- Resolução estendida comentada para estudos (10 páginas)
@@ -51,6 +55,7 @@ prova2/
 ## 🚀 Acesso Rápido aos Materiais
 
 ### Revisão Geral
+* 🌐 [Revisão interativa da Prova 2](revisao_prova2.html)
 * 📄 [Guia Integrado de Revisão (resumo_prova2.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/resumo_prova2.pdf)
 * 📝 [Código-Fonte TeX da Revisão (resumo_prova2.tex)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/resumo_prova2.tex)
 
@@ -63,12 +68,15 @@ prova2/
 
 ### Lista 07: O Problema da Seleção
 * 📄 [Enunciado Oficial (lista07.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07.pdf)
+* 📊 [Slides da Aula 07 (aula07.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/aula07.pdf)
+* ✍️ [Resolução Compacta 4 Páginas - HandTextAI (lista07_4paginas.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_4paginas.pdf) | [LaTeX](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_4paginas.tex)
 * 📑 [Resolução para Entrega (lista07_entrega.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_entrega.pdf) | [LaTeX](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_entrega.tex)
 * 📘 [Resolução para Estudos (lista07_estudo.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_estudo.pdf) | [LaTeX](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/lista07_estudo.tex)
 * 🌐 [Simulador Visual Interativo (resolucao_visual_lista7.html)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista07/resolucao_visual_lista7.html)
 
 ### Lista 08: Ordenação Linear e Cotas Inferiores
 * 📄 [Enunciado Oficial (lista08.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/lista08.pdf)
+* 📊 [Slides da Aula 08 (aula08.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/aula08.pdf)
 * 📑 [Resolução para Entrega (lista08_entrega.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/lista08_entrega.pdf) | [LaTeX](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/lista08_entrega.tex)
 * 📘 [Resolução para Estudos (lista08_estudo.pdf)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/lista08_estudo.pdf) | [LaTeX](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/lista08_estudo.tex)
 * 🌐 [Simulador Visual Interativo (resolucao_visual_lista8.html)](file:///c:/Users/amand/OneDrive%20-%20Universidade%20Federal%20de%20Uberl%C3%A2ndia/2026/analise%20de%20algoritmo/prova2/lista08/resolucao_visual_lista8.html)

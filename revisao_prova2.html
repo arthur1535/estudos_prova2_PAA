@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Revisão da Prova 2 de Projeto e Análise de Algoritmos da UFU, com as listas 06 a 09 e os slides das aulas 06 e 09.">
+  <title>Revisão da Prova 2 · Projeto e Análise de Algoritmos</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f3eb;
+      --paper: #fffcf5;
+      --ink: #172923;
+      --muted: #4f6259;
+      --line: #d7ded1;
+      --green: #184638;
+      --light-green: #eaf0e4;
+      --pale-gold: #f0dfab;
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: system-ui, "Segoe UI", sans-serif;
+      --mono: Consolas, "Lucida Console", monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font: 1rem/1.62 var(--sans);
+    }
+    a { color: var(--green); text-underline-offset: .2em; }
+    a:hover { text-decoration-thickness: 2px; }
+    :where(a, button, summary, .table-wrap):focus-visible {
+      outline: 3px solid #946000;
+      outline-offset: 4px;
+    }
+    h1, h2, h3, h4, p { margin: 0; }
+    h1, h2 { font-family: var(--serif); font-weight: 500; line-height: 1.06; }
+    h2 { font-size: clamp(2rem, 4.2vw, 3.25rem); letter-spacing: -.035em; }
+    h3 { font-size: 1.2rem; line-height: 1.28; }
+    h4 { font-size: 1rem; }
+    p + p { margin-block-start: .65rem; }
+    ul, ol { margin-block: .55rem; padding-inline-start: 1.4rem; }
+    li + li { margin-block-start: .22rem; }
+    code { font-family: var(--mono); font-size: .94em; }
+    :is(p, li, summary, dd, td, th) { overflow-wrap: anywhere; }
+    :target { scroll-margin-top: 6rem; }
+    .wrap { width: min(72rem, calc(100% - 3rem)); margin-inline: auto; }
+
+    .skip-link {
+      position: fixed;
+      z-index: 4;
+      padding: .65rem 1rem;
+      background: var(--paper);
+      transform: translateY(-120%);
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--page);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .8rem 2rem;
+      min-height: 3.8rem;
+    }
+    .brand { white-space: nowrap; font-weight: 750; letter-spacing: .06em; }
+    .topbar a { text-decoration: none; }
+    .topbar a:hover { text-decoration: underline; }
+    .topbar nav { display: flex; flex-wrap: wrap; gap: .25rem 1.3rem; }
+    .topbar nav a { font-size: .85rem; font-weight: 650; padding-block: .35rem; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      align-items: center;
+      gap: clamp(1.25rem, 5vw, 4.5rem);
+      margin: 1.55rem auto 2.75rem;
+      padding: clamp(1.65rem, 5vw, 4rem);
+      background: #153b30;
+      color: #fffdf5;
+      border-radius: 1.15rem;
+    }
+    .hero h1 {
+      max-width: 12ch;
+      margin: .65rem 0 .9rem;
+      font-size: clamp(2.9rem, 6.8vw, 5.75rem);
+      letter-spacing: -.065em;
+    }
+    .hero h1 span { white-space: nowrap; }
+    .hero .intro { max-width: 37ch; color: #e1eee5; }
+    .hero .eyebrow { color: var(--pale-gold); }
+    .eyebrow {
+      color: var(--green);
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .hero-action {
+      display: inline-flex;
+      gap: 1rem;
+      align-items: center;
+      margin-top: 1.45rem;
+      padding: .62rem .9rem;
+      background: var(--pale-gold);
+      border-radius: .4rem;
+      color: #243b32;
+      font-size: .91rem;
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .hero-action:hover { background: #f9edc5; }
+    .hero :focus-visible { outline-color: #ffda81; }
+    .partition {
+      min-width: 0;
+      margin: 0;
+      padding: clamp(1rem, 3vw, 1.55rem);
+      background: #204b3e;
+      border: 1px solid #648074;
+      border-radius: .75rem;
+    }
+    .partition figcaption { font-weight: 720; }
+    .partition p { color: #e1eee5; margin-top: .25rem; font-size: .87rem; }
+    .partition .vector {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: .3rem;
+      margin: .9rem 0;
+      padding: 0;
+      list-style: none;
+    }
+    .vector li {
+      display: grid;
+      place-items: center;
+      min-height: 2.25rem;
+      margin: 0;
+      background: #2f5a4d;
+      color: #f4faf4;
+      border: 1px solid #7f9b8d;
+      border-radius: .3rem;
+      font: 700 1rem/1 var(--mono);
+    }
+    .vector li.pivot { background: var(--pale-gold); color: #203b30; border-color: var(--pale-gold); }
+    .partition dl { margin: 0; font-size: .85rem; }
+    .partition dt { font-weight: 730; }
+    .partition dd { margin: 0 0 .55rem; color: #e1eee5; }
+    .partition dd:last-child { margin-bottom: 0; }
+
+    .index { margin-bottom: 3rem; }
+    .index h2 { font-size: clamp(1.9rem, 3vw, 2.5rem); margin-bottom: .9rem; }
+    .topics { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; }
+    .topic {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.12rem;
+      border: 1px solid var(--line);
+      border-radius: .65rem;
+      background: var(--paper);
+      text-decoration: none;
+    }
+    .topic:hover { border-color: var(--green); background: #f2f5ed; }
+    .topic strong { font-size: 1.03rem; line-height: 1.25; margin-top: .3rem; }
+    .topic .topic-note { color: var(--muted); font-size: .86rem; margin-block: .45rem .7rem; }
+    .topic .arrow { margin-top: auto; font-size: 1.1rem; line-height: 1; }
+
+    .module, .reference, .materials {
+      min-width: 0;
+      max-width: 64rem;
+      margin: 0 auto 1.55rem;
+      padding: clamp(1.15rem, 4vw, 2.75rem);
+      border: 1px solid var(--line);
+      border-radius: .9rem;
+      background: var(--paper);
+    }
+    .section-head {
+      display: grid;
+      gap: .55rem;
+      margin-bottom: 1.55rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-head p { margin: 0; }
+    .section-head p:not(.eyebrow) { max-width: 74ch; color: var(--muted); }
+    :is(.module, .reference, .materials) h3 { margin-block: 1.55rem .55rem; }
+    .example {
+      margin-block: .75rem 1.25rem;
+      padding: clamp(.75rem, 3vw, 1.3rem);
+      background: var(--light-green);
+      border-left: .22rem solid #4d785b;
+      border-radius: .1rem .5rem .5rem .1rem;
+    }
+    .example h3:first-child { margin-top: 0; }
+    .source { margin-block: .85rem; color: var(--muted); font-size: .87rem; }
+    .exercise {
+      margin-block: .47rem;
+      border: 1px solid var(--line);
+      border-radius: .5rem;
+      background: #f8f8f1;
+    }
+    .exercise[open] { background: var(--paper); border-color: #a6b4a6; }
+    .exercise > summary {
+      cursor: pointer;
+      padding: .77rem 1rem;
+      border-radius: inherit;
+      font-weight: 690;
+      color: var(--green);
+    }
+    .exercise > summary:hover { background: var(--light-green); }
+    .answer { padding: .65rem 1rem 1rem; border-top: 1px solid var(--line); }
+    .answer > :last-child, .example > :last-child { margin-bottom: 0; }
+    .exercise-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .8rem; }
+    .exercise-controls button {
+      padding: .35rem .7rem;
+      border: 1px solid #adbcae;
+      border-radius: .35rem;
+      color: var(--green);
+      background: transparent;
+      font: 650 .83rem/1.4 var(--sans);
+      cursor: pointer;
+    }
+    .exercise-controls button:hover { background: var(--light-green); }
+
+    .table-wrap { max-width: 100%; overflow-x: auto; margin-block: .75rem; container-type: inline-size; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; line-height: 1.45; }
+    .matrix th, .matrix td { white-space: nowrap; }
+    caption { margin-bottom: .4rem; text-align: left; color: var(--muted); font-weight: 650; }
+    .matrix caption { position: sticky; left: 0; width: 100cqi; }
+    th, td { padding: .5rem .7rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #e8eee4; font-weight: 700; }
+    tbody tr:nth-child(even) td { background: #f6f7ef; }
+    .reference td:first-child { font-weight: 650; }
+    .reference td:nth-child(2) { white-space: nowrap; }
+    pre {
+      max-width: 100%;
+      margin-block: .7rem;
+      padding: .85rem;
+      overflow: auto;
+      border-radius: .4rem;
+      background: #183a30;
+      color: #f5f9ef;
+      font: .87rem/1.5 var(--mono);
+      tab-size: 2;
+    }
+    pre code { font-size: inherit; }
+    .material-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .7rem 1rem;
+    }
+    .material-list article { min-width: 0; padding: 0 .8rem .8rem; border-top: 1px solid var(--line); }
+    .material-list h3 { margin-top: .75rem; }
+    .material-list li { margin-top: .36rem; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .6rem 2rem;
+      max-width: 64rem;
+      margin: 0 auto 2.6rem;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+    .footer p { margin: 0; }
+
+    @media (max-width: 880px) {
+      .topics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .wrap { width: min(72rem, calc(100% - 2rem)); }
+    }
+    @media (max-width: 650px) {
+      :target { scroll-margin-top: 1rem; }
+      .topbar { position: static; }
+      .topbar .wrap { align-items: flex-start; flex-direction: column; gap: .15rem; padding-block: .6rem; }
+      .topbar nav { gap: .05rem .86rem; }
+      .topbar nav a { padding-block: .2rem; }
+      .hero { grid-template-columns: minmax(0, 1fr); margin-top: 1rem; margin-bottom: 2rem; }
+      .hero h1 { margin-block: .5rem .65rem; }
+      .index { margin-bottom: 2rem; }
+      .material-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 365px) {
+      .topics { grid-template-columns: 1fr; }
+      .topic { padding: .8rem .9rem; }
+      .topic .topic-note { margin-bottom: .25rem; }
+    }
+    @media print {
+      :root { --page: white; --paper: white; }
+      body { font-size: .9rem; }
+      .topbar, .topics, .index, .hero-action, .exercise-controls, .footer a { display: none; }
+      .wrap { width: 100%; }
+      .hero { margin: 0 0 1rem; padding: .5rem 1rem; grid-template-columns: 1fr; background: white; color: black; }
+      .hero h1 { font-size: 2.4rem; max-width: none; }
+      .hero :is(.eyebrow, .intro) { color: black; }
+      .partition { display: none; }
+      .module, .reference, .materials { padding: 1rem; }
+      h2, h3, summary, caption { break-after: avoid; }
+      tr { break-inside: avoid; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    }
+  </style>
+</head>
+<body id="inicio">
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="#inicio">PAA · UFU</a>
+      <nav aria-label="Navegação da revisão">
+        <a href="#lista06">Lista 06</a>
+        <a href="#lista07">Lista 07</a>
+        <a href="#lista08">Lista 08</a>
+        <a href="#lista09">Lista 09</a>
+        <a href="#consulta">Complexidades</a>
+        <a href="#materiais">Materiais</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap" id="conteudo" tabindex="-1">
+    <section class="hero" aria-labelledby="titulo">
+      <div>
+        <p class="eyebrow">Projeto e Análise de Algoritmos</p>
+        <h1 id="titulo">Revisão da <span>Prova 2</span></h1>
+        <p class="intro">Use os exemplos para repassar a técnica. Tente as questões das Listas 06 a 09 e abra as respostas para conferir o raciocínio e o custo.</p>
+        <a class="hero-action" href="#roteiro">Ir para o roteiro <span aria-hidden="true">↓</span></a>
+      </div>
+      <figure class="partition">
+        <figcaption>O que acontece após a partição?</figcaption>
+        <p>O pivô 6 termina na 4ª posição.</p>
+        <ol class="vector" aria-label="Vetor particionado: 4, 2, 5, pivô 6, 9, 8">
+          <li>4</li><li>2</li><li>5</li><li class="pivot">6</li><li>9</li><li>8</li>
+        </ol>
+        <dl>
+          <dt>Quick Sort</dt>
+          <dd>Ordena os dois lados do pivô.</dd>
+          <dt>Quick-Find para o 2º menor</dt>
+          <dd>Continua somente no bloco à esquerda.</dd>
+        </dl>
+      </figure>
+    </section>
+
+    <section class="index" id="roteiro" aria-labelledby="roteiro-titulo">
+      <h2 id="roteiro-titulo">Roteiro de estudo</h2>
+      <div class="topics">
+        <a class="topic" href="#lista06">
+          <span class="eyebrow">Lista 06</span>
+          <strong>Divisão e conquista</strong>
+          <span class="topic-note">Merge, Quick Sort, partição e Quick-Find.</span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="topic" href="#lista07">
+          <span class="eyebrow">Lista 07</span>
+          <strong>O problema da seleção</strong>
+          <span class="topic-note">Mínimo, máximo, ordem estatística e mediana exata.</span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="topic" href="#lista08">
+          <span class="eyebrow">Lista 08</span>
+          <strong>Ordenação e cotas inferiores</strong>
+          <span class="topic-note">Árvores de decisão, Counting Sort e Radix Sort.</span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="topic" href="#lista09">
+          <span class="eyebrow">Lista 09</span>
+          <strong>Programação dinâmica</strong>
+          <span class="topic-note">Corte de barras, subsequências, troco e mochila.</span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="module" id="lista06" aria-labelledby="titulo-lista06">
+      <header class="section-head">
+        <p class="eyebrow">Lista 06</p>
+        <h2 id="titulo-lista06">Divisão e conquista</h2>
+        <p>Identifique o caso base, o tamanho de cada chamada recursiva e o trabalho que cada chamada faz fora da recursão. Isso permite montar a recorrência e justificar o resultado por indução.</p>
+      </header>
+
+      <h3>Da execução à recorrência</h3>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Recorrências de divisão e conquista">
+        <table>
+          <thead><tr><th scope="col">Algoritmo</th><th scope="col">Trabalho da chamada</th><th scope="col">Tempo</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Merge Sort</th><td>Ordena duas metades e intercala em Θ(n).</td><td>Θ(n lg n) em qualquer entrada</td></tr>
+            <tr><th scope="row">Quick Sort</th><td>Particiona em Θ(n) e ordena os dois lados do pivô.</td><td>Θ(n lg n) com partições equilibradas, Θ(n²) com pivôs extremos</td></tr>
+            <tr><th scope="row">Quick-Find</th><td>Particiona em Θ(n) e segue apenas o lado que contém a ordem procurada.</td><td>Θ(n) esperado com pivô uniforme e chaves distintas, Θ(n²) no pior caso</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="source"><a href="lista06/aula06_divisao_e_conquista.pdf#page=21">Aula 06 · Merge Sort, pp. 21–45</a> · <a href="lista06/aula06_divisao_e_conquista.pdf#page=132">Aula 06 · custo do Quick Sort, pp. 132–187</a></p>
+
+      <div class="example">
+        <h3>Exemplo guiado · Particionamento de Lomuto</h3>
+        <p>Em <code>[4, 2, 5, 3]</code>, o pivô é <code>x = 3</code>. Com índices a partir de 1, comece com <code>i = 0</code>. Antes de examinar <code>A[j]</code>, <code>A[1…i]</code> contém valores ≤ 3 e <code>A[i+1…j−1]</code> contém valores &gt; 3.</p>
+        <ol>
+          <li><strong>j = 1, valor 4.</strong> Mantenha <code>i = 0</code>.</li>
+          <li><strong>j = 2, valor 2.</strong> Avance <code>i</code> para 1 e troque <code>A[1]</code> com <code>A[2]</code>. O vetor fica <code>[2, 4, 5, 3]</code>.</li>
+          <li><strong>j = 3, valor 5.</strong> Mantenha <code>i = 1</code>.</li>
+          <li><strong>Troca final.</strong> Troque <code>A[i+1]</code> com o pivô. O vetor fica <code>[2, 3, 5, 4]</code> e o algoritmo devolve a posição <code>2</code>.</li>
+        </ol>
+        <p>O pivô está na posição definitiva e os dois lados ainda podem precisar de ordenação. Para um intervalo com <em>n</em> elementos, o laço faz <em>n</em> − 1 testes de chave, com tempo Θ(n) e espaço auxiliar Θ(1).</p>
+        <p class="source">Exemplo adaptado do <a href="lista06/lista06.pdf#page=1">pseudocódigo da questão 3</a>. Na <a href="lista06/aula06_divisao_e_conquista.pdf#page=95">Aula 06, pp. 95–109</a>, a rotina de Hoare usa duas varreduras e pivô inicial.</p>
+      </div>
+
+      <h3>Exercícios da Lista 06</h3>
+      <details class="exercise" id="lista06-q1">
+        <summary>Questão 1 · Trace o Merge Sort em [1, 2, …, 10]</summary>
+        <div class="answer">
+          <p>Divida primeiro em <code>[1…5]</code> e <code>[6…10]</code>. O meio <code>m = ⌊(l + r)/2⌋</code> deixa a metade esquerda com o elemento extra quando o tamanho é ímpar. Continue até os intervalos unitários.</p>
+          <p>Na ordem de retorno das chamadas, as intercalações reconstroem os intervalos <code>[1…2], [1…3], [4…5], [1…5], [6…7], [6…8], [9…10], [6…10], [1…10]</code>. Em cada uma, saem primeiro todos os valores da metade esquerda. Na versão com sentinelas dos slides, cada posição escrita aciona um teste <code>L[i] ≤ R[j]</code>. Na última intercalação há 10 testes, 5 deles entre duas chaves da entrada.</p>
+          <p>Ao todo são <strong>19 chamadas</strong> (10 casos base e 9 intercalações), <strong>19 comparações entre chaves da entrada</strong> e <strong>34 testes</strong> de <code>L[i] ≤ R[j]</code> quando contamos os testes com sentinelas. A recorrência é <code>T(n) = T(⌈n/2⌉) + T(⌊n/2⌋) + Θ(n)</code>, com <code>T(1) = Θ(1)</code>.</p>
+          <p class="source"><a href="lista06/aula06_divisao_e_conquista.pdf#page=42">Aula 06 · Intercalação com sentinelas, pp. 42–45</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista06-q2">
+        <summary>Questão 2 · Compare três escolhas de pivô em [1, 2, …, 10]</summary>
+        <div class="answer">
+          <p>Use a partição da aula, que recebe o pivô na primeira posição. Quando a escolha cair em outra posição, troque o pivô com o primeiro valor antes de particionar. Nesta entrada crescente, a partição devolve o pivô à posição original e os subvetores seguem crescentes.</p>
+          <ol type="a">
+            <li><strong>Primeiro elemento.</strong> Os pivôs são <code>1, 2, …, 9</code>, sempre com lado esquerdo vazio. Os tamanhos das chamadas que particionam vão de 10 a 2. A recorrência <code>T(n) = T(n−1) + Θ(n)</code> dá Θ(n²).</li>
+            <li><strong>Mediana de três.</strong> Aplique a regra <code>1, ⌊n/2⌋, n</code> com índices locais em cada chamada. A mediana de <code>1, 5, 10</code> é 5. Em <code>[1…4]</code>, escolha 2 e depois 3 em <code>[3,4]</code>. Em <code>[6…10]</code>, a segunda posição local contém 7, então escolha 7 e prossiga com 8 em <code>[8…10]</code> e 9 em <code>[9,10]</code>. Os demais intervalos são casos base. Para a entrada crescente, as divisões mantêm o tempo Θ(n lg n). Em entradas arbitrárias, essa heurística ainda admite pior caso quadrático.</li>
+            <li><strong>Pivô aleatório.</strong> Um sorteio possível escolhe 6 na raiz, produzindo <code>[1…5]</code> e <code>[7…10]</code>. No ramo esquerdo, o pivô 3 deixa <code>[1,2]</code> e <code>[4,5]</code>, que podem escolher 2 e 4. No ramo direito, o pivô 8 deixa <code>[7]</code> e <code>[9,10]</code>, que pode escolher 10. Com sorteio uniforme e chaves distintas, o tempo esperado é Θ(n lg n).</li>
+          </ol>
+          <p class="source"><a href="lista06/aula06_divisao_e_conquista.pdf#page=89">Aula 06 · Quick Sort e partição, pp. 89–109</a> · <a href="lista06/aula06_divisao_e_conquista.pdf#page=190">Aula 06 · escolha de pivô, pp. 190–193</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista06-q3">
+        <summary>Questão 3 · Execute Lomuto e prove o invariante</summary>
+        <div class="answer">
+          <p>Em <code>[4, 8, 2, 7, 6, 3, 5, 1, 9, 10]</code>, o pivô é 10. Para cada <code>j = 1, …, 9</code>, o teste é verdadeiro e <code>i</code> passa a valer <code>j</code>. Cada troca do laço é consigo mesma, assim como a troca final. O vetor permanece igual e o retorno é 10.</p>
+          <ol>
+            <li><strong>Inicialização.</strong> Com <code>i = l−1</code> e <code>j = l</code>, ambas as regiões já examinadas estão vazias e <code>A[r] = x</code>.</li>
+            <li><strong>Manutenção.</strong> Um valor maior que <code>x</code> amplia a região de maiores. Um valor ≤ <code>x</code> passa à região da esquerda pela troca com a primeira posição da região de maiores, ou já está no lugar quando <code>i = j</code> após o avanço.</li>
+            <li><strong>Término.</strong> Quando <code>j = r</code>, a troca final coloca o pivô em <code>i+1</code>. Todos à esquerda são ≤ <code>x</code> e todos à direita são &gt; <code>x</code>.</li>
+          </ol>
+          <p>O laço faz 9 testes nessa entrada e <em>n</em> − 1 no caso geral. São Θ(n) de tempo e Θ(1) de espaço auxiliar.</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista06-q4">
+        <summary>Questão 4 · Intercale k vetores de n elementos em O(nk lg k)</summary>
+        <div class="answer">
+          <p>Divida a coleção de vetores ao meio. Resolva a intercalação em cada metade e aplique o <code>Merge</code> de duas vias aos dois resultados. A chamada com um vetor devolve esse próprio vetor.</p>
+          <p>Um nível da recursão percorre, no máximo, os <code>nk</code> elementos. Com ⌈lg k⌉ níveis de intercalação, o custo é <code>O(nk lg k)</code> para <code>k ≥ 2</code>. Para <code>k</code> potência de 2, a recorrência é <code>T(k) = 2T(k/2) + Θ(nk)</code>, com base <code>T(1) = Θ(1)</code>.</p>
+          <p class="source"><a href="lista06/aula06_divisao_e_conquista.pdf#page=28">Aula 06 · intercalação de duas vias, pp. 28–42</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista06-q5">
+        <summary>Questão 5 · Implemente Quick-Find e analise o tempo</summary>
+        <div class="answer">
+          <p>Use <code>k</code> como a ordem desejada dentro do intervalo atual, a partir de 1. Com Lomuto, mova o pivô sorteado uniformemente para a última posição antes de chamar <code>Partition</code>.</p>
+          <pre><code>QuickFind(A, l, r, k):
+      se l = r: devolva A[l]
+      sorteie t em [l, r] e troque A[t] com A[r]
+      p ← PartitionLomuto(A, l, r)
+      ordem ← p − l + 1
+      se k = ordem: devolva A[p]
+      se k &lt; ordem: devolva QuickFind(A, l, p−1, k)
+      devolva QuickFind(A, p+1, r, k−ordem)</code></pre>
+          <p><strong>Ajuste no enunciado.</strong> Para chaves distintas e pivôs uniformes, <code>O(lg n)</code> descreve a profundidade esperada. O tempo esperado é Θ(n), pois cada chamada varre o subvetor atual. Em divisões balanceadas, a soma <code>n + n/2 + n/4 + …</code> já ilustra o custo linear. No caso aleatório, um pivô na metade central ocorre com probabilidade constante e reduz o subproblema por um fator constante, o que mantém linear o trabalho esperado total.</p>
+          <p>No pior caso, a chamada pode reter <code>n−1</code> elementos a cada passo, somando Θ(n²).</p>
+        </div>
+      </details>
+      <p class="source"><a href="lista06/lista06.pdf">Enunciados da Lista 06</a> · <a href="lista06/resolucao_visual_lista6.html">Resolução visual da Lista 06</a></p>
+    </section>
+
+    <section class="module" id="lista07" aria-labelledby="titulo-lista07">
+      <header class="section-head">
+        <p class="eyebrow">Lista 07</p>
+        <h2 id="titulo-lista07">O problema da seleção</h2>
+        <p>Encontre um elemento pelo seu posto. Para o i-ésimo menor, conte quantas chaves a partição coloca antes do pivô e recorra apenas ao trecho que pode conter a resposta.</p>
+      </header>
+
+      <div class="example">
+        <h3>Seleção por partição</h3>
+        <p>Para chaves distintas, se o pivô termina na posição <var>q</var> do trecho <var>A[p…r]</var>, seu posto local é <code>k = q − p + 1</code>. Se <var>i</var> for menor que <var>k</var>, busque o mesmo posto à esquerda. Se <var>i</var> for maior, busque o posto <code>i − k</code> à direita. A igualdade encerra a busca.</p>
+        <p>Exemplo com índices iniciando em 1. Na busca pelo 4º menor de <code>[4, 7, 2, 9, 1, 6]</code>, uma partição com pivô 4 produz <code>[1, 2, 4, 9, 7, 6]</code>. Seu posto é 3. A busca passa a ser pelo 1º menor de <code>[9, 7, 6]</code>, que é <strong>6</strong>.</p>
+        <p>A partição custa Θ(n). Com redução à metade em cada etapa, o custo total é Θ(n) pela soma <code>n + n/2 + n/4 + ⋯</code>. Um pivô uniforme ao acaso dá tempo esperado Θ(n) em chaves distintas. Pivôs extremos sucessivos podem levar a Θ(n²).</p>
+        <p class="source">A mecânica de partição usada pelo QuickSort aparece na <a href="lista06/aula06_divisao_e_conquista.pdf#page=101">Aula 06, slide 23</a>.</p>
+      </div>
+
+      <h3>Exercícios da Lista 07</h3>
+
+      <details class="exercise" id="lista07-q1">
+        <summary>Questão 1 · Encontrar mínimo e máximo juntos</summary>
+        <div class="answer">
+          <p>Para cada par, uma comparação escolhe o menor e o maior. Só o menor do par disputa o mínimo global e só o maior disputa o máximo global.</p>
+          <pre><code>MinMax(A[1…n]), com n ≥ 1
+      se n é ímpar:
+        mínimo ← A[1]; máximo ← A[1]; início ← 2
+      senão:
+        (mínimo, máximo) ← ordenar o par (A[1], A[2])
+        início ← 3
+      para j de início a n − 1, de 2 em 2:
+        (a, b) ← ordenar o par (A[j], A[j + 1])
+        se a &lt; mínimo: mínimo ← a
+        se b &gt; máximo: máximo ← b
+      devolva (mínimo, máximo)</code></pre>
+          <p>Se <var>n</var> for ímpar, são <code>3⌊n/2⌋</code> comparações de chaves. Se for par, são <code>1 + 3(n/2 − 1) = 3n/2 − 2</code>. O tempo é Θ(n) e o espaço auxiliar é Θ(1).</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista07-q2">
+        <summary>Questão 2 · Rastrear Selection até o 3º menor</summary>
+        <div class="answer">
+          <p>Usamos a variante de Lomuto com o pivô no início. Varra da esquerda para a direita movendo cada chave ≤ pivô para o início da faixa após o pivô. Ao final, troque o pivô com o último elemento dessa faixa. Os índices <var>p</var>, <var>r</var> e <var>q</var> são globais e o posto <var>i</var> é local.</p>
+          <div class="table-wrap">
+            <table>
+              <caption>Execução para A = [1, 8, 7, 6, 5, 3, 2, 10, 9]</caption>
+              <thead><tr><th scope="col">Trecho [p…r]</th><th scope="col">i</th><th scope="col">Pivô</th><th scope="col">Posição q</th><th scope="col">Posto k</th><th scope="col">Próximo passo</th></tr></thead>
+              <tbody>
+                <tr><td>1…9</td><td>3</td><td>1</td><td>1</td><td>1</td><td>Direita, i = 2</td></tr>
+                <tr><td>2…9</td><td>2</td><td>8</td><td>7</td><td>6</td><td>Esquerda, i = 2</td></tr>
+                <tr><td>2…6</td><td>2</td><td>2</td><td>2</td><td>1</td><td>Direita, i = 1</td></tr>
+                <tr><td>3…6</td><td>1</td><td>7</td><td>6</td><td>4</td><td>Esquerda, i = 1</td></tr>
+                <tr><td>3…5</td><td>1</td><td>3</td><td>3</td><td>1</td><td>Retorna 3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>As trocas que mudam o vetor são <code>8 ↔ 2</code> na 2ª partição e <code>7 ↔ 3</code> na 4ª. O vetor termina em <code>[1, 2, 3, 6, 5, 7, 8, 10, 9]</code>. A resposta é <strong>3</strong>.</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista07-q3">
+        <summary>Questão 3 · Imprimir em ordem crescente os i maiores</summary>
+        <div class="answer">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Método</th><th scope="col">Como emitir em ordem crescente</th><th scope="col">Pior caso</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">(a) Ordenação total</th><td>Ordene com Merge Sort e percorra as últimas i posições.</td><td>Θ(n log n)</td></tr>
+                <tr><th scope="row">(b) Max-heap</th><td>Construa o heap em Θ(n), faça i extrações e armazene cada saída da direita para a esquerda.</td><td>O(n + i log n)</td></tr>
+                <tr><th scope="row">(c) Seleção linear</th><td>Ache o pivô de posto n − i + 1, reúna os maiores e inclua cópias do pivô até completar i. Ordene esses i elementos.</td><td>Θ(n + i log i)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>As extrações do max-heap entregam ordem decrescente. Reservar <var>i</var> posições e escrevê-las ao contrário resolve a ordem da saída em Θ(i).</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista07-q4">
+        <summary>Questão 4 · Garantir QuickSort em Θ(n log n) no pior caso</summary>
+        <div class="answer">
+          <p>Use seleção determinística em Θ(n), como BFPRT, para encontrar a <strong>mediana exata</strong> de cada trecho. O BFPRT usa a mediana das medianas de grupos de cinco como pivô interno. Isso permite descartar pelo menos <code>3n/10 − O(1)</code> chaves a cada partição. O valor que o algoritmo devolve é a chave de posto solicitado.</p>
+          <p>Particione em menores, iguais e maiores, depois ordene apenas os dois trechos estritos. Cada trecho tem no máximo ⌊n/2⌋ elementos. A profundidade é O(log n) e o custo total de cada nível é O(n). Para chaves distintas, os trechos são balanceados, com Θ(n) de trabalho por nível até perto das folhas. O pior caso é Θ(n log n).</p>
+          <p class="source">A recorrência de partições balanceadas está na <a href="lista06/aula06_divisao_e_conquista.pdf#page=164">Aula 06, slide 30</a>.</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista07-q5">
+        <summary>Questão 5 · Seleção linear com uma caixa-preta de mediana</summary>
+        <div class="answer">
+          <p>Calcule a mediana em Θ(n) e particione em três grupos. Se <var>L</var> chaves são menores que a mediana e <var>E</var> são iguais, busque o posto <var>i</var> entre as menores quando <code>i ≤ L</code>. Retorne a mediana para <code>L &lt; i ≤ L + E</code>. Para <code>i &gt; L + E</code>, busque o posto <code>i − L − E</code> entre as maiores. Para um único elemento, retorne-o diretamente.</p>
+          <p>Há no máximo uma chamada de tamanho ⌊n/2⌋. A partição custa tempo linear no tamanho do trecho, então <code>T(n) ≤ T(⌊n/2⌋) + cn</code> para uma constante <var>c</var>. O custo total é Θ(n).</p>
+        </div>
+      </details>
+
+      <p class="source"><a href="lista07/lista07.pdf">Enunciado da Lista 07</a> · <a href="lista07/lista07_estudo.pdf">Resolução comentada</a> · <a href="lista07/resolucao_visual_lista7.html">Simulador da Lista 07</a></p>
+    </section>
+
+    <section class="module" id="lista08" aria-labelledby="titulo-lista08">
+      <header class="section-head">
+        <p class="eyebrow">Lista 08</p>
+        <h2 id="titulo-lista08">Ordenação linear e cotas inferiores</h2>
+        <p>A árvore de decisão conta comparações entre chaves. Counting Sort e Radix Sort usam o domínio das chaves como parte do algoritmo, portanto seu tempo depende da faixa de valores ou da quantidade de dígitos.</p>
+      </header>
+
+      <div class="example">
+        <h3>Counting Sort estável</h3>
+        <p>Para chaves inteiras em <code>0…k − 1</code>, conte frequências e acumule-as. Ao final dessa fase, <code>C[x]</code> é a última posição reservada à chave <var>x</var> numa saída indexada a partir de 1. Percorra a entrada do fim ao início. A cada chave <var>x</var>, escreva o registro em <code>B[C[x]]</code> e decremente <code>C[x]</code>.</p>
+        <p>Para <code>[2ₐ, 0, 2ᵦ, 1]</code>, as frequências são <code>[1, 1, 2]</code> e os prefixos são <code>[1, 2, 4]</code>. A chave <code>2ᵦ</code> ocupa a posição 4 e a chave <code>2ₐ</code>, a posição 3. A saída <code>[0, 1, 2ₐ, 2ᵦ]</code> preserva a ordem do empate. O custo é Θ(n + k) em tempo e espaço auxiliar, incluindo a saída.</p>
+      </div>
+
+      <h3>Exercícios da Lista 08</h3>
+
+      <details class="exercise" id="lista08-q1">
+        <summary>Questão 1 · Árvore de decisão para ordenar quatro chaves</summary>
+        <div class="answer">
+          <p>Considere chaves distintas. A árvore começa comparando <var>x₁</var> com <var>x₂</var> e, em cada um dos dois ramos, <var>x₃</var> com <var>x₄</var>. Em cada um dos quatro resultados, use <code>(a, b)</code> para o primeiro par em ordem crescente e <code>(c, d)</code> para o segundo. Encaixe a subárvore abaixo nos quatro ramos.</p>
+          <pre><code>Comparar a &lt; c
+      Sim → comparar b &lt; c
+        Sim → a, b, c, d
+        Não → comparar b &lt; d
+          Sim → a, c, b, d
+          Não → a, c, d, b
+      Não → comparar d &lt; a
+        Sim → c, d, a, b
+        Não → comparar d &lt; b
+          Sim → c, a, d, b
+          Não → c, a, b, d</code></pre>
+          <p>Por exemplo, para <code>[4, 1, 3, 2]</code>, temos <code>(a, b) = (x₂, x₁)</code> e <code>(c, d) = (x₄, x₃)</code>. As respostas na subárvore são sim, não e não. A saída <code>(a, c, d, b)</code> contém os valores <code>[1, 2, 3, 4]</code>.</p>
+          <p><strong>(a)</strong> Há <code>4 × 6 = 24</code> folhas. <strong>(b)</strong> A altura é 5, atingida com duas comparações para ordenar os pares e três para intercalá-los. <strong>(c)</strong> Altura conta comparações no pior caso. Para ordenar <var>n</var> chaves distintas, precisamos distinguir <var>n!</var> ordens, mas uma árvore binária de altura <var>h</var> tem no máximo <code>2<sup>h</sup></code> folhas. Então <code>h ≥ ⌈log₂(n!)⌉</code>. Para <var>n</var> = 4, esse limite já exige 5. Em geral, o produto dos maiores ⌈n/2⌉ fatores de <var>n!</var> é pelo menos <code>(n/2)<sup>⌈n/2⌉</sup></code>, dando Ω(n log n).</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista08-q2">
+        <summary>Questão 2 · Seis comparações bastam para cinco chaves?</summary>
+        <div class="answer">
+          <p>Uma árvore binária de altura 6 tem no máximo <code>2⁶ = 64</code> folhas. As <code>5! = 120</code> ordens possíveis exigem pelo menos 120 folhas. Portanto, algum caso exige pelo menos <code>⌈log₂(120)⌉ = 7</code> comparações entre chaves.</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista08-q3">
+        <summary>Questão 3 · Rastrear Counting Sort em 18 chaves</summary>
+        <div class="answer">
+          <p>Para <code>[2, 3, 3, 4, 1, 3, 0, 3, 1, 2, 2, 1, 2, 4, 3, 4, 4, 2]</code>, as frequências de 0 a 4 são <code>[1, 3, 5, 5, 4]</code> e suas somas acumuladas são <code>[1, 4, 9, 14, 18]</code>. Distribua da direita para a esquerda e reduza a posição reservada à chave inserida.</p>
+          <div class="table-wrap">
+            <table>
+              <caption>Distribuição para B e contador da chave após a escrita</caption>
+              <thead><tr><th scope="col">j</th><th scope="col">Escrita</th><th scope="col">Contador atualizado</th></tr></thead>
+              <tbody>
+                <tr><td>18</td><td>B[9] ← 2</td><td>C[2] = 8</td></tr>
+                <tr><td>17</td><td>B[18] ← 4</td><td>C[4] = 17</td></tr>
+                <tr><td>16</td><td>B[17] ← 4</td><td>C[4] = 16</td></tr>
+                <tr><td>15</td><td>B[14] ← 3</td><td>C[3] = 13</td></tr>
+                <tr><td>14</td><td>B[16] ← 4</td><td>C[4] = 15</td></tr>
+                <tr><td>13</td><td>B[8] ← 2</td><td>C[2] = 7</td></tr>
+                <tr><td>12</td><td>B[4] ← 1</td><td>C[1] = 3</td></tr>
+                <tr><td>11</td><td>B[7] ← 2</td><td>C[2] = 6</td></tr>
+                <tr><td>10</td><td>B[6] ← 2</td><td>C[2] = 5</td></tr>
+                <tr><td>9</td><td>B[3] ← 1</td><td>C[1] = 2</td></tr>
+                <tr><td>8</td><td>B[13] ← 3</td><td>C[3] = 12</td></tr>
+                <tr><td>7</td><td>B[1] ← 0</td><td>C[0] = 0</td></tr>
+                <tr><td>6</td><td>B[12] ← 3</td><td>C[3] = 11</td></tr>
+                <tr><td>5</td><td>B[2] ← 1</td><td>C[1] = 1</td></tr>
+                <tr><td>4</td><td>B[15] ← 4</td><td>C[4] = 14</td></tr>
+                <tr><td>3</td><td>B[11] ← 3</td><td>C[3] = 10</td></tr>
+                <tr><td>2</td><td>B[10] ← 3</td><td>C[3] = 9</td></tr>
+                <tr><td>1</td><td>B[5] ← 2</td><td>C[2] = 4</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Saída <code>[0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4]</code>.</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista08-q4">
+        <summary>Questão 4 · Rastrear Radix Sort por MSD e LSD</summary>
+        <div class="answer">
+          <p>Entrada <code>[329, 457, 657, 839, 436, 720, 355]</code>.</p>
+          <p><strong>(a) MSD, centenas primeiro.</strong> Os baldes de centenas ocupados são <code>3 → [329, 355]</code>, <code>4 → [457, 436]</code>, <code>6 → [657]</code>, <code>7 → [720]</code> e <code>8 → [839]</code>. Refine os baldes 3 e 4 pela dezena, obtendo <code>[329, 355]</code> e <code>[436, 457]</code>. Os demais já têm um só elemento. Concatene por ordem de balde.</p>
+          <p><strong>(b) LSD, unidades primeiro.</strong> Ordene a entrada inteira de forma estável em cada passada.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Passada</th><th scope="col">Vetor obtido</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Unidades</th><td>720, 355, 436, 457, 657, 329, 839</td></tr>
+                <tr><th scope="row">Dezenas</th><td>720, 329, 436, 839, 355, 457, 657</td></tr>
+                <tr><th scope="row">Centenas</th><td>329, 355, 436, 457, 657, 720, 839</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>(c) Custo.</strong> Para <var>d</var> dígitos em uma base <var>b</var>, o LSD com Counting Sort faz <var>d</var> passadas de Θ(n + b) e usa Θ(n + b) de espaço auxiliar. No MSD, o número de níveis é no máximo <var>d</var> e cada nível distribui até <var>n</var> chaves. Com base fixa, resulta um limite O(dn), com parada antecipada em baldes unitários. Se a base varia e cada chamada inicializa <var>b</var> contadores, inclua o termo <code>b × número de chamadas de distribuição</code> no custo do MSD.</p>
+        </div>
+      </details>
+
+      <details class="exercise" id="lista08-q5">
+        <summary>Questão 5 · Quando Radix Sort e Merge Sort empatam?</summary>
+        <div class="answer">
+          <p>O LSD com Counting Sort custa Θ(d(n + b)). Em base fixa, <code>n + b = Θ(n)</code>. Se a representação tiver <code>d = Θ(log n)</code> dígitos, o custo se torna Θ(n log n), a mesma ordem do Merge Sort. Um exemplo é usar base 2 com largura <code>⌈log₂(n² + 1)⌉</code> para chaves em <code>0…n²</code>.</p>
+        </div>
+      </details>
+
+      <p class="source"><a href="lista08/lista08.pdf">Enunciado da Lista 08</a> · <a href="lista08/lista08_estudo.pdf">Resolução comentada</a> · <a href="lista08/resolucao_visual_lista8.html">Simulador da Lista 08</a></p>
+    </section>
+
+    <section class="module" id="lista09" aria-labelledby="titulo-lista09">
+      <header class="section-head">
+        <p class="eyebrow">Lista 09</p>
+        <h2 id="titulo-lista09">Programação dinâmica</h2>
+        <p>Defina o que cada célula representa, escreva os casos-base e preencha a tabela em uma ordem que respeite as dependências.</p>
+      </header>
+
+      <p>Quando a solução ótima é composta por soluções ótimas de subproblemas, há <strong>subestrutura ótima</strong>. A <strong>sobreposição de subproblemas</strong> é o que torna útil guardar essas soluções. A versão <i>top-down</i> calcula os estados solicitados pela recursão e os memoriza. A versão <i>bottom-up</i> percorre os estados iterativamente, dos casos-base aos estados que dependem deles.</p>
+      <p class="source"><a href="lista09/aula09.pdf#page=8">Aula 09, slides 5–8</a></p>
+
+      <div class="example">
+        <h3>Exemplo resolvido de corte de barras</h3>
+        <p><strong>Estado.</strong> <code>A[i]</code> é a maior receita para uma barra de tamanho <var>i</var>. <strong>Base.</strong> <code>A[0] = 0</code>. <strong>Transição.</strong> Para cada possível primeiro pedaço <var>j</var>, some o preço <code>P[j]</code> à receita ótima da sobra <code>A[i − j]</code> e guarde o máximo.</p>
+        <p>Na questão 1, <code>P = [0, 1, 3, 11, 16, 19, 10]</code>. Depois de calcular os estados menores, os candidatos para <code>A[6]</code> são 20, 19, <strong>22</strong>, 19, 20 e 10. O máximo vem de <code>P[3] + A[3] = 11 + 11</code>, dois pedaços de tamanho 3. O preenchimento faz de 1 a <var>n</var> testes por estado, totalizando tempo <strong>Θ(n²)</strong> e espaço <strong>Θ(n)</strong>.</p>
+        <p class="source"><a href="lista09/aula09.pdf#page=83">Aula 09, slide 29</a> · <a href="lista09/lista09.pdf#page=1">Lista 09, questão 1</a></p>
+      </div>
+
+      <h3>Questões da Lista 09</h3>
+      <details class="exercise" id="lista09-q1">
+        <summary>Questão 1 · Preencha o vetor de receitas do corte de barras</summary>
+        <div class="answer">
+          <div class="table-wrap">
+            <table>
+              <caption>Candidatos na ordem dos tamanhos do primeiro pedaço</caption>
+              <thead><tr><th scope="col">i</th><th scope="col">P[j] + A[i − j]</th><th scope="col">A[i]</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">0</th><td>Caso-base</td><td>0</td></tr>
+                <tr><th scope="row">1</th><td>1</td><td>1</td></tr>
+                <tr><th scope="row">2</th><td>2, 3</td><td>3</td></tr>
+                <tr><th scope="row">3</th><td>4, 4, 11</td><td>11</td></tr>
+                <tr><th scope="row">4</th><td>12, 6, 12, 16</td><td>16</td></tr>
+                <tr><th scope="row">5</th><td>17, 14, 14, 17, 19</td><td>19</td></tr>
+                <tr><th scope="row">6</th><td>20, 19, 22, 19, 20, 10</td><td>22</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q2">
+        <summary>Questão 2 · Como recuperar os tamanhos dos pedaços ótimos?</summary>
+        <div class="answer">
+          <p>Em cada estado, guarde <code>corte[i]</code> como o primeiro <var>j</var> que atinge o máximo. Comece em <code>i = n</code> e, enquanto <code>i &gt; 0</code>, emita <code>corte[i]</code> e faça <code>i ← i − corte[i]</code>. No exemplo, <code>6 → 3 → 0</code> emite <strong>[3, 3]</strong>. O vetor auxiliar ocupa Θ(n) e o retrocesso leva tempo proporcional ao número de pedaços.</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q3">
+        <summary>Questão 3 · Calcule a LIS do vetor [5, 2, 8, 6, 3, 6, 9, 7]</summary>
+        <div class="answer">
+          <p><code>L[i]</code> mede a maior subsequência estritamente crescente que termina em <code>S[i]</code>. Ela começa com tamanho 1. Para cada <code>j &lt; i</code> com <code>S[j] &lt; S[i]</code>, considere <code>1 + L[j]</code> e guarde o maior comprimento.</p>
+          <div class="table-wrap">
+            <table class="matrix">
+              <caption>Comprimento da LIS terminada em cada posição</caption>
+              <thead><tr><th scope="col">i</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">S[i]</th><td>5</td><td>2</td><td>8</td><td>6</td><td>3</td><td>6</td><td>9</td><td>7</td></tr>
+                <tr><th scope="row">L[i]</th><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td><td>4</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Na posição 6, de valor 6, o melhor predecessor é a posição 5, de valor 3. A posição 4 também tem valor 6 e a desigualdade estrita a exclui. O resultado é <strong>max L[i] = 4</strong>. O tempo é Θ(n²) e o espaço, Θ(n).</p>
+          <p class="source"><a href="lista09/aula09.pdf#page=116">Aula 09, slides 40–41</a> · <a href="lista09/debugger_visual_lis_programa_o_din_mica.html">Simulador de LIS</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q4">
+        <summary>Questão 4 · Recupere uma subsequência crescente de comprimento máximo</summary>
+        <div class="answer">
+          <p>Guarde <code>pred[i]</code> quando um predecessor melhora <code>L[i]</code>. Use 0 como sentinela e escolha qualquer índice de comprimento global máximo. Siga os predecessores até 0 e inverta os valores coletados. Com o máximo na posição 7, o caminho <code>7 → 6 → 5 → 2</code> gera <strong>[2, 3, 6, 9]</strong>. A posição 8 também gera uma LIS, <strong>[2, 3, 6, 7]</strong>.</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q5">
+        <summary>Questão 5 · Calcule o troco mínimo para 13 com moedas [1, 5, 8, 11]</summary>
+        <div class="answer">
+          <p><code>M[t]</code> é a quantidade mínima de moedas para obter exatamente <var>t</var>. Comece com <code>M[0] = 0</code>. Em ordem crescente de <var>t</var>, calcule <code>M[t] = 1 + min M[t − c]</code> sobre os valores <code>c ≤ t</code>. Use ∞ quando nenhuma escolha forma o total. Cada denominação pode ser usada várias vezes.</p>
+          <div class="table-wrap">
+            <table class="matrix">
+              <caption>Preenchimento de M para as quantias de 0 a 13</caption>
+              <thead><tr><th scope="col">t</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th><th scope="col">11</th><th scope="col">12</th><th scope="col">13</th></tr></thead>
+              <tbody><tr><th scope="row">M[t]</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>1</td><td>2</td><td>3</td><td>1</td><td>2</td><td>2</td><td>1</td><td>2</td><td>2</td></tr></tbody>
+            </table>
+          </div>
+          <p><code>M[13] = 1 + min(2, 1, 1, 2) = 2</code>, usando 5 + 8. Para <var>n</var> denominações e alvo <var>k</var>, o tempo é Θ(nk) e o espaço, Θ(k). No pseudocódigo do slide 50, use a mesma variável para inicializar e atualizar o mínimo e retorne <code>M[k]</code>.</p>
+          <p class="source"><a href="lista09/aula09.pdf#page=157">Aula 09, slides 49–51</a> · <a href="lista09/debugger_visual_problema_do_troco_coin_change.html">Simulador de troco mínimo</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q6">
+        <summary>Questão 6 · Adapte o troco mínimo para usar cada moeda no máximo uma vez</summary>
+        <div class="answer">
+          <p>Inicialize <code>D[0] = 0</code> e os demais estados com ∞. Para cada moeda de valor <var>c</var>, percorra <var>t</var> de <var>k</var> até <var>c</var> e aplique <code>D[t] ← min(D[t], 1 + D[t − c])</code>. A ordem decrescente preserva <code>D[t − c]</code> da etapa anterior, impedindo o reuso da moeda corrente. Leia <code>D[k]</code> ao final. O tempo é O(nk) e o espaço, Θ(k).</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q7">
+        <summary>Questão 7 · Conte as combinações distintas que formam a quantia k</summary>
+        <div class="answer">
+          <p>Considere denominações distintas, repetição permitida e combinações sem ordem. Inicialize <code>formas[0] = 1</code> e os demais estados com 0. Percorra as denominações no laço externo. Para cada <var>c</var>, percorra <var>t</var> em ordem crescente, de <var>c</var> até <var>k</var>, e some <code>formas[t − c]</code> a <code>formas[t]</code>. Assim, a moeda corrente pode aparecer mais de uma vez e <code>5 + 8</code> e <code>8 + 5</code> contam juntas uma vez. Com os dados da questão 5 há <strong>6 combinações</strong>. Tempo O(nk), espaço Θ(k).</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q8">
+        <summary>Questão 8 · Preencha a tabela da mochila 0/1 para os quatro itens</summary>
+        <div class="answer">
+          <p>O enunciado dá os quatro itens e deixa a capacidade em aberto. Use <strong>K = 10</strong>, a capacidade do exemplo com os mesmos itens no slide 54. Os pares (peso, valor) são <code>(6, 30), (3, 14), (4, 16), (2, 9)</code>.</p>
+          <p><code>M[i, c]</code> é o maior valor com capacidade <var>c</var> e os primeiros <var>i</var> itens. Comece com <code>M[0, c] = 0</code>. Copie <code>M[i − 1, c]</code> e, quando o item couber, compare com <code>vᵢ + M[i − 1, c − wᵢ]</code>. Ambos os candidatos usam a linha anterior.</p>
+          <div class="table-wrap">
+            <table class="matrix">
+              <caption>Valor máximo por prefixo de itens e capacidade</caption>
+              <thead><tr><th scope="col">i / c</th><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th><th scope="col">10</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">0</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><th scope="row">1</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>30</td><td>30</td><td>30</td><td>30</td><td>30</td></tr>
+                <tr><th scope="row">2</th><td>0</td><td>0</td><td>0</td><td>14</td><td>14</td><td>14</td><td>30</td><td>30</td><td>30</td><td>44</td><td>44</td></tr>
+                <tr><th scope="row">3</th><td>0</td><td>0</td><td>0</td><td>14</td><td>16</td><td>16</td><td>30</td><td>30</td><td>30</td><td>44</td><td>46</td></tr>
+                <tr><th scope="row">4</th><td>0</td><td>0</td><td>9</td><td>14</td><td>16</td><td>23</td><td>30</td><td>30</td><td>39</td><td>44</td><td><strong>46</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><code>M[3,10] = max(44, 16 + 30) = 46</code>. Para recuperar um conjunto ótimo, comece em <code>M[4,10]</code> e suba uma linha por item. Quando o valor diferir do de cima, inclua o item e desconte seu peso da capacidade. Isso seleciona <strong>{1, 3}</strong>, peso 10 e valor 46. Tempo e espaço da tabela são Θ(nK) para K ≥ 1. O tempo é pseudopolinomial porque depende do valor numérico de K.</p>
+          <p class="source"><a href="lista09/lista09.pdf#page=2">Lista 09, questão 8</a> · <a href="lista09/aula09.pdf#page=186">Aula 09, slide 54</a> · <a href="lista09/aula09.pdf#page=209">Aula 09, slides 63–65</a> · <a href="lista09/debugger_visual_knapsack_mochila.html">Simulador de mochila</a></p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q9">
+        <summary>Questão 9 · Adapte a mochila para permitir repetições de itens</summary>
+        <div class="answer">
+          <p>Com pesos inteiros positivos, <code>V[c]</code> é o melhor valor para capacidade <var>c</var>. Base <code>V[0] = 0</code>. Para <var>c</var> crescente, escolha o máximo entre 0 e <code>vᵢ + V[c − wᵢ]</code> para todos os itens que cabem. O subproblema conserva todos os tipos disponíveis e pode selecionar o mesmo item. Com os dados da questão 8, <strong>V[10] = 48</strong> pelos itens 1, 4 e 4. Tempo Θ(nK) ao testar todos os itens em cada capacidade, espaço Θ(K).</p>
+        </div>
+      </details>
+      <details class="exercise" id="lista09-q10">
+        <summary>Questão 10 · Reconstrua uma subsequência comum mais longa (LCS)</summary>
+        <div class="answer">
+          <p><code>M[i, j]</code> é o comprimento ótimo para os prefixos de tamanhos <var>i</var> e <var>j</var>. Zere a primeira linha e a primeira coluna. Em caso de símbolos finais iguais, use <code>1 + M[i − 1, j − 1]</code>. Em caso de símbolos diferentes, use o máximo entre <code>M[i − 1, j]</code> e <code>M[i, j − 1]</code>.</p>
+          <p>Parta do canto final. Se os símbolos coincidirem, guarde o símbolo e caminhe na diagonal. Se diferirem, vá para o vizinho de cima ou da esquerda com maior valor, escolhendo qualquer um em empate. Ao atingir a linha ou coluna 0, inverta os símbolos guardados. Para <code>ABCDEF</code> e <code>BADEGF</code>, uma LCS é <strong>ADEF</strong>. Tabela em Θ(mn) tempo e espaço, retrocesso em O(m + n).</p>
+          <p class="source"><a href="lista09/aula09.pdf#page=215">Aula 09, slide 69</a> · <a href="lista09/aula09.pdf#page=237">Aula 09, slides 82–83</a></p>
+        </div>
+      </details>
+      <p class="source"><a href="lista09/lista09.pdf">Enunciados da Lista 09</a> · <a href="lista09/lista09_estudo.pdf">Resolução comentada</a> · <a href="lista09/resolucao_visual_lista9.html">Resolução visual da Lista 09</a></p>
+    </section>
+
+    <section class="reference" id="consulta" aria-labelledby="consulta-titulo">
+      <header class="section-head">
+        <h2 id="consulta-titulo">Complexidades para consultar</h2>
+        <p>Ao justificar o custo, indique o que está sendo contado e a hipótese que sustenta a análise.</p>
+      </header>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="consulta-titulo">
+        <table>
+          <thead><tr><th scope="col">Algoritmo ou problema</th><th scope="col">Tempo</th><th scope="col">Justificativa</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#lista06">Merge Sort</a></td><td>Θ(n lg n)</td><td>Dois subproblemas de aproximadamente n/2 e combinação linear.</td></tr>
+            <tr><td><a href="#lista06">Quick Sort aleatório</a></td><td>Θ(n lg n) esperado<br>Θ(n²) no pior caso</td><td>Pivô uniforme a cada chamada, com chaves distintas.</td></tr>
+            <tr><td><a href="#lista06">Quick-Find aleatório</a></td><td>Θ(n) esperado<br>Θ(n²) no pior caso</td><td>Partição linear e recursão em um só lado, com pivô uniforme e chaves distintas.</td></tr>
+            <tr><td><a href="#lista07">Mediana das medianas</a></td><td>Θ(n) no pior caso</td><td>Grupos de cinco garantem a eliminação de uma fração constante.</td></tr>
+            <tr><td><a href="#lista08">Ordenação por comparações</a></td><td>Ω(n lg n) no pior caso</td><td>Uma árvore binária com pelo menos n! folhas tem altura de pelo menos ⌈lg(n!)⌉.</td></tr>
+            <tr><td><a href="#lista08">Counting Sort e Radix LSD</a></td><td>Θ(n + k)<br>Θ(d(n + b))</td><td>Counting usa k chaves possíveis. Radix aplica Counting estável em d passadas na base b.</td></tr>
+            <tr><td><a href="#lista09">Corte de barras e LIS</a></td><td>Θ(n²) nas versões da lista</td><td>Até n decisões anteriores para cada tamanho de barra ou posição da sequência.</td></tr>
+            <tr><td><a href="#lista09">Troco e mochila</a></td><td>O(nK)</td><td>n tipos de moedas ou itens e alvo ou capacidade K. Depende do valor numérico de K.</td></tr>
+            <tr><td><a href="#lista09">LCS</a></td><td>Θ(nm)</td><td>Um estado por par de prefixos de sequências de comprimentos n e m.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="materials" id="materiais" aria-labelledby="materiais-titulo">
+      <header class="section-head">
+        <h2 id="materiais-titulo">Materiais para conferir</h2>
+        <p>As listas são do Prof. Felipe A. Louza. Os slides disponíveis na pasta são das aulas 06 e 09 do Prof. Márcio José da Cunha.</p>
+      </header>
+      <div class="material-list">
+        <article>
+          <h3>Lista 06 · Divisão e conquista</h3>
+          <ul>
+            <li><a href="lista06/lista06.pdf">Enunciado da Lista 06</a></li>
+            <li><a href="lista06/aula06_divisao_e_conquista.pdf">Slides da Aula 06</a></li>
+            <li><a href="lista06/lista06_estudo.pdf">Resolução comentada da Lista 06</a></li>
+            <li><a href="lista06/resolucao_visual_lista6.html">Simulador de Merge, Quick Sort e Lomuto</a></li>
+          </ul>
+        </article>
+        <article>
+          <h3>Lista 07 · Seleção</h3>
+          <ul>
+            <li><a href="lista07/lista07.pdf">Enunciado da Lista 07</a></li>
+            <li><a href="lista07/lista07_estudo.pdf">Resolução comentada da Lista 07</a></li>
+            <li><a href="lista07/resolucao_visual_lista7.html">Simulador de mínimo, máximo e seleção</a></li>
+          </ul>
+        </article>
+        <article>
+          <h3>Lista 08 · Ordenação</h3>
+          <ul>
+            <li><a href="lista08/lista08.pdf">Enunciado da Lista 08</a></li>
+            <li><a href="lista08/lista08_estudo.pdf">Resolução comentada da Lista 08</a></li>
+            <li><a href="lista08/resolucao_visual_lista8.html">Simulador de árvores, Counting e Radix</a></li>
+          </ul>
+        </article>
+        <article>
+          <h3>Lista 09 · Programação dinâmica</h3>
+          <ul>
+            <li><a href="lista09/lista09.pdf">Enunciado da Lista 09</a></li>
+            <li><a href="lista09/aula09.pdf">Slides da Aula 09</a></li>
+            <li><a href="lista09/lista09_estudo.pdf">Resolução comentada da Lista 09</a></li>
+            <li><a href="lista09/resolucao_visual_lista9.html">Simulador das questões da Lista 09</a></li>
+            <li><a href="lista09/debugger_visual_lis_programa_o_din_mica.html">Simulador de LIS</a></li>
+            <li><a href="lista09/debugger_visual_problema_do_troco_coin_change.html">Simulador de troco</a></li>
+            <li><a href="lista09/debugger_visual_knapsack_mochila.html">Simulador de mochila 0-1</a></li>
+          </ul>
+        </article>
+      </div>
+      <p class="source"><a href="resumo_prova2.pdf">Resumo integrado em PDF</a></p>
+    </section>
+    <footer class="footer">
+      <p>Projeto e Análise de Algoritmos · UFU</p>
+      <a href="#inicio">Voltar ao início ↑</a>
+    </footer>
+  </main>
+  <script>
+    for (const module of document.querySelectorAll(".module")) {
+      const exercises = [...module.querySelectorAll("details.exercise")];
+      if (exercises.length < 2) continue;
+
+      const controls = document.createElement("div");
+      controls.className = "exercise-controls";
+      for (const [open, label] of [[true, "Mostrar respostas desta lista"], [false, "Fechar respostas"]]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          for (const exercise of exercises) exercise.open = open;
+        });
+        controls.append(button);
+      }
+      exercises[0].before(controls);
+    }
+
+    for (const wrapper of document.querySelectorAll(".module .table-wrap:not([tabindex])")) {
+      const table = wrapper.querySelector("table");
+      if (!table) continue;
+      wrapper.tabIndex = 0;
+      wrapper.setAttribute("role", "region");
+      wrapper.setAttribute("aria-label", table.caption?.textContent.trim() || "Tabela do exercício");
+    }
+  </script>
+</body>
+</html>

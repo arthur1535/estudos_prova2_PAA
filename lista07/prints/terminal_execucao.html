@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #181818;
+    color: #cccccc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    width: 1536px;
+    height: 816px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .titlebar {
+    height: 35px;
+    background-color: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid #2b2b2b;
+    user-select: none;
+  }
+  .titlebar-left { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .titlebar-menu { display: flex; gap: 12px; margin-left: 10px; }
+  .titlebar-center { color: #9d9d9d; }
+  .titlebar-right { display: flex; align-items: center; gap: 14px; }
+  
+  .terminal-panel {
+    flex: 1;
+    background-color: #181818;
+    display: flex;
+    flex-direction: column;
+  }
+  .terminal-tabs {
+    height: 35px;
+    background-color: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid #252526;
+  }
+  .tabs-left {
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #969696;
+  }
+  .tabs-left .active {
+    color: #ffffff;
+    border-bottom: 1px solid #ffffff;
+    padding-bottom: 8px;
+  }
+  .tabs-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #cccccc;
+    font-size: 12px;
+  }
+  .terminal-content {
+    flex: 1;
+    background-color: #181818;
+    padding: 12px 18px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 13.5px;
+    line-height: 20px;
+    color: #cccccc;
+    overflow: hidden;
+  }
+  .cmd-line {
+    color: #4ec9b0;
+    margin-bottom: 8px;
+  }
+  .prompt-char {
+    color: #569cd6;
+    margin-right: 6px;
+  }
+  .statusbar {
+    height: 22px;
+    background-color: #007acc;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="#007acc"><path d="M14.5 2.5l-3.2-1.5c-.4-.2-.8-.1-1.1.2L5.8 5.4 3.2 3.5c-.3-.2-.7-.2-1 .1L.4 5.3c-.3.3-.4.8-.1 1.1l2.5 2.3-2.5 2.3c-.3.3-.2.8.1 1.1l1.8 1.7c.3.3.7.3 1 .1l2.6-1.9 4.4 4.2c.3.3.7.4 1.1.2l3.2-1.5c.4-.2.6-.6.6-1.1V3.6c0-.5-.2-.9-.6-1.1z"/></svg>
+      <div class="titlebar-menu">
+        <span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span>
+      </div>
+    </div>
+    <div class="titlebar-center">&larr; &rarr; &nbsp; lista07</div>
+    <div class="titlebar-right"><span>&#9633;</span><span>&#9645;</span><span>&#10005;</span></div>
+  </div>
+
+  <div class="terminal-panel">
+    <div class="terminal-tabs">
+      <div class="tabs-left">
+        <span>Problems</span>
+        <span>Output</span>
+        <span>Debug Console</span>
+        <span class="active">Terminal</span>
+        <span>Ports</span>
+      </div>
+      <div class="tabs-right">
+        <span>&#9881; Executar Lista 7 - Task</span>
+        <span>+</span>
+        <span>&#8964;</span>
+        <span>&#128465;</span>
+        <span>&times;</span>
+      </div>
+    </div>
+    <div class="terminal-content">
+      <div class="cmd-line"><span class="prompt-char">*</span> Executing task: python lista07.py</div>
+      <div style="color:#ffffff; font-weight:bold; margin-top:6px;">LISTA 7 - O PROBLEMA DA SELECAO</div>
+<div></div>
+<div style="color:#ffffff; font-weight:bold; margin-top:6px;">1) MINIMO E MAXIMO SIMULTANEOS</div>
+<div>Vetor: [12, 35, 8, 42, 17, 91, 3, 25, 76, 50]</div>
+<div>Minimo: 3 | Maximo: 91</div>
+<div style="color:#4ec9b0; font-weight:bold;">Comparacoes realizadas: 13 (limite 3*floor(n/2) = 15)</div>
+<div></div>
+<div style="color:#ffffff; font-weight:bold; margin-top:6px;">2) ALGORITMO SELECTION</div>
+<div>Vetor original: [1, 8, 7, 6, 5, 3, 2, 10, 9] | Procurando 3o menor (i=3)</div>
+<div style="color:#dcdcaa;">Pivo 1 fixado na pos 1: [1, 8, 7, 6, 5, 3, 2, 10, 9] (vetor: [1, 8, 7, 6, 5, 3, 2, 10, 9])</div>
+<div>Recurso a direita: novo_i=2 (k=1)</div>
+<div style="color:#dcdcaa;">Pivo 8 fixado na pos 7: [2, 7, 6, 5, 3, 8, 10, 9] (vetor: [1, 2, 7, 6, 5, 3, 8, 10, 9])</div>
+<div>Recurso a esquerda: i=2 &lt;= k-1=5</div>
+<div style="color:#dcdcaa;">Pivo 2 fixado na pos 2: [2, 7, 6, 5, 3] (vetor: [1, 2, 7, 6, 5, 3, 8, 10, 9])</div>
+<div>Recurso a direita: novo_i=1 (k=1)</div>
+<div style="color:#dcdcaa;">Pivo 7 fixado na pos 6: [3, 6, 5, 7] (vetor: [1, 2, 3, 6, 5, 7, 8, 10, 9])</div>
+<div>Recurso a esquerda: i=1 &lt;= k-1=3</div>
+<div style="color:#dcdcaa;">Pivo 3 fixado na pos 3: [3, 6, 5] (vetor: [1, 2, 3, 6, 5, 7, 8, 10, 9])</div>
+<div>Encontrado: i=1 == k=1, elemento = 3</div>
+<div style="color:#4ec9b0; font-weight:bold;">Resultado final: 3</div>
+<div></div>
+<div style="color:#ffffff; font-weight:bold; margin-top:6px;">3) TRES METODOS PARA OS i MAIORES ELEMENTOS</div>
+<div>Vetor: [45, 12, 85, 32, 89, 39, 69, 44, 42, 1, 98] | i = 4</div>
+<div style="color:#9cdcfe;">Metodo A (Ordenacao total): [69, 85, 89, 98]</div>
+<div style="color:#9cdcfe;">Metodo B (Max-Heap):        [69, 85, 89, 98]</div>
+<div style="color:#9cdcfe;">Metodo C (Selecao linear):  [69, 85, 89, 98]</div>
+<div></div>
+<div style="color:#ffffff; font-weight:bold; margin-top:6px;">4) QUICKSORT COM PIOR CASO Theta(n lg n)</div>
+<div>Entrada em ordem decrescente (pior caso comum): [9, 8, 7, 6, 5, 4, 3, 2, 1]</div>
+<div>Ordenado com pivo de mediana deterministica:   [1, 2, 3, 4, 5, 6, 7, 8, 9]</div>
+<div></div>
+<div style="color:#ffffff; font-weight:bold; margin-top:6px;">5) SELECAO LINEAR COM CAIXA-PRETA DE MEDIANA</div>
+<div>1o menor elemento de [38, 27, 43, 3, 9, 82, 10]: 3</div>
+<div>3o menor elemento de [38, 27, 43, 3, 9, 82, 10]: 10</div>
+<div>4o menor elemento de [38, 27, 43, 3, 9, 82, 10]: 27</div>
+<div>7o menor elemento de [38, 27, 43, 3, 9, 82, 10]: 82</div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div style="display:flex; gap:14px;">
+      <span>&#10005; 0 &nbsp; &#9888; 0</span>
+      <span style="background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:2px;">Screen Reader Optimized</span>
+    </div>
+    <div style="display:flex; gap:14px;">
+      <span>UTF-8</span>
+      <span>LF</span>
+      <span>PowerShell</span>
+      <span>🔔</span>
+    </div>
+  </div>
+</body>
+</html>

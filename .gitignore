@@ -11,4 +11,8 @@
 .DS_Store
 Thumbs.db
 .vscode/
+.vscode-terminal-profile/
 .idea/
+tmp/
+pcheck/
+pcheck*.png

@@ -1,0 +1,112 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern,amsmath,amssymb,booktabs,array,geometry,fancyhdr,xcolor,enumitem}
+\geometry{margin=1.9cm}
+\definecolor{azul}{HTML}{183B56}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Projeto e Análise de Algoritmos}
+\fancyhead[R]{\small Lista 6 -- Divisão e Conquista}
+\fancyfoot[L]{\small Arthur Pires Lopes -- 12221EEL001}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setlist{nosep,leftmargin=*}
+\newcommand{\questao}[1]{\section*{\color{azul}Questão #1}}
+\newcommand{\vet}[1]{\langle #1\rangle}
+
+\begin{document}
+\begin{center}
+{\small Universidade Federal de Uberlândia -- FEELT}\par
+{\Large\bfseries\color{azul}Lista 6: Divisão e Conquista}\par
+\textbf{Arthur Pires Lopes} \quad 12221EEL001\par
+{\small Projeto e Análise de Algoritmos -- Prof. Felipe A. Louza}
+\end{center}
+\vspace{-6pt}\hrule
+
+\questao{1 -- Merge Sort}
+Para $A=\vet{1,2,3,4,5,6,7,8,9,10}$, as divisões são
+\[
+[1,10]\to[1,5],[6,10];\quad
+[1,5]\to[1,3],[4,5];\quad [1,3]\to[1,2],[3];
+\]
+\vspace{-15pt}
+\[
+[6,10]\to[6,8],[9,10];\quad [6,8]\to[6,7],[8].
+\]
+Os blocos de dois elementos são divididos em unidades. Na volta da recursão, as intercalações ocorrem nesta ordem (o vetor já está ordenado, logo cada bloco permanece na mesma ordem):
+\begin{center}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+Etapa & \textsc{Merge}$(p,q,r)$ & Resultado & Comparações\\
+\midrule
+1 & $(1,1,2)$ & $\vet{1,2}$ & 1\\
+2 & $(1,2,3)$ & $\vet{1,2,3}$ & 2\\
+3 & $(4,4,5)$ & $\vet{4,5}$ & 1\\
+4 & $(1,3,5)$ & $\vet{1,2,3,4,5}$ & 3\\
+5 & $(6,6,7)$ & $\vet{6,7}$ & 1\\
+6 & $(6,7,8)$ & $\vet{6,7,8}$ & 2\\
+7 & $(9,9,10)$ & $\vet{9,10}$ & 1\\
+8 & $(6,8,10)$ & $\vet{6,7,8,9,10}$ & 3\\
+9 & $(1,5,10)$ & $\vet{1,2,3,4,5,6,7,8,9,10}$ & 5\\
+\bottomrule
+\end{tabular}
+\end{center}
+Em cada intercalação, todos os elementos da metade esquerda são comparados ao primeiro da direita; por isso há $1+2+1+3+1+2+1+3+5=19$ comparações. O tempo é $\Theta(n\lg n)$.
+
+\questao{2 -- Quick Sort}
+Entrada: $A=\vet{1,2,3,4,5,6,7,8,9,10}$. Em cada linha abaixo, o pivô separa os elementos menores à esquerda e os maiores à direita.
+
+\textbf{(a) Primeiro elemento.} Os pivôs sucessivos são $1,2,3,4,5,6,7,8,9$; após escolher $i$, a partição é $\emptyset\mid i\mid\vet{i+1,\ldots,10}$. O elemento $10$ é caso base. São $9+8+\cdots+1=45$ comparações: $\Theta(n^2)$.
+
+\textbf{(b) Mediana de três.} No vetor ordenado, a mediana entre primeiro, central e último é o elemento central de cada subvetor:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Subvetor & Pivô & Partições restantes\\
+\midrule
+$[1,10]$ & 5 & $[1,4]$, $[6,10]$\\
+$[1,4]$; $[6,10]$ & 2; 8 & $[1]$, $[3,4]$; $[6,7]$, $[9,10]$\\
+$[3,4]$; $[6,7]$; $[9,10]$ & 3; 6; 9 & $[4]$; $[7]$; $[10]$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Os demais blocos são unitários. As partições são balanceadas, portanto $T(n)=\Theta(n\lg n)$.
+
+\textbf{(c) Pivô aleatório.} Uma execução possível sorteia $6$ e produz $[1,5]\mid6\mid[7,10]$; depois sorteia $3$ e $8$, produzindo $[1,2]\mid3\mid[4,5]$ e $[7]\mid8\mid[9,10]$. Por fim, escolhe $1$, $4$ e $9$ nos três blocos de dois elementos. Restam apenas blocos unitários. Cada sorteio escolhe uniformemente uma posição do subvetor atual. O tempo esperado é $\Theta(n\lg n)$, embora o pior caso seja $\Theta(n^2)$.
+
+\newpage
+\questao{3 -- Partition-Lomuto}
+Com $A=\vet{4,8,2,7,6,3,5,1,9,10}$, $l=1$, $r=10$, o pivô é $x=A[10]=10$ e $i=0$. Para cada $j=1,\ldots,9$, vale $A[j]\le10$; assim, $i$ passa sucessivamente por $1,\ldots,9$ e cada troca é $A[j]\leftrightarrow A[j]$. A troca final é $A[10]\leftrightarrow A[10]$. O vetor permanece $\vet{4,8,2,7,6,3,5,1,9,10}$ e a rotina retorna $10$.
+
+\textbf{Corretude.} No início da iteração $j$, o invariante é $A[l..i]\le x$, $A[i+1..j-1]>x$ e $A[r]=x$. Inicialmente, os dois intervalos são vazios. Se $A[j]\le x$, incrementa-se $i$ e troca-se $A[i]$ com $A[j]$, ampliando o primeiro intervalo; caso contrário, $A[j]$ amplia o segundo. Ao terminar, $j=r$; a troca $A[i+1]\leftrightarrow A[r]$ põe o pivô entre os dois grupos. Logo, o índice retornado é a posição final correta do pivô.
+
+\textbf{Custo.} O laço faz exatamente $n-1$ comparações e no máximo $n$ trocas, incluindo a final. Assim, o tempo é $\Theta(n)$ e o espaço auxiliar é $\Theta(1)$.
+
+\questao{4 -- Intercalação de $k$ vetores}
+Divida os $k$ vetores ordenados (cada um com $n$ elementos) em duas metades; intercale recursivamente cada metade e depois intercale os dois resultados.
+\begin{center}
+\begin{tabular}{@{}l@{}}
+\texttt{MERGE-K(V, a, b):}\quad\texttt{se a=b: retorne V[a]}\\
+\quad\texttt{m = floor((a+b)/2)}\\
+\quad\texttt{retorne MERGE-DUAS(MERGE-K(V,a,m), MERGE-K(V,m+1,b))}
+\end{tabular}
+\end{center}
+Em cada nível, todos os $nk$ elementos participam de intercalações, com custo $\Theta(nk)$. Assim, $T(k)=2T(k/2)+\Theta(nk)$; há $\lceil\lg k\rceil$ níveis, logo o tempo é $\Theta(nk\lg k)$ para $k\ge2$. A saída ocupa $\Theta(nk)$ posições.
+
+\questao{5 -- Quick-Find (Quickselect)}
+Use \textsc{Partition} para colocar o pivô em sua posição final e prossiga somente no lado que contém o $k$-ésimo menor elemento (com $k$ contado a partir de 1):
+\begin{center}
+\begin{tabular}{@{}l@{}}
+\texttt{QUICK-FIND(V, l, r, k):}\quad\texttt{se l=r: retorne V[l]}\\
+\quad\texttt{q = PARTITION-ALEATORIA(V,l,r); m = q-l+1}\\
+\quad\texttt{se k=m: retorne V[q]}\\
+\quad\texttt{se k<m: retorne QUICK-FIND(V,l,q-1,k)}\\
+\quad\texttt{senao: retorne QUICK-FIND(V,q+1,r,k-m)}
+\end{tabular}
+\end{center}
+\texttt{PARTITION-ALEATORIA} sorteia um índice, troca seu elemento com $V[r]$ e executa Lomuto. Uma partição custa $\Theta(n)$; com pivôs aleatórios, o tempo \emph{esperado} é $\Theta(n)$ e o pior caso é $\Theta(n^2)$. O $O(\log n)$ citado no enunciado descreve a profundidade típica da recursão, não o tempo total: mesmo a primeira partição já requer $\Omega(n)$ operações.
+\end{document}
