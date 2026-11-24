@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Revisão da Prova 2 de Projeto e Análise de Algoritmos da UFU, com as listas 06 a 09 e os slides das aulas 06 e 09.">
+  <meta name="description" content="Revisão da Prova 2 de Projeto e Análise de Algoritmos da UFU, com as listas 06 a 09 e os slides das aulas 06 a 09.">
   <title>Revisão da Prova 2 · Projeto e Análise de Algoritmos</title>
   <style>
     :root {
@@ -478,7 +478,7 @@
         <p>Para chaves distintas, se o pivô termina na posição <var>q</var> do trecho <var>A[p…r]</var>, seu posto local é <code>k = q − p + 1</code>. Se <var>i</var> for menor que <var>k</var>, busque o mesmo posto à esquerda. Se <var>i</var> for maior, busque o posto <code>i − k</code> à direita. A igualdade encerra a busca.</p>
         <p>Exemplo com índices iniciando em 1. Na busca pelo 4º menor de <code>[4, 7, 2, 9, 1, 6]</code>, uma partição com pivô 4 produz <code>[1, 2, 4, 9, 7, 6]</code>. Seu posto é 3. A busca passa a ser pelo 1º menor de <code>[9, 7, 6]</code>, que é <strong>6</strong>.</p>
         <p>A partição custa Θ(n). Com redução à metade em cada etapa, o custo total é Θ(n) pela soma <code>n + n/2 + n/4 + ⋯</code>. Um pivô uniforme ao acaso dá tempo esperado Θ(n) em chaves distintas. Pivôs extremos sucessivos podem levar a Θ(n²).</p>
-        <p class="source">A mecânica de partição usada pelo QuickSort aparece na <a href="lista06/aula06_divisao_e_conquista.pdf#page=101">Aula 06, slide 23</a>.</p>
+        <p class="source"><a href="lista07/aula07.pdf#page=14">Aula 07 · Mínimo e Máximo, pp. 14–21</a> · <a href="lista07/aula07.pdf#page=23">Aula 07 · 2º menor por torneio, pp. 23–30</a> · <a href="lista07/aula07.pdf#page=34">Aula 07 · Seleção e BFPRT, pp. 34–66</a></p>
       </div>
 
       <h3>Exercícios da Lista 07</h3>
@@ -571,6 +571,7 @@
         <h3>Counting Sort estável</h3>
         <p>Para chaves inteiras em <code>0…k − 1</code>, conte frequências e acumule-as. Ao final dessa fase, <code>C[x]</code> é a última posição reservada à chave <var>x</var> numa saída indexada a partir de 1. Percorra a entrada do fim ao início. A cada chave <var>x</var>, escreva o registro em <code>B[C[x]]</code> e decremente <code>C[x]</code>.</p>
         <p>Para <code>[2ₐ, 0, 2ᵦ, 1]</code>, as frequências são <code>[1, 1, 2]</code> e os prefixos são <code>[1, 2, 4]</code>. A chave <code>2ᵦ</code> ocupa a posição 4 e a chave <code>2ₐ</code>, a posição 3. A saída <code>[0, 1, 2ₐ, 2ᵦ]</code> preserva a ordem do empate. O custo é Θ(n + k) em tempo e espaço auxiliar, incluindo a saída.</p>
+        <p class="source"><a href="lista08/aula08.pdf#page=4">Aula 08 · Cota inferior e Stirling, pp. 4–15</a> · <a href="lista08/aula08.pdf#page=18">Aula 08 · Counting Sort e estabilidade, pp. 18–30</a> · <a href="lista08/aula08.pdf#page=31">Aula 08 · Radix Sort vs Merge Sort, pp. 31–38</a></p>
       </div>
 
       <h3>Exercícios da Lista 08</h3>
@@ -842,6 +843,8 @@
           <h3>Lista 07 · Seleção</h3>
           <ul>
             <li><a href="lista07/lista07.pdf">Enunciado da Lista 07</a></li>
+            <li><a href="lista07/aula07.pdf">Slides da Aula 07</a></li>
+            <li><a href="lista07/lista07_4paginas.pdf">Resolução compacta (4 páginas para HandTextAI)</a></li>
             <li><a href="lista07/lista07_estudo.pdf">Resolução comentada da Lista 07</a></li>
             <li><a href="lista07/resolucao_visual_lista7.html">Simulador de mínimo, máximo e seleção</a></li>
           </ul>
@@ -850,6 +853,7 @@
           <h3>Lista 08 · Ordenação</h3>
           <ul>
             <li><a href="lista08/lista08.pdf">Enunciado da Lista 08</a></li>
+            <li><a href="lista08/aula08.pdf">Slides da Aula 08</a></li>
             <li><a href="lista08/lista08_estudo.pdf">Resolução comentada da Lista 08</a></li>
             <li><a href="lista08/resolucao_visual_lista8.html">Simulador de árvores, Counting e Radix</a></li>
           </ul>
